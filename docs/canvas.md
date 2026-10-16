@@ -1,6 +1,6 @@
 # Общий холст: дизайн
 
-Статус: **session, palette и links реализованы и подключены в workspace и graph-up; canvas проектируется (этот документ), не реализован**. Цель: один холст на трёх потребителей (workspace, graph-up, taofx) вместо трёх копий, без разрастания в «мега-фреймворк».
+Статус: **реализовано и подключено в workspace и graph-up: session, palette, links, canvas**. Остались `pins` и стор taofx. Цель: один холст на трёх потребителей (workspace, graph-up, taofx) вместо трёх копий, без разрастания в «мега-фреймворк».
 
 ## 1. Что нашли
 
@@ -88,7 +88,6 @@ export interface CanvasHost<P = unknown> {
 export interface CanvasOptions<P> {
     pinAt(target: EventTarget | null): P | null; // пин под указателем
     pinNear?(point: { clientX: number; clientY: number }): P | null; // ближайший пин (сторона ноды)
-    wheel?: 'pan' | 'zoom'; // по умолчанию 'pan'
 }
 ```
 
@@ -157,7 +156,7 @@ createDocumentSession<D>({
 1. ~~Тест ярусов и каркас сборки Vue~~ (готово).
 2. ~~`session`~~ (готово: workspace и graph-up переведены, store короче на ≈130 строк у каждого).
 3. ~~`links` и `palette`~~ (готово: `TaoxLinks` с переменными `--tx-link-*`, проверено в браузере в обоих проектах).
-4. **`canvas`**: сначала по workspace (надмножество), затем graph-up. Здесь `pinAt`/`pinNear`, адаптеры и DOM-контракт проверяются на живом поведении (мышь, сенсор, автопрокрутка).
+4. ~~`canvas`~~ (готово: `EditorCanvas.vue` стал 37 строк у workspace (было 803) и 26 у graph-up (было 298); жесты проверены в браузере; у graph-up появились touch, автопрокрутка и `cancelConnect`).
 5. **taofx**: стор по образцу graph-up, `NodeView` с типизированными пинами и цветом по типу.
 
 ## 8. Решения, которые нужны от человека
@@ -165,4 +164,4 @@ createDocumentSession<D>({
 1. Правило ярусов (составные модули могут импортировать примитивы) и тест, который его охраняет.
 2. Стили отдельным `.css` на модуль + переменные `--tx-*` (вместо внедрения CSS из JS).
 3. Порядок: `session` раньше `canvas`.
-4. Колесо у graph-up/taofx: оставить масштабирование колесом или перейти на «колесо двигает, Ctrl масштабирует» как в workspace.
+4. Колесо у graph-up/taofx: решено как в workspace: колесо двигает, Ctrl масштабирует (опции `wheel` в API нет).
