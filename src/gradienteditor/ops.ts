@@ -67,6 +67,20 @@ export function removeStop(stops: readonly GradientStop[], i: number): GradientS
     return copy(stops.filter((_, k) => k !== i));
 }
 
+/** Остановки, лежащие вплотную к остановке `i` (в пределах `px` пикселей при ширине полосы `width`), включая её саму: стопка наложенных ручек. */
+export function stackAround(stops: readonly GradientStop[], i: number, width: number, px: number): number[] {
+    const here = stops[i]?.t ?? 0;
+    return stops.flatMap((s, k) => (Math.abs(s.t - here) * width <= px ? [k] : []));
+}
+
+/**
+ * Какую ручку из стопки взять, когда её потянули на `dx` пикселей. Порядок остановок менять нельзя, поэтому вытянуть можно
+ * только крайнюю: влево первую, вправо последнюю.
+ */
+export function pickFromStack(cluster: readonly number[], dx: number): number {
+    return dx < 0 ? Math.min(...cluster) : Math.max(...cluster);
+}
+
 /** Линейный цвет → sRGB, 0…1. */
 export const toSrgb = (c: number) => (c <= 0.0031308 ? c * 12.92 : 1.055 * Math.pow(c, 1 / 2.4) - 0.055);
 /** sRGB → линейный цвет, 0…1. */

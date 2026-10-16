@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addStop, gradientCss, moveStop, removeStop, sampleGradient, toLinear, toSrgb, type GradientStop } from '../src/gradienteditor';
+import { addStop, gradientCss, moveStop, pickFromStack, removeStop, sampleGradient, stackAround, toLinear, toSrgb, type GradientStop } from '../src/gradienteditor';
 
 const stops: GradientStop[] = [
     { t: 0, color: [0, 0, 0], alpha: 1 },
@@ -40,5 +40,26 @@ describe('градиент', () => {
         expect(css).toContain('rgba(0, 0, 0, 1.000) 0.0%');
         expect(css).toContain('rgba(255, 255, 255, 0.000) 100.0%');
         for (const c of [0, 0.02, 0.3, 0.8, 1]) expect(toLinear(toSrgb(c))).toBeCloseTo(c, 6);
+    });
+});
+
+describe('стопка наложенных ручек', () => {
+    const at = (t: number): GradientStop => ({ t, color: [0, 0, 0], alpha: 1 });
+    const stack = [at(0), at(1), at(1), at(1)];
+
+    it('находит соседей вплотную, дальние не трогает', () => {
+        expect(stackAround(stack, 3, 200, 7)).toEqual([1, 2, 3]);
+        expect(stackAround(stack, 0, 200, 7)).toEqual([0]);
+        expect(stackAround([at(0.5), at(0.52)], 0, 200, 7)).toEqual([0, 1]); // 4 px
+        expect(stackAround([at(0.5), at(0.6)], 0, 200, 7)).toEqual([0]); // 20 px
+    });
+
+    it('влево вытягивается первая из стопки, вправо последняя: порядок не ломается', () => {
+        expect(pickFromStack([1, 2, 3], -5)).toBe(1);
+        expect(pickFromStack([1, 2, 3], 5)).toBe(3);
+        // стопка у правого края: первая уходит влево без помех
+        expect(moveStop(stack, 1, 0.5)[1]!.t).toBe(0.5);
+        // последняя влево не пошла бы: упирается в соседа
+        expect(moveStop(stack, 3, 0.5)[3]!.t).toBe(1);
     });
 });
