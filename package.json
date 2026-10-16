@@ -55,6 +55,10 @@
       "types": "./dist/palette.d.ts",
       "import": "./dist/palette.js"
     },
+    "./pins": {
+      "types": "./dist/pins.d.ts",
+      "import": "./dist/pins.js"
+    },
     "./session": {
       "types": "./dist/session.d.ts",
       "import": "./dist/session.js"
