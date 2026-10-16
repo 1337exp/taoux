@@ -13,9 +13,21 @@
       "types": "./dist/camera.d.ts",
       "import": "./dist/camera.js"
     },
+    "./curve": {
+      "types": "./dist/curve.d.ts",
+      "import": "./dist/curve.js"
+    },
+    "./edgescroll": {
+      "types": "./dist/edgescroll.d.ts",
+      "import": "./dist/edgescroll.js"
+    },
     "./file": {
       "types": "./dist/file.d.ts",
       "import": "./dist/file.js"
+    },
+    "./gestures": {
+      "types": "./dist/gestures.d.ts",
+      "import": "./dist/gestures.js"
     },
     "./history": {
       "types": "./dist/history.d.ts",
@@ -25,9 +37,25 @@
       "types": "./dist/i18n.d.ts",
       "import": "./dist/i18n.js"
     },
+    "./ids": {
+      "types": "./dist/ids.d.ts",
+      "import": "./dist/ids.js"
+    },
+    "./snap": {
+      "types": "./dist/snap.d.ts",
+      "import": "./dist/snap.js"
+    },
     "./storage": {
       "types": "./dist/storage.d.ts",
       "import": "./dist/storage.js"
+    },
+    "./touch": {
+      "types": "./dist/touch.d.ts",
+      "import": "./dist/touch.js"
+    },
+    "./wheel": {
+      "types": "./dist/wheel.d.ts",
+      "import": "./dist/wheel.js"
     },
     "./package.json": "./package.json"
   },
