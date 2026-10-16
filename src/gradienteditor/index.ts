@@ -1,2 +1,2 @@
 export { default as TaoxGradientEditor } from './TaoxGradientEditor.vue';
-export { addStop, gradientCss, moveStop, pickFromStack, removeStop, roundAlpha, sampleGradient, stackAround, toLinear, toSrgb, type GradientStop } from './ops';
+export { addStop, DEFAULT_PRECISION, gradientCss, moveStop, patchStop, pickFromStack, removeStop, roundAlpha, roundTo, sampleGradient, stackAround, toLinear, toSrgb, type GradientStop } from './ops';

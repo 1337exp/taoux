@@ -12,8 +12,28 @@ const clamp01 = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x);
 
 const copy = (stops: readonly GradientStop[]): GradientStop[] => stops.map((s) => ({ ...s, color: [...s.color] as GradientStop['color'] }));
 
-/** Непрозрачность с тремя знаками: «0.5700000000000001» в файле никому не нужно. */
-export const roundAlpha = (a: number): number => Math.round(Math.min(1, Math.max(0, a)) * 1000) / 1000;
+/** Знаков после запятой по умолчанию у t и непрозрачности: «0.5700000000000001» в файле никому не нужно. */
+export const DEFAULT_PRECISION = 3;
+
+/** Обрезает до `digits` знаков после запятой; `null` и `undefined` оставляют значение как есть. */
+export function roundTo(x: number, digits?: number | null): number {
+    if (digits === undefined || digits === null) return x;
+    const k = Math.pow(10, Math.max(0, Math.floor(digits)));
+    return Math.round(x * k) / k + 0;
+}
+
+/** Непрозрачность 0…1 с `digits` знаками (по умолчанию три). */
+export const roundAlpha = (a: number, digits: number | null = DEFAULT_PRECISION): number => roundTo(Math.min(1, Math.max(0, a)), digits);
+
+/** Меняет остановку `i`; непрозрачность и t округляются до `precision` знаков (по умолчанию три; `null` отключает). */
+export function patchStop(stops: readonly GradientStop[], i: number, patch: Partial<GradientStop>, precision: number | null = DEFAULT_PRECISION): GradientStop[] {
+    const next = copy(stops);
+    const stop = { ...next[i]!, ...patch };
+    stop.alpha = roundAlpha(stop.alpha, precision);
+    stop.t = roundTo(Math.min(1, Math.max(0, stop.t)), precision);
+    next[i] = stop;
+    return next;
+}
 
 /** Цвет и непрозрачность градиента в t: линейно между остановками, за краями равны крайней. Возвращает [r, g, b, a]. */
 export function sampleGradient(stops: readonly GradientStop[], t: number): [number, number, number, number] {
@@ -45,22 +65,22 @@ export function sampleGradient(stops: readonly GradientStop[], t: number): [numb
 }
 
 /** Сдвигает остановку `i` по t в пределах соседей. */
-export function moveStop(stops: readonly GradientStop[], i: number, t: number): GradientStop[] {
+export function moveStop(stops: readonly GradientStop[], i: number, t: number, precision?: number | null): GradientStop[] {
     const next = copy(stops);
     const lo = i > 0 ? next[i - 1]!.t : 0;
     const hi = i < next.length - 1 ? next[i + 1]!.t : 1;
-    next[i] = { ...next[i]!, t: Math.min(hi, Math.max(lo, clamp01(t))) };
+    next[i] = { ...next[i]!, t: Math.min(hi, Math.max(lo, roundTo(clamp01(t), precision))) };
     return next;
 }
 
 /** Добавляет остановку в `t` с цветом, который градиент имеет в этой точке; возвращает новый список и индекс. */
-export function addStop(stops: readonly GradientStop[], t: number): { stops: GradientStop[]; index: number } {
-    const x = clamp01(t);
+export function addStop(stops: readonly GradientStop[], t: number, precision: number | null = DEFAULT_PRECISION): { stops: GradientStop[]; index: number } {
+    const x = roundTo(clamp01(t), precision);
     const [r, g, b, a] = sampleGradient(stops, x);
     const next = copy(stops);
     const at = next.findIndex((s) => s.t > x);
     const index = at === -1 ? next.length : at;
-    next.splice(index, 0, { t: x, color: [r, g, b], alpha: roundAlpha(a) });
+    next.splice(index, 0, { t: x, color: [r, g, b], alpha: roundAlpha(a, precision) });
     return { stops: next, index };
 }
 

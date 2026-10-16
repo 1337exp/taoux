@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
-import { addStop, gradientCss, moveStop, pickFromStack, removeStop, stackAround, toSrgb, type GradientStop } from './ops';
+import { addStop, DEFAULT_PRECISION, gradientCss, moveStop, pickFromStack, removeStop, stackAround, toSrgb, type GradientStop } from './ops';
 
 const props = withDefaults(
     defineProps<{
@@ -10,8 +10,10 @@ const props = withDefaults(
         selected?: number;
         /** Подсказка при наведении на полосу. */
         hint?: string;
+        /** Знаков после запятой у t и непрозрачности в том, что компонент отдаёт; `null` не обрезает. По умолчанию три. */
+        precision?: number | null;
     }>(),
-    { selected: 0 },
+    { selected: 0, precision: DEFAULT_PRECISION },
 );
 const emit = defineEmits<{
     'update:modelValue': [value: GradientStop[]];
@@ -62,7 +64,7 @@ function onMove(e: PointerEvent) {
         pending = null;
         emit('update:selected', dragging);
     }
-    emit('update:modelValue', moveStop(props.modelValue, dragging, tAt(e)));
+    emit('update:modelValue', moveStop(props.modelValue, dragging, tAt(e), props.precision));
 }
 
 function onUp() {
@@ -77,7 +79,7 @@ const stopColor = (s: GradientStop) => `rgb(${s.color.map((c) => Math.round(255 
 
 function onBarClick(e: MouseEvent) {
     if (e.target !== bar.value) return;
-    const r = addStop(props.modelValue, tAt(e));
+    const r = addStop(props.modelValue, tAt(e), props.precision);
     emit('update:modelValue', r.stops);
     emit('update:selected', r.index);
     emit('commit');

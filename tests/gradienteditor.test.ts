@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addStop, gradientCss, moveStop, pickFromStack, removeStop, roundAlpha, sampleGradient, stackAround, toLinear, toSrgb, type GradientStop } from '../src/gradienteditor';
+import { addStop, gradientCss, moveStop, pickFromStack, patchStop, removeStop, roundAlpha, sampleGradient, stackAround, toLinear, toSrgb, type GradientStop } from '../src/gradienteditor';
 
 const stops: GradientStop[] = [
     { t: 0, color: [0, 0, 0], alpha: 1 },
@@ -75,5 +75,24 @@ describe('непрозрачность', () => {
     it('добавленная остановка получает короткую альфу', () => {
         const odd: GradientStop[] = [{ t: 0, color: [0, 0, 0], alpha: 1 }, { t: 1, color: [0, 0, 0], alpha: 0 }];
         expect(addStop(odd, 0.43).stops[1]!.alpha).toBe(0.57);
+    });
+});
+
+describe('знаки после запятой', () => {
+    const three: GradientStop[] = [{ t: 0, color: [0, 0, 0], alpha: 1 }, { t: 1, color: [0, 0, 0], alpha: 0 }];
+
+    it('patchStop округляет альфу и t до трёх знаков, precision null не обрезает', () => {
+        expect(patchStop(three, 0, { alpha: 0.5700000000000001 })[0]!.alpha).toBe(0.57);
+        expect(patchStop(three, 1, { t: 0.123456 })[1]!.t).toBe(0.123);
+        expect(patchStop(three, 0, { alpha: 0.12345 }, 2)[0]!.alpha).toBe(0.12);
+        expect(patchStop(three, 0, { alpha: 0.123456 }, null)[0]!.alpha).toBe(0.123456);
+        expect(three[0]!.alpha).toBe(1); // исходный список не тронут
+    });
+
+    it('moveStop и addStop учитывают precision', () => {
+        expect(moveStop(three, 1, 0.8123456, 3)[1]!.t).toBe(0.812);
+        expect(moveStop(three, 1, 0.8123456)[1]!.t).toBe(0.8123456);
+        expect(addStop(three, 0.314159).stops[1]!.t).toBe(0.314);
+        expect(addStop(three, 0.314159, null).stops[1]!.t).toBe(0.314159);
     });
 });

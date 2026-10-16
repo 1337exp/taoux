@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { TaoButton, TaoSlider } from '@1337exp/taoui';
 import { computed, ref } from 'vue';
-import { removeStop, roundAlpha, TaoxGradientEditor, toLinear, toSrgb, type GradientStop } from '../src/gradienteditor';
+import { patchStop, removeStop, TaoxGradientEditor, toLinear, toSrgb, type GradientStop } from '../src/gradienteditor';
 import SandboxShell from './SandboxShell.vue';
 
 const stops = ref<GradientStop[]>([
@@ -16,7 +16,7 @@ const stop = computed(() => stops.value[Math.min(selected.value, stops.value.len
 const hex = computed(() => '#' + stop.value.color.map((c) => Math.round(toSrgb(c) * 255).toString(16).padStart(2, '0')).join(''));
 
 function patch(p: Partial<GradientStop>) {
-    stops.value = stops.value.map((s, i) => (i === selected.value ? { ...s, ...p } : s));
+    stops.value = patchStop(stops.value, selected.value, p); // альфа и t обрезаются до трёх знаков
 }
 function onColor(e: Event) {
     const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec((e.target as HTMLInputElement).value);
@@ -38,7 +38,7 @@ function reset() {
             <TaoxGradientEditor v-model="stops" v-model:selected="selected" hint="Клик по полосе добавляет остановку" />
             <div class="row">
                 <input type="color" :value="hex" @input="onColor" />
-                <TaoSlider class="grow" variant="thin" size="small" :min="0" :max="1" :step="0.01" :model-value="stop.alpha" @update:model-value="(v) => patch({ alpha: roundAlpha(Number(v)) })" />
+                <TaoSlider class="grow" variant="thin" size="small" :min="0" :max="1" :step="0.01" :model-value="stop.alpha" @update:model-value="(v) => patch({ alpha: Number(v) })" />
                 <TaoButton size="small" variant="ghost" :disabled="stops.length <= 1" @click="remove">Убрать</TaoButton>
                 <TaoButton size="small" variant="ghost" @click="reset">Сбросить</TaoButton>
             </div>
