@@ -68,6 +68,7 @@ const json = computed(() => JSON.stringify({ single: single.value, price: price.
                     <TaoInputNumber class="grow" size="small" :min="price[0]" :max="5000000" :step="100" :controls="false" :model-value="price[1]" @update:model-value="(v) => v !== null && (price = [price[0], v])" />
                 </div>
                 <TaoRangeSlider v-model="price" :min="0" :max="5000" :step="100" :format="money" :marks="[0, 1000, 2500, 5000]" />
+                <TaoRangeSlider v-model="price" :min="0" :max="5000" :step="100" :format="money" :marks="[0, 1000, 2500, 5000]" marks-side="start" />
             </section>
 
             <section class="case">
@@ -98,13 +99,15 @@ const json = computed(() => JSON.stringify({ single: single.value, price: price.
             </section>
 
             <section class="case">
-                <h2>vertical <small>с метками, thin, без меток, flat</small></h2>
+                <h2>vertical <small>с метками, thin, без меток, flat, метки слева</small></h2>
                 <div class="row" style="gap: 40px; padding: 8px 12px">
                     <TaoSlider v-model="level" vertical marks />
                     <TaoRangeSlider v-model="band" vertical marks />
                     <TaoSlider v-model="level" vertical variant="thin" :marks="[0, 50, 100]" />
                     <TaoSlider v-model="level" vertical />
                     <TaoRangeSlider v-model="band" vertical flat />
+                    <TaoSlider v-model="level" vertical marks marks-side="start" />
+                    <TaoRangeSlider v-model="band" vertical variant="thin" :marks="[0, 50, 100]" marks-side="start" />
                 </div>
             </section>
 
@@ -120,6 +123,15 @@ const json = computed(() => JSON.stringify({ single: single.value, price: price.
                     <TaoButton size="small" variant="secondary" @click="toggle">{{ playing ? '❚❚' : '▶' }}</TaoButton>
                     <TaoSlider v-model="time" class="grow" style="margin-top: 5px" size="small" :min="0" :max="LENGTH" :step="0.01" :marks="events" />
                     <span class="muted" style="margin-top: 4px">{{ timeText }}</span>
+                </div>
+            </section>
+
+            <section class="case">
+                <h2>Таймлайн, шкала сверху <small>marks-side="start", как линейка</small></h2>
+                <div class="row" style="align-items: flex-end">
+                    <TaoButton size="small" variant="secondary" @click="toggle">{{ playing ? '❚❚' : '▶' }}</TaoButton>
+                    <TaoSlider v-model="time" class="grow" variant="thin" size="small" :min="0" :max="LENGTH" :step="0.01" :marks="events" marks-side="start" style="margin-bottom: 5px" />
+                    <span class="muted" style="margin-bottom: 4px">{{ timeText }}</span>
                 </div>
             </section>
 
