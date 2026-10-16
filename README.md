@@ -24,10 +24,11 @@ import { History } from '@1337exp/taoux/history';
 | `palette` | поиск и группы нод для палитры | нет |
 | `links` (Vue) | слой связей: SVG из готовой геометрии, `--tx-link-*` | vue (peer) |
 | `canvas` (Vue) | холст: жесты мыши и сенсора, колесо, автопрокрутка, клавиши; контракт `CanvasHost` | vue (peer) |
+| `curveeditor` (Vue) | поле редактора кривой: сетка, шаг, границы, знаки, автопрокрутка у края; операции над точками | vue (peer) |
 | `pins` | позиции пинов-строк, измеренные по DOM: `usePinMeasure`, `createPinRegistry` | vue (peer) |
 | `i18n` | типизированный i18n: `createI18n({ locales, fallback, storageKey })` | vue (peer, опционально) |
 
-Vue-модули (`links`, `canvas`) требуют явного импорта стилей: `import '@1337exp/taoux/canvas.css'`. Составные модули (session, palette, links, canvas) импортируют только примитивы, и тест `tiers.test.ts` это охраняет; контракт холста описан в [docs/canvas.md](docs/canvas.md).
+Vue-модули (`links`, `canvas`, `curveeditor`) требуют явного импорта стилей: `import '@1337exp/taoux/canvas.css'`. Составные модули (session, palette, links, canvas, pins, curveeditor) импортируют только примитивы, и тест `tiers.test.ts` это охраняет; контракт холста описан в [docs/canvas.md](docs/canvas.md).
 
 Правило: модуль попадает сюда, когда он понадобился во втором проекте. Ядро модулей не знает про Vue и DOM, если это не их задача.
 
@@ -38,6 +39,7 @@ npm install
 npm test            # vitest
 npm run typecheck
 npm run build       # dist/ (vite + tsc declarations)
+npm run sandbox     # песочница: http://localhost:5300, страницы из sandbox/
 npm run dev         # watch: пересборка JS и деклараций
 ```
 
@@ -51,3 +53,7 @@ npm run dev         # watch: пересборка JS и деклараций
 
 - В `vite.config.ts` потребителя нужен `resolve: { dedupe: ['vue'] }`, а в `tsconfig.json` в `paths` строка `"vue": ["./node_modules/vue"]`. Иначе у слинкованного пакета своя копия Vue: реактивность и типы (`ComputedRef` не распознаётся как `Ref`) ломаются.
 - Классический `npm link` (через глобальную папку на C:) на этой машине не работает: junction C: → E: ломается ("mount point ... not attached"). Поэтому только `file:` или junction внутри E:.
+
+## Sandbox
+
+Папка `sandbox/` это демо и поле для проверки компонентов: страницы подключают модули прямо из `src/`, без сборки. Новый компонент = `sandbox/<имя>.html` + `.ts` + демо `.vue` и ссылка в `sandbox/index.html`. Запуск: `npm run sandbox`. Сейчас там `curveeditor`.

@@ -1,0 +1,113 @@
+:root {
+    --bg: #15171b;
+    --surface: #1b1e23;
+    --border: #2a2d33;
+    --text: #d6d9de;
+    --muted: #8b929c;
+    --accent: #ffb74d;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    min-height: 100%;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.4 system-ui, sans-serif;
+}
+
+a {
+    color: var(--accent);
+}
+
+code {
+    color: var(--muted);
+}
+
+.page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 24px 16px;
+}
+
+h1 {
+    margin: 0 0 8px;
+    font-size: 20px;
+}
+
+.muted {
+    color: var(--muted);
+}
+
+.list {
+    padding-left: 18px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.case {
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+}
+
+.case h2 {
+    margin: 0 0 8px;
+    font-size: 13px;
+}
+
+.case h2 small {
+    margin-left: 6px;
+    color: var(--muted);
+    font-weight: 400;
+}
+
+.case pre {
+    margin: 8px 0 0;
+    color: var(--muted);
+    font-size: 11px;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    font-size: 12px;
+}
+
+button {
+    padding: 3px 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--accent);
+    font: inherit;
+    cursor: pointer;
+}
+
+button:disabled {
+    color: var(--muted);
+    cursor: default;
+}
+
+/* Тема виджета: вся настройка через переменные --tx-curve-* */
+.page {
+    --tx-curve-bg: #101216;
+    --tx-curve-accent: var(--accent);
+}

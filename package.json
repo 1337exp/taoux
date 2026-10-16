@@ -17,6 +17,11 @@
       "types": "./dist/curve.d.ts",
       "import": "./dist/curve.js"
     },
+    "./curveeditor": {
+      "types": "./dist/curveeditor/index.d.ts",
+      "import": "./dist/curveeditor.js"
+    },
+    "./curveeditor.css": "./dist/curveeditor.css",
     "./edgescroll": {
       "types": "./dist/edgescroll.d.ts",
       "import": "./dist/edgescroll.js"
@@ -84,6 +89,7 @@
   "scripts": {
     "build": "vite build && vue-tsc -p tsconfig.build.json",
     "dev": "node scripts/dev.mjs",
+    "sandbox": "vite --config vite.sandbox.config.ts",
     "typecheck": "vue-tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
