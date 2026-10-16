@@ -41,6 +41,10 @@
       "types": "./dist/ids.d.ts",
       "import": "./dist/ids.js"
     },
+    "./palette": {
+      "types": "./dist/palette.d.ts",
+      "import": "./dist/palette.js"
+    },
     "./session": {
       "types": "./dist/session.d.ts",
       "import": "./dist/session.js"
