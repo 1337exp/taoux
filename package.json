@@ -109,7 +109,7 @@
     }
   },
   "devDependencies": {
-    "@1337exp/taoui": "file:../taoui",
+    "@1337exp/taoui": "^2.1.1",
     "@types/node": "^26.6.4",
     "@vitejs/plugin-vue": "^6.0.10",
     "happy-dom": "^20.14.5",
