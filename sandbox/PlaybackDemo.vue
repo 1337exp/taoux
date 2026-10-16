@@ -1,0 +1,49 @@
+<script lang="ts" setup>
+import { TaoSegmented, TaoSegmentedOption, TaoSwitch, TaoTimeline } from '@1337exp/taoui';
+import { computed, ref, watch } from 'vue';
+import { usePlayback } from '../src/playback';
+import SandboxShell from './SandboxShell.vue';
+
+// TaoUX ведёт время (usePlayback), TaoUI рисует (TaoTimeline): друг про друга они не знают, склейка это два v-model.
+const LENGTH = 8;
+const clip = usePlayback({ length: LENGTH, time: 1.25 });
+const events = [0, 2, 4, 6].map((value) => ({ value, label: `${value} с` }));
+const seconds = (t: number) => `${t.toFixed(2)} с`;
+
+const speed = ref('1');
+watch(speed, (v) => clip.playback.setSpeed(Number(v)));
+
+// Второй таймлайн на той же модели: шкала сверху и толстый трек, оба показывают одно время
+const state = computed(() => JSON.stringify({ time: Number(clip.time.value.toFixed(2)), playing: clip.playing.value, loop: clip.loop.value, speed: clip.speed.value, progress: Number(clip.progress.value.toFixed(3)) }));
+</script>
+
+<template>
+    <SandboxShell title="playback" note="usePlayback из taoux ведёт время, TaoTimeline из TaoUI показывает и принимает действия. Обе стороны связаны только двумя v-model. Время ведётся по кадрам браузера; на конце без цикла воспроизведение останавливается, а «играть» оттуда начинает сначала.">
+        <div class="grid" style="grid-template-columns: 1fr">
+            <section class="case">
+                <h2>TaoTimeline <small>v-model=time, v-model:playing, метки событий</small></h2>
+                <TaoTimeline v-model="clip.time.value" v-model:playing="clip.playing.value" :length="LENGTH" :marks="events" :format="seconds" />
+                <div class="row">
+                    <TaoSwitch v-model="clip.loop.value" label="Цикл" />
+                    <TaoSegmented v-model="speed" size="small">
+                        <TaoSegmentedOption value="0.25" label="0.25×" />
+                        <TaoSegmentedOption value="0.5" label="0.5×" />
+                        <TaoSegmentedOption value="1" label="1×" />
+                        <TaoSegmentedOption value="2" label="2×" />
+                    </TaoSegmented>
+                </div>
+            </section>
+
+            <section class="case">
+                <h2>Те же данные, другой вид <small>шкала сверху, толстый трек, без «в начало»</small></h2>
+                <TaoTimeline v-model="clip.time.value" v-model:playing="clip.playing.value" :length="LENGTH" :marks="events" marks-side="start" variant="bar" size="small" :show-restart="false" :format="seconds" />
+            </section>
+
+            <section class="case">
+                <h2>Не вести при перемотке <small>pause-on-scrub выключен: тянешь, а время идёт</small></h2>
+                <TaoTimeline v-model="clip.time.value" v-model:playing="clip.playing.value" :length="LENGTH" :pause-on-scrub="false" :show-time="false" />
+            </section>
+        </div>
+        <pre class="muted" style="margin-top: 16px; font-size: 11px">{{ state }}</pre>
+    </SandboxShell>
+</template>

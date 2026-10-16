@@ -10,7 +10,7 @@ import { describe, expect, it } from 'vitest';
  *   1, составные: импортируют только примитивы, но не друг друга.
  * Составные модули перечислены здесь; всё остальное в src считается примитивом.
  */
-const COMPOSITES = new Set(['session', 'canvas', 'links', 'palette', 'pins', 'curveeditor', 'gradienteditor']);
+const COMPOSITES = new Set(['session', 'canvas', 'links', 'palette', 'pins', 'curveeditor', 'gradienteditor', 'playback']);
 
 const srcDir = fileURLToPath(new URL('../src', import.meta.url));
 

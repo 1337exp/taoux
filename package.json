@@ -61,6 +61,10 @@
       "import": "./dist/links.js"
     },
     "./links.css": "./dist/links.css",
+    "./playback": {
+      "types": "./dist/playback/index.d.ts",
+      "import": "./dist/playback.js"
+    },
     "./palette": {
       "types": "./dist/palette.d.ts",
       "import": "./dist/palette.js"
