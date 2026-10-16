@@ -1,5 +1,7 @@
 # @1337exp/taoux
 
+Building blocks for interaction and behavior in Vue apps: import only what you need, bring your own design.
+
 Самодостаточные UX-модули для наших проектов. Каждый модуль — отдельный subpath-импорт, поэтому в сборку попадает только то, что реально используется:
 
 ```ts

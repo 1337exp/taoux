@@ -1,7 +1,8 @@
 {
   "name": "@1337exp/taoux",
   "version": "0.1.0",
-  "description": "Самодостаточные UX-модули: камера, история, хранилище, файлы, i18n. Импортируй только нужное.",
+  "description": "Interaction and behavior building blocks for Vue apps: import only what you need, bring your own design",
+  "keywords": ["vue", "ux", "typescript", "canvas", "undo-redo", "composables", "i18n", "playback", "curve-editor", "gradient-editor"],
   "type": "module",
   "license": "MIT",
   "sideEffects": false,
