@@ -2,6 +2,8 @@
 
 Building blocks for interaction and behavior in Vue apps: import only what you need, bring your own design.
 
+**С TaoUI:** TaoUX и [TaoUI](https://www.npmjs.com/package/@1337exp/taoui) это два отдельных пакета, готового модуля-связки между ними нет, и связать их нужно самим: привязать `--tx-*` к токенам `--tao-*` и передать значения через `v-model`. Как это сделать, коротко и с кодом: [docs/taoui.md](docs/taoui.md).
+
 Самодостаточные UX-модули для наших проектов. Каждый модуль — отдельный subpath-импорт, поэтому в сборку попадает только то, что реально используется:
 
 ```ts
