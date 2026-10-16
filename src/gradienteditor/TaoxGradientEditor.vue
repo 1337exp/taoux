@@ -98,7 +98,10 @@ function onBarClick(e: MouseEvent) {
             @pointercancel="onUp"
         >
             <!-- залитый треугольник цвета остановки, остриём к полосе: на светлом и тёмном фоне его видно по обводке -->
-            <svg viewBox="0 0 12 12"><polygon points="6,0.5 11.5,11.5 0.5,11.5" /></svg>
+            <svg viewBox="0 0 12 12">
+                <polygon class="tx-gradient-halo" points="6,0.5 11.5,11.5 0.5,11.5" />
+                <polygon points="6,0.5 11.5,11.5 0.5,11.5" />
+            </svg>
         </span>
     </div>
 </template>
@@ -106,7 +109,7 @@ function onBarClick(e: MouseEvent) {
 <style>
 /*
  * Настройка через CSS-переменные на любом предке:
- *   --tx-gradient-border, --tx-gradient-stop-border, --tx-gradient-accent.
+ *   --tx-gradient-border, --tx-gradient-stop-border, --tx-gradient-stop-outline, --tx-gradient-accent.
  */
 .tx-gradient {
     position: relative;
@@ -136,7 +139,19 @@ function onBarClick(e: MouseEvent) {
     overflow: visible;
 }
 
-.tx-gradient-stop polygon {
+/* тёмная обводка в 1px снаружи основной: ручка видна и на светлых цветах полосы за ней */
+.tx-gradient-stop .tx-gradient-halo {
+    fill: none;
+    stroke: var(--tx-gradient-stop-outline, rgba(0, 0, 0, 0.85));
+    stroke-width: 3.5;
+    stroke-linejoin: round;
+}
+
+.tx-gradient-stop.on .tx-gradient-halo {
+    stroke-width: 4;
+}
+
+.tx-gradient-stop polygon:not(.tx-gradient-halo) {
     fill: currentColor; /* цвет остановки задаёт сам компонент */
     stroke: var(--tx-gradient-stop-border, #8b929c);
     stroke-width: 1.5;
@@ -148,7 +163,7 @@ function onBarClick(e: MouseEvent) {
     z-index: 1;
 }
 
-.tx-gradient-stop.on polygon {
+.tx-gradient-stop.on polygon:not(.tx-gradient-halo) {
     stroke: var(--tx-gradient-accent, #4fc3f7);
     stroke-width: 2;
 }
