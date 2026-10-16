@@ -57,7 +57,7 @@ watch(
     --tx-curve-label: var(--tao-color-text-muted);
     --tx-curve-accent: var(--tao-color-accent);
     --tx-gradient-border: var(--tao-color-border);
-    --tx-gradient-stop-border: var(--tao-color-text-muted);
+    --tx-gradient-stop-border: var(--tao-color-border-strong);
     --tx-gradient-accent: var(--tao-color-accent);
 }
 

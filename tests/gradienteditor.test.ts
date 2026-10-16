@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addStop, gradientCss, moveStop, pickFromStack, removeStop, sampleGradient, stackAround, toLinear, toSrgb, type GradientStop } from '../src/gradienteditor';
+import { addStop, gradientCss, moveStop, pickFromStack, removeStop, roundAlpha, sampleGradient, stackAround, toLinear, toSrgb, type GradientStop } from '../src/gradienteditor';
 
 const stops: GradientStop[] = [
     { t: 0, color: [0, 0, 0], alpha: 1 },
@@ -27,7 +27,7 @@ describe('градиент', () => {
         expect(r.index).toBe(1);
         expect(r.stops.map((s) => s.t)).toEqual([0, 0.25, 1]);
         expect(r.stops[1]!.color[0]).toBeCloseTo(0.25);
-        expect(r.stops[1]!.alpha).toBeCloseTo(0.75);
+        expect(r.stops[1]!.alpha).toBe(0.75);
     });
 
     it('последнюю остановку убрать нельзя', () => {
@@ -61,5 +61,19 @@ describe('стопка наложенных ручек', () => {
         expect(moveStop(stack, 1, 0.5)[1]!.t).toBe(0.5);
         // последняя влево не пошла бы: упирается в соседа
         expect(moveStop(stack, 3, 0.5)[3]!.t).toBe(1);
+    });
+});
+
+describe('непрозрачность', () => {
+    it('обрезается до трёх знаков и зажимается в 0…1', () => {
+        expect(roundAlpha(0.5700000000000001)).toBe(0.57);
+        expect(roundAlpha(0.12345)).toBe(0.123);
+        expect(roundAlpha(2)).toBe(1);
+        expect(roundAlpha(-1)).toBe(0);
+    });
+
+    it('добавленная остановка получает короткую альфу', () => {
+        const odd: GradientStop[] = [{ t: 0, color: [0, 0, 0], alpha: 1 }, { t: 1, color: [0, 0, 0], alpha: 0 }];
+        expect(addStop(odd, 0.43).stops[1]!.alpha).toBe(0.57);
     });
 });

@@ -12,6 +12,9 @@ const clamp01 = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x);
 
 const copy = (stops: readonly GradientStop[]): GradientStop[] => stops.map((s) => ({ ...s, color: [...s.color] as GradientStop['color'] }));
 
+/** Непрозрачность с тремя знаками: «0.5700000000000001» в файле никому не нужно. */
+export const roundAlpha = (a: number): number => Math.round(Math.min(1, Math.max(0, a)) * 1000) / 1000;
+
 /** Цвет и непрозрачность градиента в t: линейно между остановками, за краями равны крайней. Возвращает [r, g, b, a]. */
 export function sampleGradient(stops: readonly GradientStop[], t: number): [number, number, number, number] {
     const n = stops.length;
@@ -57,7 +60,7 @@ export function addStop(stops: readonly GradientStop[], t: number): { stops: Gra
     const next = copy(stops);
     const at = next.findIndex((s) => s.t > x);
     const index = at === -1 ? next.length : at;
-    next.splice(index, 0, { t: x, color: [r, g, b], alpha: a });
+    next.splice(index, 0, { t: x, color: [r, g, b], alpha: roundAlpha(a) });
     return { stops: next, index };
 }
 

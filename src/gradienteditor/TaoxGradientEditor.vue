@@ -149,7 +149,7 @@ function onBarClick(e: MouseEvent) {
 
 .tx-gradient-stop polygon:not(.tx-gradient-halo) {
     fill: currentColor; /* цвет остановки задаёт сам компонент */
-    stroke: var(--tx-gradient-stop-border, #8b929c);
+    stroke: var(--tx-gradient-stop-border, #5a606b);
     stroke-width: 1.5;
     stroke-linejoin: round;
 }
