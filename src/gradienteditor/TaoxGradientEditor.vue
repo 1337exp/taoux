@@ -114,7 +114,7 @@ function onBarClick(e: MouseEvent) {
 .tx-gradient {
     position: relative;
     height: 22px;
-    margin-bottom: 14px; /* место под ручки остановок */
+    margin-bottom: 20px; /* место под ручки остановок и отметку выбранной */
     border: 1px solid var(--tx-gradient-border, #2a2d33);
     border-radius: 4px;
     /* шахматка под полосой показывает прозрачность */
@@ -147,10 +147,6 @@ function onBarClick(e: MouseEvent) {
     stroke-linejoin: round;
 }
 
-.tx-gradient-stop.on .tx-gradient-halo {
-    stroke-width: 4;
-}
-
 .tx-gradient-stop polygon:not(.tx-gradient-halo) {
     fill: currentColor; /* цвет остановки задаёт сам компонент */
     stroke: var(--tx-gradient-stop-border, #8b929c);
@@ -158,13 +154,28 @@ function onBarClick(e: MouseEvent) {
     stroke-linejoin: round;
 }
 
-/* выбранная выше остальных и в акцентной обводке: в стопке она не прячется под соседями */
+/*
+ * Выбранная ручка: выше остальных (в стопке не прячется), чуть крупнее и с акцентной черточкой под ней.
+ * Заливка остаётся цветом остановки: акцент не должен спорить с ним, поэтому обводку не красим.
+ */
 .tx-gradient-stop.on {
     z-index: 1;
 }
 
-.tx-gradient-stop.on polygon:not(.tx-gradient-halo) {
-    stroke: var(--tx-gradient-accent, #4fc3f7);
-    stroke-width: 2;
+.tx-gradient-stop.on svg {
+    transform: scale(1.25);
+    transform-origin: 50% 0;
+}
+
+.tx-gradient-stop.on::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    width: 12px;
+    height: 2px;
+    margin-left: -6px;
+    border-radius: 1px;
+    background: var(--tx-gradient-accent, #4fc3f7);
 }
 </style>
