@@ -29,12 +29,11 @@ npm run dev         # watch: пересборка JS и деклараций
 
 Новый модуль: файл `src/<имя>.ts` и запись в `exports` в `package.json` (тест `exports.test.ts` следит, чтобы они совпадали).
 
-## Подключение к проекту через npm link
+## Подключение к проекту (без публикации)
 
-```bash
-npm link                      # один раз, в taoux
-npm link @1337exp/taoux       # в проекте-потребителе
-npm run dev                   # в taoux, пока правим модули
-```
+В `package.json` проекта: `"@1337exp/taoux": "file:../taoux"`, затем `npm install`. npm сделает ссылку на соседнюю папку, правки в taoux видны сразу (после `npm run dev` здесь).
 
-В `vite.config.ts` потребителя нужно `resolve: { dedupe: ['vue'] }`, иначе у слинкованного пакета будет своя копия Vue и реактивность сломается.
+Нюансы линка:
+
+- В `vite.config.ts` потребителя нужен `resolve: { dedupe: ['vue'] }`, а в `tsconfig.json` в `paths` строка `"vue": ["./node_modules/vue"]`. Иначе у слинкованного пакета своя копия Vue: реактивность и типы (`ComputedRef` не распознаётся как `Ref`) ломаются.
+- Классический `npm link` (через глобальную папку на C:) на этой машине не работает: junction C: → E: ломается ("mount point ... not attached"). Поэтому только `file:` или junction внутри E:.
