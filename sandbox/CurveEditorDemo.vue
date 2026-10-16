@@ -1,6 +1,8 @@
 <script lang="ts" setup>
+import { TaoButton, TaoInputNumber, TaoSwitch } from '@1337exp/taoui';
 import { ref } from 'vue';
-import { TaoxCurveEditor, type CurvePoint } from '../src/curveeditor';
+import { movePoint, TaoxCurveEditor, type CurvePoint } from '../src/curveeditor';
+import SandboxShell from './SandboxShell.vue';
 
 interface Case {
     title: string;
@@ -35,29 +37,35 @@ const cases = ref<Case[]>([
     make('Два знака', 'precision 2, min 0: потяни точку к верхнему краю', [{ t: 0, v: 0 }, { t: 0.5, v: 1 }, { t: 1, v: 0 }], 0, undefined, 2),
 ]);
 
+const current = (c: Case) => c.value[Math.min(c.selected, c.value.length - 1)]!;
 const reset = (c: Case) => {
     c.value = c.initial.map((p) => ({ ...p }));
     c.selected = 0;
 };
 const changed = (c: Case) => JSON.stringify(c.value) !== JSON.stringify(c.initial);
+
+function setField(c: Case, field: 't' | 'v', value: number | null) {
+    if (value === null) return;
+    const p = current(c);
+    c.value = movePoint(c.value, c.selected, field === 't' ? value : p.t, field === 'v' ? value : p.v);
+}
 </script>
 
 <template>
-    <main class="page">
-        <h1>curveeditor</h1>
-        <p class="muted">Двойной клик добавляет точку, Alt+клик или Delete убирает, Shift временно меняет режим шага, у края графика вид едет за точкой.</p>
-        <label class="bar"><input v-model="snap" type="checkbox" /> Шаг сетки</label>
+    <SandboxShell title="curveeditor" note="Двойной клик добавляет точку, Alt+клик или Delete убирает, Shift временно меняет режим шага, у края графика вид едет за точкой.">
+        <TaoSwitch v-model="snap" label="Шаг сетки" />
 
         <div class="grid">
             <section v-for="c in cases" :key="c.title" class="case">
                 <h2>{{ c.title }} <small>{{ c.note }}</small></h2>
                 <TaoxCurveEditor v-model="c.value" v-model:selected="c.selected" :min="c.min" :max="c.max" :precision="c.precision" :snap="snap" />
-                <div class="bar">
-                    <button :disabled="!changed(c)" @click="reset(c)">Сбросить</button>
-                    <span class="muted">точка {{ c.selected }}</span>
+                <div class="row">
+                    <TaoInputNumber class="grow" size="small" :min="0" :max="1" :step="0.05" :precision="c.precision" :controls="false" :model-value="current(c).t" @update:model-value="(x) => setField(c, 't', x)" />
+                    <TaoInputNumber class="grow" size="small" :min="c.min" :max="c.max" :step="0.1" :precision="c.precision" :controls="false" :model-value="current(c).v" @update:model-value="(x) => setField(c, 'v', x)" />
+                    <TaoButton size="small" variant="ghost" :disabled="!changed(c)" @click="reset(c)">Сбросить</TaoButton>
                 </div>
                 <pre>{{ JSON.stringify(c.value) }}</pre>
             </section>
         </div>
-    </main>
+    </SandboxShell>
 </template>

@@ -13,6 +13,7 @@
         "verbatimModuleSyntax": true,
         "skipLibCheck": true,
         "noEmit": true,
+        "paths": { "vue": ["./node_modules/vue"] },
         "types": ["node"]
     },
     "include": ["src/**/*.ts", "src/**/*.vue", "tests/**/*.ts", "sandbox/**/*.ts", "sandbox/**/*.vue", "vite.config.ts", "vite.sandbox.config.ts"]
