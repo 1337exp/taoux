@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addStop, gradientCss, moveStop, pickFromStack, patchStop, removeStop, roundAlpha, sampleGradient, stackAround, toLinear, toSrgb, type GradientStop } from '../src/gradienteditor';
+import { addStop, colorDigits, gradientCss, moveStop, pickFromStack, patchStop, removeStop, roundAlpha, sampleGradient, stackAround, toLinear, toSrgb, type GradientStop } from '../src/gradienteditor';
 
 const stops: GradientStop[] = [
     { t: 0, color: [0, 0, 0], alpha: 1 },
@@ -94,5 +94,22 @@ describe('знаки после запятой', () => {
         expect(moveStop(three, 1, 0.8123456)[1]!.t).toBe(0.8123456);
         expect(addStop(three, 0.314159).stops[1]!.t).toBe(0.314);
         expect(addStop(three, 0.314159, null).stops[1]!.t).toBe(0.314159);
+    });
+});
+
+describe('знаки у цвета', () => {
+    const base: GradientStop[] = [{ t: 0, color: [0, 0, 0], alpha: 1 }, { t: 1, color: [1, 1, 1], alpha: 1 }];
+
+    it('цвет получает на два знака больше, чем t и альфа', () => {
+        expect(colorDigits(3)).toBe(5);
+        expect(colorDigits(null)).toBeNull();
+        expect(patchStop(base, 0, { color: [0.07939999999999997, 0.123456789, 0.5] })[0]!.color).toEqual([0.0794, 0.12346, 0.5]);
+        expect(patchStop(base, 0, { color: [0.123456789, 0, 0] }, null)[0]!.color[0]).toBe(0.123456789);
+    });
+
+    it('добавленная остановка получает короткий цвет', () => {
+        const added = addStop(base, 0.3333333).stops[1]!;
+        expect(added.color.every((c) => String(c).length <= 7)).toBe(true);
+        expect(added.color[0]).toBe(0.333); // t уже округлён до 0.333, цвет взят в этой точке
     });
 });

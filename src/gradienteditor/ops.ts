@@ -22,15 +22,22 @@ export function roundTo(x: number, digits?: number | null): number {
     return Math.round(x * k) / k + 0;
 }
 
+/**
+ * Знаков у компонент цвета при `precision` у t и непрозрачности. Цвет линейный, а в тёмной части шкалы sRGB круто растёт
+ * (шаг 0.001 линейного это 3 уровня из 255), поэтому тут нужно на два знака больше: при трёх у t это пять.
+ */
+export const colorDigits = (precision: number | null): number | null => (precision === null ? null : precision + 2);
+
 /** Непрозрачность 0…1 с `digits` знаками (по умолчанию три). */
 export const roundAlpha = (a: number, digits: number | null = DEFAULT_PRECISION): number => roundTo(Math.min(1, Math.max(0, a)), digits);
 
-/** Меняет остановку `i`; непрозрачность и t округляются до `precision` знаков (по умолчанию три; `null` отключает). */
+/** Меняет остановку `i`; t и непрозрачность округляются до `precision` знаков (по умолчанию три; `null` отключает), цвет до `precision + 2`. */
 export function patchStop(stops: readonly GradientStop[], i: number, patch: Partial<GradientStop>, precision: number | null = DEFAULT_PRECISION): GradientStop[] {
     const next = copy(stops);
     const stop = { ...next[i]!, ...patch };
     stop.alpha = roundAlpha(stop.alpha, precision);
     stop.t = roundTo(Math.min(1, Math.max(0, stop.t)), precision);
+    stop.color = stop.color.map((c) => roundTo(c, colorDigits(precision))) as GradientStop['color'];
     next[i] = stop;
     return next;
 }
@@ -80,7 +87,8 @@ export function addStop(stops: readonly GradientStop[], t: number, precision: nu
     const next = copy(stops);
     const at = next.findIndex((s) => s.t > x);
     const index = at === -1 ? next.length : at;
-    next.splice(index, 0, { t: x, color: [r, g, b], alpha: roundAlpha(a, precision) });
+    const d = colorDigits(precision);
+    next.splice(index, 0, { t: x, color: [roundTo(r, d), roundTo(g, d), roundTo(b, d)], alpha: roundAlpha(a, precision) });
     return { stops: next, index };
 }
 
