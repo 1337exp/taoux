@@ -91,16 +91,33 @@ const json = computed(() => JSON.stringify({ single: single.value, price: price.
             </section>
 
             <section class="case">
-                <h2>vertical <small>одна и две ручки, метки справа</small></h2>
-                <div class="row" style="gap: 48px; padding: 8px 12px">
+                <h2>vertical <small>с метками, thin, без меток, flat</small></h2>
+                <div class="row" style="gap: 40px; padding: 8px 12px">
                     <TaoSlider v-model="level" vertical marks />
                     <TaoRangeSlider v-model="band" vertical marks />
                     <TaoSlider v-model="level" vertical variant="thin" :marks="[0, 50, 100]" />
+                    <TaoSlider v-model="level" vertical />
+                    <TaoRangeSlider v-model="band" vertical flat />
                 </div>
             </section>
 
             <section class="case">
-                <h2>Таймлайн <small>thin + метки событий + кнопка</small></h2>
+                <h2>Flat <small>без круглых ручек: плоская полоса</small></h2>
+                <TaoSlider v-model="single" flat />
+                <TaoRangeSlider v-model="price" :min="0" :max="5000" :step="100" flat marks :format="money" />
+            </section>
+
+            <section class="case">
+                <h2>Таймлайн (средняя) <small>bar + метки событий + кнопка</small></h2>
+                <div class="row" style="align-items: flex-start">
+                    <TaoButton size="small" variant="secondary" @click="toggle">{{ playing ? '❚❚' : '▶' }}</TaoButton>
+                    <TaoSlider v-model="time" class="grow" style="margin-top: 5px" size="small" :min="0" :max="LENGTH" :step="0.01" :marks="events" />
+                    <span class="muted" style="margin-top: 4px">{{ timeText }}</span>
+                </div>
+            </section>
+
+            <section class="case">
+                <h2>Таймлайн (тонкая) <small>thin + метки событий + кнопка</small></h2>
                 <div class="row" style="align-items: flex-start">
                     <TaoButton size="small" variant="secondary" @click="toggle">{{ playing ? '❚❚' : '▶' }}</TaoButton>
                     <TaoSlider v-model="time" class="grow" style="margin-top: 5px" variant="thin" size="small" :min="0" :max="LENGTH" :step="0.01" :marks="events" />
