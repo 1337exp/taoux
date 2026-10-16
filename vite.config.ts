@@ -1,25 +1,37 @@
-import { readdirSync } from 'node:fs';
+import { existsSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath, URL } from 'node:url';
+import vue from '@vitejs/plugin-vue';
 import { defineConfig } from 'vitest/config';
 
 const srcDir = fileURLToPath(new URL('./src', import.meta.url));
 
-// Каждый src/<имя>.ts — отдельная точка входа и отдельный subpath-экспорт (`@1337exp/taoux/<имя>`).
-// Общий код rollup вынесет в chunks сам; тут главное, что модули не склеены в один бандл и режутся tree-shaking'ом.
-const entries = Object.fromEntries(
-    readdirSync(srcDir)
-        .filter((f) => f.endsWith('.ts') && !f.endsWith('.d.ts'))
-        .map((f) => [f.slice(0, -3), `${srcDir}/${f}`]),
-);
+// Модуль = файл src/<имя>.ts или папка src/<имя>/ с index.ts. Каждый модуль: отдельная точка входа и subpath-экспорт
+// (`@1337exp/taoux/<имя>`). Общий код rollup вынесет в chunks сам; главное, что модули не склеены в один бандл
+// и режутся tree-shaking'ом. Стили Vue-модулей лежат рядом: dist/<имя>.css.
+const entries: Record<string, string> = {};
+for (const entry of readdirSync(srcDir)) {
+    const full = `${srcDir}/${entry}`;
+    if (statSync(full).isDirectory()) {
+        if (existsSync(`${full}/index.ts`)) entries[entry] = `${full}/index.ts`;
+    } else if (entry.endsWith('.ts') && !entry.endsWith('.d.ts')) {
+        entries[entry.slice(0, -3)] = full;
+    }
+}
 
 export default defineConfig({
+    plugins: [vue()],
     build: {
         lib: { entry: entries, formats: ['es'] },
+        cssCodeSplit: true,
         minify: false,
         sourcemap: true,
         rollupOptions: {
             external: [/^vue(\/|$)/],
-            output: { entryFileNames: '[name].js', chunkFileNames: 'chunks/[name]-[hash].js' },
+            output: {
+                entryFileNames: '[name].js',
+                chunkFileNames: 'chunks/[name]-[hash].js',
+                assetFileNames: '[name][extname]',
+            },
         },
     },
     test: {
