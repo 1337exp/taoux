@@ -25,10 +25,11 @@ import { History } from '@1337exp/taoux/history';
 | `links` (Vue) | слой связей: SVG из готовой геометрии, `--tx-link-*` | vue (peer) |
 | `canvas` (Vue) | холст: жесты мыши и сенсора, колесо, автопрокрутка, клавиши; контракт `CanvasHost` | vue (peer) |
 | `curveeditor` (Vue) | поле редактора кривой: сетка, шаг, границы, знаки, автопрокрутка у края; операции над точками | vue (peer) |
+| `gradienteditor` (Vue) | полоса градиента с ручками остановок; операции над остановками, `gradientCss` | vue (peer) |
 | `pins` | позиции пинов-строк, измеренные по DOM: `usePinMeasure`, `createPinRegistry` | vue (peer) |
 | `i18n` | типизированный i18n: `createI18n({ locales, fallback, storageKey })` | vue (peer, опционально) |
 
-Vue-модули (`links`, `canvas`, `curveeditor`) требуют явного импорта стилей: `import '@1337exp/taoux/canvas.css'`. Составные модули (session, palette, links, canvas, pins, curveeditor) импортируют только примитивы, и тест `tiers.test.ts` это охраняет; контракт холста описан в [docs/canvas.md](docs/canvas.md).
+Vue-модули (`links`, `canvas`, `curveeditor`, `gradienteditor`) требуют явного импорта стилей: `import '@1337exp/taoux/canvas.css'`. Составные модули (session, palette, links, canvas, pins, curveeditor, gradienteditor) импортируют только примитивы, и тест `tiers.test.ts` это охраняет; контракт холста описан в [docs/canvas.md](docs/canvas.md).
 
 Правило: модуль попадает сюда, когда он понадобился во втором проекте. Ядро модулей не знает про Vue и DOM, если это не их задача.
 
@@ -56,4 +57,4 @@ npm run dev         # watch: пересборка JS и деклараций
 
 ## Sandbox
 
-Папка `sandbox/` это демо и поле для проверки компонентов: страницы подключают модули прямо из `src/`, без сборки. Новый компонент = `sandbox/<имя>.html` + `.ts` + демо `.vue` и ссылка в `sandbox/index.html`. Запуск: `npm run sandbox`. Сейчас там `curveeditor`.
+Папка `sandbox/` это демо и поле для проверки компонентов: страницы подключают модули прямо из `src/`, без сборки. Новый компонент = `sandbox/<имя>.html` + `.ts` + демо `.vue` и ссылка в `sandbox/index.html`. Запуск: `npm run sandbox`. Сейчас там `curveeditor` и `gradienteditor`.

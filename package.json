@@ -22,6 +22,11 @@
       "import": "./dist/curveeditor.js"
     },
     "./curveeditor.css": "./dist/curveeditor.css",
+    "./gradienteditor": {
+      "types": "./dist/gradienteditor/index.d.ts",
+      "import": "./dist/gradienteditor.js"
+    },
+    "./gradienteditor.css": "./dist/gradienteditor.css",
     "./edgescroll": {
       "types": "./dist/edgescroll.d.ts",
       "import": "./dist/edgescroll.js"
