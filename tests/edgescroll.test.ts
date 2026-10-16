@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { EDGE_MAX_SPEED, EDGE_ZONE, edgeScrollVelocity } from '../src/edgescroll';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createEdgeScroller, EDGE_MAX_SPEED, EDGE_ZONE, edgeScrollVelocity, type EdgeScrollerOptions } from '../src/edgescroll';
 
 describe('edgeScrollVelocity', () => {
     const W = 1000;
@@ -39,5 +39,78 @@ describe('edgeScrollVelocity', () => {
         const [vx, vy] = edgeScrollVelocity(W - 4, H - 4, W, H);
         expect(vx).toBeGreaterThan(0);
         expect(vy).toBeGreaterThan(0);
+    });
+});
+
+describe('createEdgeScroller', () => {
+    const rafs: Array<(t: number) => void> = [];
+    let now = 0;
+
+    const run = (frames: number, step = 16) => {
+        for (let i = 0; i < frames; i++) {
+            const cb = rafs.shift();
+            if (!cb) return;
+            now += step;
+            cb(now);
+        }
+    };
+
+    beforeEach(() => {
+        rafs.length = 0;
+        now = 0;
+        vi.stubGlobal('requestAnimationFrame', (cb: (t: number) => void) => rafs.push(cb));
+        vi.stubGlobal('cancelAnimationFrame', () => rafs.splice(0));
+        vi.stubGlobal('performance', { now: () => now });
+    });
+    afterEach(() => vi.unstubAllGlobals());
+
+    const make = (pointer: [number, number], extra: Partial<EdgeScrollerOptions> = {}) => {
+        const steps: Array<[number, number]> = [];
+        const scroller = createEdgeScroller({
+            bounds: () => ({ left: 0, top: 0, width: 200, height: 100 }),
+            pointer: () => pointer,
+            onScroll: (dx, dy) => steps.push([dx, dy]),
+            ...extra,
+        });
+        return { scroller, steps };
+    };
+
+    it('в середине не запускается', () => {
+        const { scroller, steps } = make([100, 50]);
+        scroller.kick();
+        expect(rafs).toHaveLength(0);
+        expect(steps).toEqual([]);
+    });
+
+    it('у края ездит каждый кадр, скорость по времени', () => {
+        const { scroller, steps } = make([100, 100], { zone: 20, maxSpeed: 100 });
+        scroller.kick();
+        run(2, 20);
+        expect(steps).toHaveLength(2);
+        expect(steps[0]![0]).toBe(0);
+        expect(steps[0]![1]).toBeCloseTo(100 * 0.02); // у границы и за ней — максимум
+    });
+
+    it('stop останавливает, enabled=false гасит цикл', () => {
+        const a = make([100, 100], { zone: 20 });
+        a.scroller.kick();
+        a.scroller.stop();
+        run(3);
+        expect(a.steps).toEqual([]);
+
+        let on = true;
+        const b = make([100, 100], { zone: 20, enabled: () => on });
+        b.scroller.kick();
+        run(1);
+        on = false;
+        run(2);
+        expect(b.steps).toHaveLength(1);
+    });
+
+    it('после долгой паузы шаг ограничен', () => {
+        const { scroller, steps } = make([100, 100], { zone: 20, maxSpeed: 100 });
+        scroller.kick();
+        run(1, 5000);
+        expect(steps[0]![1]).toBeCloseTo(100 * 0.05);
     });
 });

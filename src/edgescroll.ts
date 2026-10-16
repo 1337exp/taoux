@@ -20,3 +20,73 @@ export function edgeScrollVelocity(x: number, y: number, w: number, h: number, z
     const ease = (t: number) => Math.sign(t) * t * t * max;
     return [ease(depth(x, w, zone)), ease(depth(y, h, zone))];
 }
+
+//--------------------------------------------------
+// Цикл автопрокрутки: общий для холста и любых других виджетов, где что-то тащат у края.
+
+const MAX_FRAME_S = 0.05; // после паузы (вкладка спала) прокрутка не «прыгает»
+
+export interface EdgeScrollerOptions {
+    /** Область, у краёв которой едем (обычно getBoundingClientRect элемента); null — прокрутки нет. */
+    bounds: () => { left: number; top: number; width: number; height: number } | null;
+    /** Где сейчас указатель, в координатах окна. */
+    pointer: () => [number, number];
+    /** Пока false, прокрутка не идёт (например, жест не тянет ничего). Проверяется каждый кадр. */
+    enabled?: () => boolean;
+    /** Шаг за кадр: на сколько экранных px уехала видимая область (знак как у `edgeScrollVelocity`). */
+    onScroll: (dx: number, dy: number) => void;
+    /** Ширина зоны у края, px. */
+    zone?: number;
+    /** Скорость у границы и за ней, px/с. */
+    maxSpeed?: number;
+}
+
+export interface EdgeScroller {
+    /** Сообщить, что указатель сдвинулся или жест начался: запускает цикл, если указатель в зоне. */
+    kick(): void;
+    /** Остановить цикл (жест кончился). */
+    stop(): void;
+}
+
+/**
+ * Цикл крутится, даже когда мышь стоит; скорость считается по времени, а не по кадрам.
+ * Сам ничего не двигает: на каждом кадре зовёт `onScroll`, а потребитель сдвигает камеру/вид и догоняет указатель.
+ */
+export function createEdgeScroller(options: EdgeScrollerOptions): EdgeScroller {
+    let frame = 0;
+    let last = 0;
+
+    function velocity(): [number, number] {
+        if (options.enabled && !options.enabled()) return [0, 0];
+        const r = options.bounds();
+        if (!r) return [0, 0];
+        const [x, y] = options.pointer();
+        return edgeScrollVelocity(x - r.left, y - r.top, r.width, r.height, options.zone, options.maxSpeed);
+    }
+
+    function tick(now: number) {
+        frame = 0;
+        const [vx, vy] = velocity();
+        if (vx === 0 && vy === 0) return;
+
+        const dt = Math.min((now - last) / 1000, MAX_FRAME_S);
+        last = now;
+        options.onScroll(vx * dt, vy * dt);
+
+        frame = requestAnimationFrame(tick);
+    }
+
+    return {
+        kick() {
+            if (frame) return;
+            const [vx, vy] = velocity();
+            if (vx === 0 && vy === 0) return;
+            last = performance.now();
+            frame = requestAnimationFrame(tick);
+        },
+        stop() {
+            cancelAnimationFrame(frame);
+            frame = 0;
+        },
+    };
+}

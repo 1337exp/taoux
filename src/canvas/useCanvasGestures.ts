@@ -1,12 +1,11 @@
 import { onMounted, onUnmounted, ref, watch, type Ref } from 'vue';
 import { panBy, screenToWorld, zoomAt } from '../camera';
-import { edgeScrollVelocity } from '../edgescroll';
+import { createEdgeScroller } from '../edgescroll';
 import { LONG_PRESS_MS, PinchTracker, TapRecognizer, pinchOf, type Sample } from '../gestures';
 import { wheelIntent } from '../wheel';
 import type { CanvasHost, CanvasOptions, Point, Rect, ResizeEdge } from './host';
 
 const PAN_CLICK_THRESHOLD = 4; // ПКМ, сдвинутая меньше, это клик (открывает палитру)
-const MAX_FRAME_S = 0.05; // после паузы (вкладка спала) камера не «прыгает»
 
 /** Всё, что нужно знать о положении указателя: годится и настоящее событие, и последнее известное положение. */
 type Pointer = Pick<MouseEvent, 'clientX' | 'clientY'>;
@@ -437,41 +436,19 @@ export function useCanvasGestures<P>(root: Ref<HTMLElement | null>, host: Canvas
     // Цикл крутится, даже когда мышь стоит; скорость считается по времени, а не по кадрам.
 
     const SCROLL_MODES: readonly Mode[] = ['drag', 'resize', 'marquee', 'connect'];
-    let scrollFrame = 0;
-    let scrollLast = 0;
 
-    function scrollVelocity(): [number, number] {
-        const el = root.value;
-        if (!el || !SCROLL_MODES.includes(mode)) return [0, 0];
-        const r = el.getBoundingClientRect();
-        return edgeScrollVelocity(lastX - r.left, lastY - r.top, r.width, r.height);
-    }
+    const scroller = createEdgeScroller({
+        bounds: () => root.value?.getBoundingClientRect() ?? null,
+        pointer: () => [lastX, lastY],
+        enabled: () => SCROLL_MODES.includes(mode),
+        onScroll: autoScrollStep,
+    });
+    const kickAutoScroll = scroller.kick;
+    const stopAutoScroll = scroller.stop;
 
-    function kickAutoScroll() {
-        if (scrollFrame) return;
-        const [vx, vy] = scrollVelocity();
-        if (vx === 0 && vy === 0) return;
-        scrollLast = performance.now();
-        scrollFrame = requestAnimationFrame(autoScrollFrame);
-    }
-
-    function stopAutoScroll() {
-        cancelAnimationFrame(scrollFrame);
-        scrollFrame = 0;
-    }
-
-    function autoScrollFrame(now: number) {
-        scrollFrame = 0;
-        const [vx, vy] = scrollVelocity();
-        if (vx === 0 && vy === 0) return;
-
-        const dt = Math.min((now - scrollLast) / 1000, MAX_FRAME_S);
-        scrollLast = now;
-
+    function autoScrollStep(sx: number, sy: number) {
         // Камера уехала на (sx, sy) экранных px, и то, что было под курсором, оказалось в стороне:
         // догоняем курсор тем, что у жеста привязано к миру.
-        const sx = vx * dt;
-        const sy = vy * dt;
         const z = host.camera.z;
         host.setCamera(panBy(host.camera, -sx, -sy));
 
@@ -490,8 +467,6 @@ export function useCanvasGestures<P>(root: Ref<HTMLElement | null>, host: Canvas
             marquee.value = { x0: m.x0 - sx, y0: m.y0 - sy, x1: lastX, y1: lastY };
             host.setSelection([...baseSelection, ...nodesInMarquee()]);
         }
-
-        scrollFrame = requestAnimationFrame(autoScrollFrame);
     }
 
     function onPointerMove(e: PointerEvent) {
