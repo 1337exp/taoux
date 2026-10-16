@@ -1,73 +1,75 @@
-# TaoUX и TaoUI: как подключить друг к другу
+# TaoUX and TaoUI: how to connect them
 
-**Главное, что нужно знать сразу:** TaoUX и TaoUI это два отдельных пакета, и между ними нет готового модуля-связки. В TaoUX нет кнопок, полей и слайдеров TaoUI, а TaoUI ничего не знает про TaoUX. Связывать их вам, и связка состоит всего из двух вещей:
+**English** · [Русский](taoui.ru.md)
 
-1. **Цвета и размеры.** Компоненты TaoUX настраиваются своими CSS-переменными `--tx-*`. Вы один раз привязываете их к токенам TaoUI `--tao-*`.
-2. **Значения.** Состояние из TaoUX (время, точки кривой, остановки градиента) отдаёте компонентам TaoUI через `v-model`.
+**The main thing to know up front:** TaoUX and TaoUI are two separate packages, and there is no ready-made module that joins them. TaoUX has no TaoUI buttons, fields or sliders, and TaoUI knows nothing about TaoUX. Connecting them is up to you, and the connection is only two things:
 
-Ничего больше. TaoUX работает и без TaoUI (у каждой переменной есть тёмная тема по умолчанию), TaoUI без TaoUX тем более.
+1. **Colors and sizes.** TaoUX components are styled by their own `--tx-*` CSS variables. You map them to the TaoUI `--tao-*` tokens once.
+2. **Values.** State from TaoUX (time, curve points, gradient stops) goes to TaoUI components through `v-model`.
 
-## Кто от кого может зависеть
+That is all. TaoUX works without TaoUI (every variable has a dark default), and TaoUI works without TaoUX even more so.
 
-TaoUI это ярус 0: он самодостаточный и не зависит ни от чего из этой семьи. TaoUX это ярус 1: его модули могут использовать TaoUI, но никогда наоборот. Поэтому `@1337exp/taoui` в TaoUX стоит только в `devDependencies` (для песочницы), а в вашем проекте нужны оба пакета рядом:
+## Who may depend on whom
+
+TaoUI is tier 0: self-contained, it depends on nothing from this family. TaoUX is tier 1: its modules may use TaoUI, but never the other way round. That is why `@1337exp/taoui` is only in TaoUX's `devDependencies` (for the sandbox), and your project needs both packages side by side:
 
 ```bash
 npm install @1337exp/taoux @1337exp/taoui
 ```
 
-## Шаг 1. Стили
+## Step 1. Styles
 
 ```ts
-import '@1337exp/taoui/styles.css';          // токены и компоненты TaoUI
-import '@1337exp/taoux/canvas.css';          // стили Vue-модулей TaoUX подключаются явно
+import '@1337exp/taoui/styles.css';          // TaoUI tokens and components
+import '@1337exp/taoux/canvas.css';          // styles of TaoUX Vue modules are imported explicitly
 import '@1337exp/taoux/links.css';
 import '@1337exp/taoux/curveeditor.css';
 import '@1337exp/taoux/gradienteditor.css';
 ```
 
-Подключайте CSS только тех модулей, которыми пользуетесь. Модули без компонентов (`camera`, `history`, `playback` и другие) стилей не имеют.
+Import the CSS only of the modules you use. Modules without components (`camera`, `history`, `playback` and others) have no styles.
 
-## Шаг 2. Тема: привязка `--tx-*` к `--tao-*`
+## Step 2. Theme: map `--tx-*` to `--tao-*`
 
-Положите это в глобальный CSS проекта. Переменные задаются на `:root`, поэтому тема TaoUI (например, `data-tao-theme="light"`) переключает и компоненты TaoUX:
+Put this into the project's global CSS. The variables are set on `:root`, so a TaoUI theme (for example `data-tao-theme="light"`) switches the TaoUX components too:
 
 ```css
 :root {
-    /* Холст */
+    /* Canvas */
     --tx-canvas-bg: var(--tao-color-bg);
     --tx-canvas-grid-minor: color-mix(in srgb, var(--tao-color-text) 4%, transparent);
     --tx-canvas-grid-major: color-mix(in srgb, var(--tao-color-text) 8%, transparent);
     --tx-canvas-accent: var(--tao-color-accent);
     --tx-canvas-accent-subtle: var(--tao-color-accent-subtle);
 
-    /* Связи */
+    /* Links */
     --tx-link-color: var(--tao-color-text-muted);
     --tx-link-hover-color: var(--tao-color-text);
     --tx-link-selected-color: var(--tao-color-accent);
     --tx-link-preview-color: var(--tao-color-accent);
     --tx-link-invalid-color: var(--tao-color-danger);
 
-    /* Редактор кривой */
+    /* Curve editor */
     --tx-curve-bg: var(--tao-color-surface-sunken);
     --tx-curve-border: var(--tao-color-border);
     --tx-curve-grid: var(--tao-color-border);
     --tx-curve-label: var(--tao-color-text-muted);
     --tx-curve-accent: var(--tao-color-accent);
 
-    /* Редактор градиента */
+    /* Gradient editor */
     --tx-gradient-border: var(--tao-color-border);
     --tx-gradient-stop-border: var(--tao-color-border-strong);
     --tx-gradient-accent: var(--tao-color-accent);
 }
 ```
 
-Полные списки переменных каждого модуля написаны в комментарии в начале его стилей (`src/<модуль>/*.vue`). Что не привязали, остаётся со значением по умолчанию.
+The full list of variables of each module is in the comment at the top of its styles (`src/<module>/*.vue`). Whatever you do not map keeps its default value.
 
-## Шаг 3. Значения: примеры склейки
+## Step 3. Values: connection examples
 
-### Воспроизведение: `usePlayback` и `TaoTimeline`
+### Playback: `usePlayback` and `TaoTimeline`
 
-TaoUX ведёт время, TaoUI его показывает. Связь это два `v-model`:
+TaoUX drives the time, TaoUI shows it. The connection is two `v-model`s:
 
 ```vue
 <script setup lang="ts">
@@ -82,11 +84,11 @@ const clip = usePlayback({ length: 8, loop: true });
 </template>
 ```
 
-`usePlayback` возвращает `ref`-ы внутри обычного объекта, поэтому в шаблоне нужен `.value`. Без Vue то же самое делает `createPlayback` из того же модуля.
+`usePlayback` returns refs inside a plain object, so the template needs `.value`. Without Vue, `createPlayback` from the same module does the same.
 
-### Кривая: `TaoxCurveEditor` и поля TaoUI
+### Curve: `TaoxCurveEditor` and TaoUI fields
 
-TaoUX даёт поле графика (сетка, шаг, границы, автопрокрутка у края), а поля «Время» и «Значение» и всё остальное (переключатель шага, кнопки) вы собираете из компонентов TaoUI:
+TaoUX gives the plot (grid, snapping, bounds, auto-scroll at the edge); the «Time» and «Value» fields and everything else (snap switch, buttons) you assemble from TaoUI components:
 
 ```vue
 <script setup lang="ts">
@@ -111,9 +113,9 @@ const set = (field: 't' | 'v', value: number | null) => {
 </template>
 ```
 
-### Градиент: `TaoxGradientEditor`, цвет и прозрачность из TaoUI
+### Gradient: `TaoxGradientEditor`, opacity from TaoUI
 
-Полосу с ручками рисует TaoUX, прозрачность задаёт `TaoSlider`. Правки остановки делайте через `patchStop`: он округляет `t`, прозрачность и цвет до разумного числа знаков:
+TaoUX draws the bar with handles, a `TaoSlider` sets the opacity. Change a stop through `patchStop`: it rounds `t`, opacity and color to a sensible number of decimals:
 
 ```vue
 <script setup lang="ts">
@@ -140,12 +142,12 @@ const selected = ref(0);
 </template>
 ```
 
-## Живые примеры
+## Live examples
 
-В репозитории TaoUX есть песочница, где все эти связки собраны на одной странице с переключателем тёмной и светлой темы:
+The TaoUX repository has a sandbox where all these connections are assembled on one page with a dark/light theme switch:
 
 ```bash
 npm run sandbox     # http://localhost:5300
 ```
 
-Страницы лежат в `sandbox/` (`curveeditor`, `gradienteditor`, `slider`, `playback`); общая привязка токенов находится в `sandbox/SandboxShell.vue`. Её можно скопировать как есть.
+The pages are in `sandbox/` (`curveeditor`, `gradienteditor`, `slider`, `playback`); the shared token mapping is in `sandbox/SandboxShell.vue`. You can copy it as is.
