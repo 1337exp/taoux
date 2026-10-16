@@ -41,6 +41,10 @@
       "types": "./dist/ids.d.ts",
       "import": "./dist/ids.js"
     },
+    "./session": {
+      "types": "./dist/session.d.ts",
+      "import": "./dist/session.js"
+    },
     "./snap": {
       "types": "./dist/snap.d.ts",
       "import": "./dist/snap.js"
