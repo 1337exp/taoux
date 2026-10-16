@@ -16,6 +16,9 @@
   ],
   "type": "module",
   "license": "MIT",
+  "homepage": "https://github.com/1337exp/taoux#readme",
+  "repository": { "type": "git", "url": "git+https://github.com/1337exp/taoux.git" },
+  "bugs": { "url": "https://github.com/1337exp/taoux/issues" },
   "sideEffects": false,
   "files": [
     "dist"
