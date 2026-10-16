@@ -1,65 +1,67 @@
 # @1337exp/taoux
 
+**English** · [Русский](README.ru.md)
+
 Building blocks for interaction and behavior in Vue apps: import only what you need, bring your own design.
 
-**С TaoUI:** TaoUX и [TaoUI](https://www.npmjs.com/package/@1337exp/taoui) это два отдельных пакета, готового модуля-связки между ними нет, и связать их нужно самим: привязать `--tx-*` к токенам `--tao-*` и передать значения через `v-model`. Как это сделать, коротко и с кодом: [docs/taoui.md](docs/taoui.md).
+**With TaoUI:** TaoUX and [TaoUI](https://www.npmjs.com/package/@1337exp/taoui) are two separate packages. There is no ready-made module that joins them, so you connect them yourself: map `--tx-*` to the `--tao-*` tokens and pass values through `v-model`. How, briefly and with code: [docs/taoui.md](docs/taoui.md).
 
-Самодостаточные UX-модули для наших проектов. Каждый модуль — отдельный subpath-импорт, поэтому в сборку попадает только то, что реально используется:
+Self-contained UX modules. Every module is its own subpath import, so only what you actually use ends up in the build:
 
 ```ts
 import { zoomAt } from '@1337exp/taoux/camera';
 import { History } from '@1337exp/taoux/history';
 ```
 
-| Модуль | Что делает | Зависимости |
+| Module | What it does | Depends on |
 |---|---|---|
-| `camera` | камера холста: pan, zoom вокруг курсора, экран ↔ мир | нет |
-| `history` | undo/redo на снимках-строках со склейкой частых правок | нет |
-| `storage` | автосохранение в localStorage без исключений | нет |
-| `file` | скачивание текста как файла, лимит размера | DOM |
-| `snap` | мягкая привязка к сетке с порогом по масштабу камеры | нет |
-| `wheel` | колесо/тачпад → pan или zoom (как в Figma) | нет |
-| `edgescroll` | скорость автопрокрутки у края и готовый цикл `createEdgeScroller` (холст, редакторы кривых и любое перетаскивание) | нет |
-| `gestures` | сенсорные жесты: тап, двойной тап, долгое нажатие, щипок | нет |
-| `touch` | `coarse` — есть ли грубый указатель (палец) | vue (peer) |
-| `curve` | пути связей: безье между пинами, стрелки постоянного экранного размера | нет |
-| `ids` | `uid(prefix, taken)` | нет |
-| `session` | жизненный цикл документа: история, автосохранение, файлы, восстановление, уведомления | vue (peer) |
-| `palette` | поиск и группы нод для палитры | нет |
-| `links` (Vue) | слой связей: SVG из готовой геометрии, `--tx-link-*` | vue (peer) |
-| `canvas` (Vue) | холст: жесты мыши и сенсора, колесо, автопрокрутка, клавиши; контракт `CanvasHost` | vue (peer) |
-| `curveeditor` (Vue) | поле редактора кривой: сетка, шаг, границы, знаки, автопрокрутка у края; операции над точками | vue (peer) |
-| `gradienteditor` (Vue) | полоса градиента с ручками остановок; операции над остановками, `gradientCss` | vue (peer) |
-| `playback` | модель воспроизведения: время, пауза, цикл, скорость, перемотка; `createPlayback` без Vue и `usePlayback` для компонента | vue (peer, для `usePlayback`) |
-| `pins` | позиции пинов-строк, измеренные по DOM: `usePinMeasure`, `createPinRegistry` | vue (peer) |
-| `i18n` | типизированный i18n: `createI18n({ locales, fallback, storageKey })` | vue (peer, опционально) |
+| `camera` | canvas camera: pan, zoom around the cursor, screen ↔ world | nothing |
+| `history` | undo/redo on string snapshots, rapid edits merged into one step | nothing |
+| `storage` | autosave to localStorage without exceptions | nothing |
+| `file` | download text as a file, size limit | DOM |
+| `snap` | soft snapping to a grid with a threshold that follows the camera zoom | nothing |
+| `wheel` | wheel/trackpad → pan or zoom (like Figma) | nothing |
+| `edgescroll` | auto-scroll speed near an edge and a ready loop, `createEdgeScroller` (canvas, curve editors, any drag) | nothing |
+| `gestures` | touch gestures: tap, double tap, long press, pinch | nothing |
+| `touch` | `coarse`: is there a coarse pointer (a finger) | vue (peer) |
+| `curve` | link paths: bezier between pins, arrowheads of constant screen size | nothing |
+| `ids` | `uid(prefix, taken)` | nothing |
+| `session` | document lifecycle: history, autosave, files, restore, notices | vue (peer) |
+| `palette` | search and groups of nodes for a palette | nothing |
+| `links` (Vue) | links layer: SVG from ready geometry, `--tx-link-*` | vue (peer) |
+| `canvas` (Vue) | canvas: mouse and touch gestures, wheel, auto-scroll, keys; the `CanvasHost` contract | vue (peer) |
+| `curveeditor` (Vue) | curve editor plot: grid, snapping, bounds, decimals, auto-scroll at the edge; point operations | vue (peer) |
+| `gradienteditor` (Vue) | gradient bar with stop handles; stop operations, `gradientCss` | vue (peer) |
+| `playback` | playback model: time, pause, loop, speed, seeking; `createPlayback` without Vue and `usePlayback` for a component | vue (peer, for `usePlayback`) |
+| `pins` | row pin positions measured from the DOM: `usePinMeasure`, `createPinRegistry` | vue (peer) |
+| `i18n` | typed i18n: `createI18n({ locales, fallback, storageKey })` | vue (peer, optional) |
 
-Vue-модули (`links`, `canvas`, `curveeditor`, `gradienteditor`) требуют явного импорта стилей: `import '@1337exp/taoux/canvas.css'`. Составные модули (session, palette, links, canvas, pins, curveeditor, gradienteditor, playback) импортируют только примитивы, и тест `tiers.test.ts` это охраняет; контракт холста описан в [docs/canvas.md](docs/canvas.md).
+Vue modules (`links`, `canvas`, `curveeditor`, `gradienteditor`) need their styles imported explicitly: `import '@1337exp/taoux/canvas.css'`. Composite modules (session, palette, links, canvas, pins, curveeditor, gradienteditor, playback) import only primitives, and the `tiers.test.ts` test guards that. The canvas contract is described in [docs/canvas.md](docs/canvas.md) (in Russian).
 
-Правило: модуль попадает сюда, когда он понадобился во втором проекте. Ядро модулей не знает про Vue и DOM, если это не их задача.
+The rule: a module lands here when a second project needs it. A module's core knows nothing about Vue or the DOM unless that is its job.
 
-## Разработка
+## Development
 
 ```bash
 npm install
 npm test            # vitest
 npm run typecheck
 npm run build       # dist/ (vite + tsc declarations)
-npm run sandbox     # песочница: http://localhost:5300, страницы из sandbox/
-npm run dev         # watch: пересборка JS и деклараций
+npm run sandbox     # sandbox: http://localhost:5300, pages from sandbox/
+npm run dev         # watch: rebuild JS and declarations
 ```
 
-Новый модуль: файл `src/<имя>.ts` и запись в `exports` в `package.json` (тест `exports.test.ts` следит, чтобы они совпадали).
+A new module is a file `src/<name>.ts` (or a folder with `index.ts`) and an entry in `exports` in `package.json`; the `exports.test.ts` test makes sure they match.
 
-## Подключение к проекту (без публикации)
+## Using it from a project (before publishing)
 
-В `package.json` проекта: `"@1337exp/taoux": "file:../taoux"`, затем `npm install`. npm сделает ссылку на соседнюю папку, правки в taoux видны сразу (после `npm run dev` здесь).
+In the project's `package.json`: `"@1337exp/taoux": "file:../taoux"`, then `npm install`. npm links the neighbouring folder, so edits in taoux are visible at once (after `npm run dev` here).
 
-Нюансы линка:
+Link notes:
 
-- В `vite.config.ts` потребителя нужен `resolve: { dedupe: ['vue'] }`, а в `tsconfig.json` в `paths` строка `"vue": ["./node_modules/vue"]`. Иначе у слинкованного пакета своя копия Vue: реактивность и типы (`ComputedRef` не распознаётся как `Ref`) ломаются.
-- Классический `npm link` (через глобальную папку на C:) на этой машине не работает: junction C: → E: ломается ("mount point ... not attached"). Поэтому только `file:` или junction внутри E:.
+- The consumer's `vite.config.ts` needs `resolve: { dedupe: ['vue'] }`, and its `tsconfig.json` needs `"vue": ["./node_modules/vue"]` in `paths`. Otherwise the linked package gets its own copy of Vue and reactivity and types break (`ComputedRef` is not recognised as `Ref`).
+- Classic `npm link` (through a global folder on drive C:) does not work on the author's machine: the C: → E: junction breaks ("mount point ... not attached"). So use `file:` or a junction inside E: only.
 
 ## Sandbox
 
-Папка `sandbox/` это демо и поле для проверки компонентов: страницы подключают модули прямо из `src/`, без сборки. Новый компонент = `sandbox/<имя>.html` + `.ts` + демо `.vue` и ссылка в `sandbox/index.html`. Запуск: `npm run sandbox`. Сейчас там `curveeditor`, `gradienteditor`, `slider` и `playback`. Песочница собрана вместе с TaoUI (dev-зависимость, в пакет не попадает): видно, как модули работают в паре, есть переключатель тёмной и светлой темы. Сам taoux от TaoUI не зависит.
+The `sandbox/` folder is a demo and a testing ground for components: pages import modules straight from `src/`, with no build. A new component is `sandbox/<name>.html` + `.ts` + a demo `.vue` and a link in `sandbox/index.html`. Run it with `npm run sandbox`. It holds `curveeditor`, `gradienteditor`, `slider` and `playback` for now. The sandbox is built together with TaoUI (a dev dependency that does not ship in the package), so you can see how the modules work as a pair, and there is a dark/light theme switch. TaoUX itself does not depend on TaoUI.
