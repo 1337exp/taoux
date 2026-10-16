@@ -81,10 +81,10 @@ const json = computed(() => JSON.stringify({ single: single.value, price: price.
             </section>
 
             <section class="case">
-                <h2>Color flat <small>сведи диапазон в точку: верхний слайдер её не показывает</small></h2>
+                <h2>Color flat <small>сведи диапазон в точку: виден штрих</small></h2>
                 <TaoRangeSlider v-model="color" :min="0" :max="7" :marks="colorMarks" discrete flat />
-                <TaoRangeSlider v-model="color" :min="0" :max="7" :marks="colorMarks" discrete flat collapsed-mark />
-                <p class="muted">нижний с collapsedMark: в точке виден штрих (по умолчанию его нет)</p>
+                <TaoRangeSlider v-model="color" :min="0" :max="7" :marks="colorMarks" discrete flat :min-gap="1" />
+                <p class="muted">нижний с minGap 1: в точку не сводится (значение снаружи сводит оба)</p>
             </section>
 
             <section class="case">
