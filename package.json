@@ -21,6 +21,11 @@
       "types": "./dist/edgescroll.d.ts",
       "import": "./dist/edgescroll.js"
     },
+    "./canvas": {
+      "types": "./dist/canvas/index.d.ts",
+      "import": "./dist/canvas.js"
+    },
+    "./canvas.css": "./dist/canvas.css",
     "./file": {
       "types": "./dist/file.d.ts",
       "import": "./dist/file.js"
