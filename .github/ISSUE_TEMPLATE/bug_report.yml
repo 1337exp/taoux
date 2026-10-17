@@ -1,0 +1,37 @@
+name: Bug report
+description: Something does not work as documented
+labels: [bug]
+body:
+    - type: input
+      id: version
+      attributes:
+          label: "@1337exp/taoux version"
+          placeholder: "0.1.0"
+      validations:
+          required: true
+    - type: input
+      id: module
+      attributes:
+          label: Module
+          description: "For example curveeditor, playback, canvas"
+      validations:
+          required: true
+    - type: input
+      id: env
+      attributes:
+          label: Environment
+          description: Vue / Nuxt version, TaoUI version if used, browser, OS
+      validations:
+          required: true
+    - type: textarea
+      id: what
+      attributes:
+          label: What happened, and what did you expect?
+      validations:
+          required: true
+    - type: textarea
+      id: repro
+      attributes:
+          label: Minimal reproduction
+          description: A few lines of code, or a link to a StackBlitz / repository.
+          render: vue

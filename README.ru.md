@@ -1,12 +1,76 @@
-# @1337exp/taoux
+<h1 align="center">TaoUX</h1>
 
-[English](README.md) · **Русский**
+<p align="center">
+  <b>Блоки взаимодействия для Vue-приложений.</b><br>
+  Импортируйте только нужное, дизайн приносите свой.
+</p>
 
-Блоки поведения и взаимодействия для Vue-приложений: импортируйте только нужное, дизайн приносите свой.
+<p align="center">
+  <a href="https://www.npmjs.com/package/@1337exp/taoux"><img src="https://img.shields.io/npm/v/@1337exp/taoux?color=cb3837&logo=npm" alt="npm"></a>
+  <a href="https://github.com/1337exp/taoux/actions/workflows/ci.yml"><img src="https://github.com/1337exp/taoux/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/1337exp/taoux/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@1337exp/taoux" alt="license"></a>
+  <img src="https://img.shields.io/badge/Vue-3-42b883?logo=vuedotjs&logoColor=white" alt="Vue 3">
+  <img src="https://img.shields.io/badge/types-included-3178c6?logo=typescript&logoColor=white" alt="TypeScript">
+</p>
 
-**С TaoUI:** TaoUX и [TaoUI](https://www.npmjs.com/package/@1337exp/taoui) это два отдельных пакета, готового модуля-связки между ними нет, и связать их нужно самим: привязать `--tx-*` к токенам `--tao-*` и передать значения через `v-model`. Как это сделать, коротко и с кодом: [docs/taoui.ru.md](docs/taoui.ru.md).
+<p align="center">
+  <a href="https://github.com/1337exp/taoux/blob/main/README.md">English</a> · <b>Русский</b> ·
+  <a href="#с-taoui">С TaoUI</a> ·
+  <a href="#модули">Модули</a> ·
+  <a href="#песочница">Песочница</a> ·
+  <a href="CHANGELOG.md">Список изменений</a>
+</p>
 
-Самодостаточные UX-модули для наших проектов. Каждый модуль — отдельный subpath-импорт, поэтому в сборку попадает только то, что реально используется:
+<p align="center">
+  <img src="https://raw.githubusercontent.com/1337exp/taoux/main/docs/media/screenshots/overview-dark.webp" alt="Редакторы кривой TaoUX в тёмной теме" width="860">
+</p>
+
+## Почему TaoUX
+
+- **Платите только за используемое.** Каждый модуль это свой subpath-импорт и своя точка входа: `import { zoomAt } from '@1337exp/taoux/camera'`. `sideEffects` объявлен, остальное режется tree-shaking'ом.
+- **Сначала логика.** Ядро модуля (математика камеры, история, easing, воспроизведение) это обычный TypeScript без Vue и DOM, если это не его задача, и тесты написаны именно так. Компоненты тонкая оболочка сверху.
+- **Ваш дизайн.** Компоненты настраиваются CSS-переменными `--tx-*` с разумными тёмными значениями по умолчанию. Дизайн-система не обязательна.
+- **С TaoUI в одну строку.** `import '@1337exp/taoux/taoui.css'`, и редакторы следуют теме TaoUI. [Подробности ниже.](#с-taoui)
+- **Типизированный i18n, undo/redo, автосохранение, воспроизведение** и остальное, что каждое приложение-редактор пишет заново.
+
+<table>
+  <tr>
+    <td width="50%"><img src="https://raw.githubusercontent.com/1337exp/taoux/main/docs/media/clips/curveeditor.webp" alt="Редактор кривой: перетаскивание и добавление точек"><br><sub><b>curveeditor</b> — сетка, шаг, границы, ручки Безье, клавиатура</sub></td>
+    <td width="50%"><img src="https://raw.githubusercontent.com/1337exp/taoux/main/docs/media/clips/gradienteditor.webp" alt="Редактор градиента: добавление и перемещение остановок"><br><sub><b>gradienteditor</b> — остановки, ручки, <code>gradientCss</code></sub></td>
+  </tr>
+  <tr>
+    <td><img src="https://raw.githubusercontent.com/1337exp/taoux/main/docs/media/clips/playback.webp" alt="Воспроизведение: TaoTimeline ведёт usePlayback"><br><sub><b>playback</b> — время, цикл, скорость, перемотка; <code>usePlayback</code> + <code>TaoTimeline</code> из TaoUI</sub></td>
+    <td><img src="https://raw.githubusercontent.com/1337exp/taoux/main/docs/media/clips/curvefield.webp" alt="TaoxCurveField: кривая с полями TaoUI"><br><sub><b>curvefield</b> — кривая с полями TaoUI в одном компоненте</sub></td>
+  </tr>
+</table>
+
+## Установка
+
+```bash
+npm install @1337exp/taoux
+npm install @1337exp/taoui   # по желанию: только для curvefield и моста к TaoUI
+```
+
+Peer-зависимости: `vue ^3.4` (для Vue-модулей) и, по желанию, `@1337exp/taoui ^3.2.1`. Модулям без Vue ничего не нужно.
+Только ESM. Импорт по subpath; корневой точки входа нет намеренно, чтобы в сборку не попало ничего неимпортированного.
+
+## С TaoUI
+
+TaoUX и [TaoUI](https://www.npmjs.com/package/@1337exp/taoui) это два отдельных пакета: у TaoUX нет своих кнопок и полей, а TaoUI ничего не знает про TaoUX. Связать их это две вещи, и первая делается одной строкой:
+
+```ts
+import '@1337exp/taoui/styles.css';
+import '@1337exp/taoux/taoui.css';          // мост: --tx-* → --tao-*, редакторы следуют теме TaoUI
+import '@1337exp/taoux/curveeditor.css';    // стили Vue-модуля подключаются явно
+```
+
+`taoui.css` это обычный CSS с нулевой специфичностью и без зависимости от TaoUI, поэтому любое ваше правило главнее. Дальше значения ходят через `v-model`: `usePlayback` ведёт `TaoTimeline`, поле TaoUI правит точку кривой, слайдер TaoUI задаёт прозрачность остановки градиента. С кодом: [docs/taoui.ru.md](docs/taoui.ru.md). Без моста редакторы остаются с тёмными значениями по умолчанию; `TaoxCurveField` (собран из компонентов TaoUI) подстраивается под тему сам.
+
+<a id="модули"></a>
+
+## Модули
+
+Каждый модуль — отдельный subpath-импорт, поэтому в сборку попадает только то, что реально используется:
 
 ```ts
 import { zoomAt } from '@1337exp/taoux/camera';
@@ -50,21 +114,27 @@ npm install
 npm test            # vitest
 npm run typecheck
 npm run build       # dist/ (vite + tsc declarations)
+npm run smoke       # упаковать, поставить во временное приложение рядом с TaoUI, собрать
 npm run sandbox     # песочница: http://localhost:5300, страницы из sandbox/
 npm run dev         # watch: пересборка JS и деклараций
 ```
 
-Новый модуль: файл `src/<имя>.ts` и запись в `exports` в `package.json` (тест `exports.test.ts` следит, чтобы они совпадали).
+Новый модуль: файл `src/<имя>.ts` (или папка с `index.ts`) и запись в `exports` в `package.json`; тест `exports.test.ts` следит, чтобы они совпадали. Подробнее: [CONTRIBUTING.ru.md](CONTRIBUTING.ru.md).
 
-## Подключение к проекту (без публикации)
+Работа с локальной копией вместо npm: в `package.json` проекта `"@1337exp/taoux": "file:../taoux"` (правки видны сразу после `npm run dev` здесь). Тогда в `vite.config.ts` потребителя нужен `resolve: { dedupe: ['vue'] }`, а в `tsconfig.json` в `paths` строка `"vue": ["./node_modules/vue"]`: иначе у слинкованного пакета своя копия Vue и реактивность ломается. Обычной установке из npm ничего из этого не нужно.
 
-В `package.json` проекта: `"@1337exp/taoux": "file:../taoux"`, затем `npm install`. npm сделает ссылку на соседнюю папку, правки в taoux видны сразу (после `npm run dev` здесь).
+<a id="песочница"></a>
 
-Нюансы линка:
+## Песочница
 
-- В `vite.config.ts` потребителя нужен `resolve: { dedupe: ['vue'] }`, а в `tsconfig.json` в `paths` строка `"vue": ["./node_modules/vue"]`. Иначе у слинкованного пакета своя копия Vue: реактивность и типы (`ComputedRef` не распознаётся как `Ref`) ломаются.
-- Классический `npm link` (через глобальную папку на C:) на этой машине не работает: junction C: → E: ломается ("mount point ... not attached"). Поэтому только `file:` или junction внутри E:.
+Папка `sandbox/` это демо и поле для проверки: страницы подключают модули прямо из `src/`, без сборки. Сейчас там `curveeditor`, `curvefield`, `gradienteditor`, `slider`, `color` и `playback`, с переключателем языка (EN / RU) и темы (тёмная / светлая: тема TaoUI через мост). Новая страница = `sandbox/<имя>.html` + `.ts` + демо `.vue` и ссылка в `sandbox/index.html`. `npm run sandbox:build` собирает статическую копию с относительными путями, её можно положить в любую папку (например, `/sandbox/taoux/`).
 
-## Sandbox
+Скриншоты и ролики в этом README сняты с песочницы: см. [docs/media](docs/media/README.md).
 
-Папка `sandbox/` это демо и поле для проверки компонентов: страницы подключают модули прямо из `src/`, без сборки. Новый компонент = `sandbox/<имя>.html` + `.ts` + демо `.vue` и ссылка в `sandbox/index.html`. Запуск: `npm run sandbox`. Сейчас там `curveeditor`, `gradienteditor`, `slider`, `color` и `playback`. Песочница собрана вместе с TaoUI (dev-зависимость, в пакет не попадает): видно, как модули работают в паре, есть переключатель тёмной и светлой темы. Сам taoux от TaoUI не зависит.
+## Участие в проекте
+
+Issues и pull request'ы приветствуются, см. [CONTRIBUTING.ru.md](CONTRIBUTING.ru.md). Об уязвимостях: [SECURITY.md](SECURITY.md).
+
+## Лицензия
+
+[MIT](LICENSE) © 2026 1337exp

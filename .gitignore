@@ -2,7 +2,15 @@ node_modules
 dist
 *.local
 .DS_Store
+
+# Secrets and local config (an .npmrc may hold a publish token)
 .npmrc
+.env
+.env.*
+!.env.example
+
+# Media pipeline: raw recordings stay local, only the encoded results are committed
+docs/media/.raw/
 
 # IDE и локальные настройки
 .idea

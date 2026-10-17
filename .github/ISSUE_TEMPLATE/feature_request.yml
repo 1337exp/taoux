@@ -1,0 +1,16 @@
+name: Feature request
+description: A module, an option or a variable that is missing
+labels: [enhancement]
+body:
+    - type: textarea
+      id: problem
+      attributes:
+          label: What are you trying to build?
+          description: Describe the task first, the API you imagine second. A module lands here when a second project needs it.
+      validations:
+          required: true
+    - type: textarea
+      id: idea
+      attributes:
+          label: Proposed API
+          render: ts

@@ -1,12 +1,76 @@
-# @1337exp/taoux
+<h1 align="center">TaoUX</h1>
 
-**English** · [Русский](README.ru.md)
+<p align="center">
+  <b>Interaction building blocks for Vue apps.</b><br>
+  Import only what you need, bring your own design.
+</p>
 
-Building blocks for interaction and behavior in Vue apps: import only what you need, bring your own design.
+<p align="center">
+  <a href="https://www.npmjs.com/package/@1337exp/taoux"><img src="https://img.shields.io/npm/v/@1337exp/taoux?color=cb3837&logo=npm" alt="npm"></a>
+  <a href="https://github.com/1337exp/taoux/actions/workflows/ci.yml"><img src="https://github.com/1337exp/taoux/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/1337exp/taoux/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@1337exp/taoux" alt="license"></a>
+  <img src="https://img.shields.io/badge/Vue-3-42b883?logo=vuedotjs&logoColor=white" alt="Vue 3">
+  <img src="https://img.shields.io/badge/types-included-3178c6?logo=typescript&logoColor=white" alt="TypeScript">
+</p>
 
-**With TaoUI:** TaoUX and [TaoUI](https://www.npmjs.com/package/@1337exp/taoui) are two separate packages. There is no ready-made module that joins them, so you connect them yourself: map `--tx-*` to the `--tao-*` tokens and pass values through `v-model`. How, briefly and with code: [docs/taoui.md](docs/taoui.md).
+<p align="center">
+  <b>English</b> · <a href="https://github.com/1337exp/taoux/blob/main/README.ru.md">Русский</a> ·
+  <a href="#with-taoui">With TaoUI</a> ·
+  <a href="#modules">Modules</a> ·
+  <a href="#sandbox">Sandbox</a> ·
+  <a href="CHANGELOG.md">Changelog</a>
+</p>
 
-Self-contained UX modules. Every module is its own subpath import, so only what you actually use ends up in the build:
+<p align="center">
+  <img src="https://raw.githubusercontent.com/1337exp/taoux/main/docs/media/screenshots/overview-dark.webp" alt="TaoUX curve editors in the dark theme" width="860">
+</p>
+
+## Why TaoUX
+
+- **Pay for what you use.** Every module is its own subpath import with its own entry point: `import { zoomAt } from '@1337exp/taoux/camera'`. `sideEffects` is declared, the rest tree-shakes.
+- **Logic first.** The core of a module (camera maths, history, easing, playback) is plain TypeScript with no Vue or DOM unless that is its job, and it is unit-tested that way. Components are thin shells on top.
+- **Your design.** Components are styled by `--tx-*` CSS variables with sensible dark defaults. No design system is required.
+- **Works with TaoUI in one line.** `import '@1337exp/taoux/taoui.css'` and the editors follow the TaoUI theme. [Details below.](#with-taoui)
+- **Typed i18n, undo/redo, autosave, playback** and the other things every editor-like app ends up writing again.
+
+<table>
+  <tr>
+    <td width="50%"><img src="https://raw.githubusercontent.com/1337exp/taoux/main/docs/media/clips/curveeditor.webp" alt="Curve editor: dragging and adding points"><br><sub><b>curveeditor</b> — grid, snapping, bounds, Bezier handles, keyboard</sub></td>
+    <td width="50%"><img src="https://raw.githubusercontent.com/1337exp/taoux/main/docs/media/clips/gradienteditor.webp" alt="Gradient editor: adding and moving stops"><br><sub><b>gradienteditor</b> — stops, handles, <code>gradientCss</code></sub></td>
+  </tr>
+  <tr>
+    <td><img src="https://raw.githubusercontent.com/1337exp/taoux/main/docs/media/clips/playback.webp" alt="Playback: TaoTimeline driven by usePlayback"><br><sub><b>playback</b> — time, loop, speed, seeking; <code>usePlayback</code> + TaoUI <code>TaoTimeline</code></sub></td>
+    <td><img src="https://raw.githubusercontent.com/1337exp/taoux/main/docs/media/clips/curvefield.webp" alt="TaoxCurveField: a curve with TaoUI fields"><br><sub><b>curvefield</b> — a curve with TaoUI fields in one component</sub></td>
+  </tr>
+</table>
+
+## Install
+
+```bash
+npm install @1337exp/taoux
+npm install @1337exp/taoui   # optional: only for curvefield and the TaoUI bridge
+```
+
+Peers: `vue ^3.4` (for the Vue modules) and, optionally, `@1337exp/taoui ^3.2.1`. Modules without Vue need nothing.
+ESM only. Import by subpath; there is no root entry on purpose, so nothing you do not import can end up in your bundle.
+
+## With TaoUI
+
+TaoUX and [TaoUI](https://www.npmjs.com/package/@1337exp/taoui) are two separate packages: TaoUX has no buttons or fields of its own, TaoUI knows nothing about TaoUX. Joining them takes two things, and the first is one line:
+
+```ts
+import '@1337exp/taoui/styles.css';
+import '@1337exp/taoux/taoui.css';          // the bridge: --tx-* → --tao-*, the editors follow the TaoUI theme
+import '@1337exp/taoux/curveeditor.css';    // styles of a Vue module are imported explicitly
+```
+
+`taoui.css` is plain CSS with zero specificity and no dependency on TaoUI, so any rule of yours wins. Values then travel through `v-model`: `usePlayback` drives `TaoTimeline`, a TaoUI field edits a curve point, a TaoUI slider sets the opacity of a gradient stop. With code: [docs/taoui.md](docs/taoui.md). Without the bridge the editors keep their dark defaults; `TaoxCurveField` (built from TaoUI components) follows the theme by itself.
+
+<a id="modules"></a>
+
+## Modules
+
+Every module is its own subpath import, so only what you actually use ends up in the build:
 
 ```ts
 import { zoomAt } from '@1337exp/taoux/camera';
@@ -50,21 +114,25 @@ npm install
 npm test            # vitest
 npm run typecheck
 npm run build       # dist/ (vite + tsc declarations)
-npm run sandbox     # sandbox: http://localhost:5300, pages from sandbox/
+npm run smoke       # pack, install into a throwaway app next to TaoUI, build it
+npm run sandbox     # the sandbox: http://localhost:5300, pages from sandbox/
 npm run dev         # watch: rebuild JS and declarations
 ```
 
-A new module is a file `src/<name>.ts` (or a folder with `index.ts`) and an entry in `exports` in `package.json`; the `exports.test.ts` test makes sure they match.
+A new module is a file `src/<name>.ts` (or a folder with `index.ts`) and an entry in `exports` in `package.json`; the `exports.test.ts` test makes sure they match. More in [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Using it from a project (before publishing)
-
-In the project's `package.json`: `"@1337exp/taoux": "file:../taoux"`, then `npm install`. npm links the neighbouring folder, so edits in taoux are visible at once (after `npm run dev` here).
-
-Link notes:
-
-- The consumer's `vite.config.ts` needs `resolve: { dedupe: ['vue'] }`, and its `tsconfig.json` needs `"vue": ["./node_modules/vue"]` in `paths`. Otherwise the linked package gets its own copy of Vue and reactivity and types break (`ComputedRef` is not recognised as `Ref`).
-- Classic `npm link` (through a global folder on drive C:) does not work on the author's machine: the C: → E: junction breaks ("mount point ... not attached"). So use `file:` or a junction inside E: only.
+Working against a local checkout instead of npm: put `"@1337exp/taoux": "file:../taoux"` into the project's `package.json` (edits are visible at once after `npm run dev` here). Then the consumer's `vite.config.ts` needs `resolve: { dedupe: ['vue'] }` and its `tsconfig.json` needs `"vue": ["./node_modules/vue"]` in `paths`, otherwise the linked package gets its own copy of Vue and reactivity breaks. A normal install from npm needs none of this.
 
 ## Sandbox
 
-The `sandbox/` folder is a demo and a testing ground for components: pages import modules straight from `src/`, with no build. A new component is `sandbox/<name>.html` + `.ts` + a demo `.vue` and a link in `sandbox/index.html`. Run it with `npm run sandbox`. It holds `curveeditor`, `gradienteditor`, `slider`, `color` and `playback` for now. The sandbox is built together with TaoUI (a dev dependency that does not ship in the package), so you can see how the modules work as a pair, and there is a dark/light theme switch. TaoUX itself does not depend on TaoUI.
+The `sandbox/` folder is a demo and a testing ground: pages import the modules straight from `src/`, with no build. It holds `curveeditor`, `curvefield`, `gradienteditor`, `slider`, `color` and `playback`, with an EN / RU switch and a dark / light switch (the TaoUI theme, through the bridge). A new page is `sandbox/<name>.html` + `.ts` + a demo `.vue` and a link in `sandbox/index.html`. `npm run sandbox:build` makes a static copy with relative paths, ready for any folder (for example `/sandbox/taoux/`).
+
+Screenshots and clips in this README come from the sandbox: see [docs/media](docs/media/README.md).
+
+## Contributing
+
+Issues and pull requests are welcome, see [CONTRIBUTING.md](CONTRIBUTING.md). Security reports: [SECURITY.md](SECURITY.md).
+
+## License
+
+[MIT](LICENSE) © 2026 1337exp
