@@ -300,6 +300,14 @@ describe('TaoxCurveEditor: переходы и ручки Безье', () => {
         expect(bezierOf(model(w)[0]!)[1]).toBeCloseTo(0.5);
     });
 
+    it('метка B стоит над началом каждого участка с Безье, подпись ручки настраивается', () => {
+        w = mountCurve({ modelValue: bez(), selected: 1, handleLabel: (n: number) => `Ручка ${n}` });
+        expect(w.findAll('.tx-curve-mark')).toHaveLength(1);
+        w.unmount();
+        w = mountCurve({ modelValue: bez(), handleLabel: (n: number) => `Ручка ${n}` });
+        expect(handles(w)[1]!.attributes('aria-label')).toBe('Ручка 2');
+    });
+
     it('перетаскивание точки не теряет её переход', async () => {
         w = mountCurve({ modelValue: bez() });
         await dots(w)[0]!.trigger('pointerdown', { clientX: x(0), clientY: y(0), pointerId: 1, button: 0 });

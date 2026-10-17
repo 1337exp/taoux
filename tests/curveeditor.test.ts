@@ -92,4 +92,9 @@ describe('переходы между точками', () => {
         expect(overshoot.max).toBeGreaterThan(flat.max);
         expect(valueBounds([{ t: 0, v: 0, ease: 'back-out' as const }, { t: 1, v: 1 }], 0, 1)).toEqual({ min: 0, max: 1 }); // заданные границы главнее
     });
+
+    it('вид растёт вместе с ручками Безье', () => {
+        const b = valueBounds([{ t: 0, v: 0, ease: { bezier: [0.2, 0.1, 0.8, 2.5] } }, { t: 1, v: 1 }]);
+        expect(b.max).toBeGreaterThan(2.5);
+    });
 });

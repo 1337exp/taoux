@@ -38,7 +38,7 @@ import { History } from '@1337exp/taoux/history';
 | `pins` | позиции пинов-строк, измеренные по DOM: `usePinMeasure`, `createPinRegistry` | vue (peer) |
 | `i18n` | типизированный i18n: `createI18n({ locales, fallback, storageKey })` | vue (peer, опционально) |
 
-Vue-модули (`links`, `canvas`, `curveeditor`, `gradienteditor`) требуют явного импорта стилей: `import '@1337exp/taoux/canvas.css'`. Составные модули (session, palette, links, canvas, pins, curveeditor, gradienteditor, playback) импортируют только примитивы, и тест `tiers.test.ts` это охраняет; контракт холста описан в [docs/canvas.md](docs/canvas.md).
+Vue-модули (`links`, `canvas`, `curveeditor`, `gradienteditor`) требуют явного импорта стилей: `import '@1337exp/taoux/canvas.css'`. Составные модули (session, palette, links, canvas, pins, curveeditor, gradienteditor, playback) импортируют только примитивы, и тест `tiers.test.ts` это охраняет; контракт холста описан в [docs/canvas.md](docs/canvas.md), переходы между точками кривой в [docs/ease.md](docs/ease.md).
 
 Правило: модуль попадает сюда, когда он понадобился во втором проекте. Ядро модулей не знает про Vue и DOM, если это не их задача.
 

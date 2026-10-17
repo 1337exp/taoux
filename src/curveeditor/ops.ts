@@ -91,7 +91,16 @@ export function valueBounds(points: readonly CurvePoint[], min?: number, max?: n
     }
     // переходы с заступом (back, elastic, Безье) выходят за значения точек: вид подбираем по самой кривой
     for (let i = 0; i < points.length - 1; i++) {
-        if (!curved(points[i]!.ease)) continue;
+        const a = points[i]!;
+        if (!curved(a.ease)) continue;
+        // ручки Безье тоже должны попадать в вид: иначе уехавшую за край ручку не достать
+        if (typeof a.ease === 'object') {
+            const dv = points[i + 1]!.v - a.v;
+            for (const y of [a.ease.bezier[1], a.ease.bezier[3]]) {
+                lo = Math.min(lo, a.v + y * dv);
+                hi = Math.max(hi, a.v + y * dv);
+            }
+        }
         for (const s of sampleSegment(points[i]!, points[i + 1]!)) {
             lo = Math.min(lo, s.v);
             hi = Math.max(hi, s.v);

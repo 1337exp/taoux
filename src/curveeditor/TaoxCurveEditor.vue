@@ -24,6 +24,8 @@ const props = withDefaults(
         hint?: string;
         /** Подпись точки для скринридеров; по умолчанию «Point 1: t, v». */
         pointLabel?: (index: number, point: CurvePoint) => string;
+        /** Подпись ручки Безье для скринридеров (n: 1 или 2); по умолчанию «Bezier handle n». */
+        handleLabel?: (n: number, index: number) => string;
     }>(),
     { selected: 0, snap: true, stepT: 0.05, majorT: 0.25 },
 );
@@ -190,6 +192,9 @@ const bezierHandles = computed(() => {
     ];
 });
 
+/** Начала участков с Безье: над ними рисуется метка «B». */
+const bezierMarks = computed(() => points.value.flatMap((p, i) => (typeof p.ease === 'object' && i < points.value.length - 1 ? [{ i, t: p.t, v: p.v }] : [])));
+
 const round2 = (x: number) => Math.round(x * 100) / 100;
 const BEZIER_STEP = 0.05;
 
@@ -323,6 +328,9 @@ const labelOf = (i: number, p: CurvePoint) => (props.pointLabel ? props.pointLab
 
         <path class="tx-curve-line" :d="path" />
 
+        <!-- Метка «B» над началом участка с Безье: видно, что у точки есть ручки, даже когда она не выбрана -->
+        <text v-for="m in bezierMarks" :key="`b${m.i}`" class="tx-curve-mark" :x="px(m.t)" :y="py(m.v) - 8" text-anchor="middle" aria-hidden="true">B</text>
+
         <g v-if="bezierHandles.length" class="tx-curve-bezier">
             <template v-for="h in bezierHandles" :key="h.n">
                 <line class="tx-curve-arm" :x1="px(h.from.t)" :y1="py(h.from.v)" :x2="px(h.t)" :y2="py(h.v)" />
@@ -333,7 +341,7 @@ const labelOf = (i: number, p: CurvePoint) => (props.pointLabel ? props.pointLab
                     r="4"
                     tabindex="0"
                     role="slider"
-                    :aria-label="`Bezier handle ${h.n + 1}`"
+                    :aria-label="handleLabel ? handleLabel(h.n + 1, bezierSegment!.i) : `Bezier handle ${h.n + 1}`"
                     @pointerdown.stop="onHandleDown($event, h.n)"
                     @pointermove="onHandleMove"
                     @pointerup="onHandleUp"
@@ -404,6 +412,13 @@ const labelOf = (i: number, p: CurvePoint) => (props.pointLabel ? props.pointLab
     stroke: var(--tx-curve-accent, #4fc3f7);
     stroke-width: 2;
     pointer-events: none;
+}
+
+.tx-curve-mark {
+    fill: var(--tx-curve-accent, #4fc3f7);
+    font: 600 9px/1 system-ui, sans-serif;
+    pointer-events: none;
+    user-select: none;
 }
 
 .tx-curve-arm {
