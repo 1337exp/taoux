@@ -247,6 +247,11 @@ function onHandleKey(e: KeyboardEvent, n: number) {
     setBezierHandle(n as 0 | 1, s.bezier[n * 2]! + d[0] * k, s.bezier[n * 2 + 1]! + d[1] * k, true);
 }
 
+/** Двойной клик по графику не должен выделять текст страницы вокруг. */
+function noSelect(e: MouseEvent) {
+    if (e.detail > 1) e.preventDefault();
+}
+
 function onDouble(e: MouseEvent) {
     const { t: tt, v } = toCurve(e);
     const r = addPoint(points.value, tt, v);
@@ -318,7 +323,7 @@ const labelOf = (i: number, p: CurvePoint) => (props.pointLabel ? props.pointLab
 </script>
 
 <template>
-    <svg ref="svg" class="tx-curve" :viewBox="`0 0 ${W} ${H}`" :title="hint" tabindex="-1" role="group" @dblclick.self="onDouble" @keydown="onKey">
+    <svg ref="svg" class="tx-curve" :viewBox="`0 0 ${W} ${H}`" :title="hint" tabindex="-1" role="group" @dblclick.self="onDouble" @mousedown="noSelect" @keydown="onKey">
         <!-- мелкая сетка: те же шаги, что у прилипания -->
         <line v-for="x in gridT" :key="`gt${x}`" class="tx-curve-grid" :class="{ major: isMajorT(x) }" :x1="px(x)" :x2="px(x)" :y1="PAD_T" :y2="H - PAD_B" />
         <line v-for="v in gridV" :key="`gv${v}`" class="tx-curve-grid" :class="{ major: isMajorV(v) }" :x1="PAD_L" :x2="W - PAD_R" :y1="py(v)" :y2="py(v)" />
@@ -385,6 +390,7 @@ const labelOf = (i: number, p: CurvePoint) => (props.pointLabel ? props.pointLab
     border-radius: 4px;
     background: var(--tx-curve-bg, #15171b);
     touch-action: none;
+    user-select: none;
     outline: none;
 }
 
