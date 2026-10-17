@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { TaoButton, TaoInputNumber, TaoRangeSlider, TaoSlider } from '@1337exp/taoui';
 import { computed, onBeforeUnmount, ref } from 'vue';
+import { tr } from './lang';
 import SandboxShell from './SandboxShell.vue';
 
 // Страница показывает слайдеры TaoUI 3 в тех сочетаниях, из которых строятся фильтры, таймлайны и параметры.
@@ -29,7 +30,7 @@ const band = ref<[number, number]>([20, 70]);
 const LENGTH = 8;
 const time = ref(1.25);
 const playing = ref(false);
-const events = [0, 2, 4, 6].map((value) => ({ value, label: `${value} с` }));
+const events = computed(() => [0, 2, 4, 6].map((value) => ({ value, label: `${value} ${tr('s', 'с')}` })));
 let frame = 0;
 let last = 0;
 function tick(now: number) {
@@ -46,23 +47,23 @@ function toggle() {
     }
 }
 onBeforeUnmount(() => cancelAnimationFrame(frame));
-const timeText = computed(() => `${time.value.toFixed(2)} / ${LENGTH.toFixed(1)} с`);
+const timeText = computed(() => `${time.value.toFixed(2)} / ${LENGTH.toFixed(1)} ${tr('s', 'с')}`);
 
 const json = computed(() => JSON.stringify({ single: single.value, price: price.value, carat: carat.value, color: color.value, clarity: clarity.value, cut: cut.value, level: level.value, band: band.value }));
 </script>
 
 <template>
-    <SandboxShell title="slider" note="TaoSlider (одна ручка) и TaoRangeSlider (две) из TaoUI 3: метки, ступени с подписями, вертикальная ориентация. Ручки двигаются мышью, стрелками, Home/End; клик по подписи метки переносит ручку.">
+    <SandboxShell title="slider" :note="tr('TaoSlider (one thumb) and TaoRangeSlider (two) from TaoUI: marks, captioned steps, vertical orientation. Thumbs move with the mouse, arrows, Home/End; a click on a mark caption moves the thumb.', 'TaoSlider (одна ручка) и TaoRangeSlider (две) из TaoUI 3: метки, ступени с подписями, вертикальная ориентация. Ручки двигаются мышью, стрелками, Home/End; клик по подписи метки переносит ручку.')">
         <div class="grid">
             <section class="case">
                 <h2>TaoSlider <small>bar, thin, showValue, wheel</small></h2>
                 <TaoSlider v-model="single" show-value />
                 <TaoSlider v-model="volume" variant="thin" :wheel="5" />
-                <p class="muted">{{ single }} · {{ volume }} (колёсико над нижним меняет на 5)</p>
+                <p class="muted">{{ single }} · {{ volume }} ({{ tr('the wheel over the lower one changes it by 5', 'колёсико над нижним меняет на 5') }})</p>
             </section>
 
             <section class="case">
-                <h2>Price <small>TaoRangeSlider + два поля</small></h2>
+                <h2>Price <small>{{ tr('TaoRangeSlider + two fields', 'TaoRangeSlider + два поля') }}</small></h2>
                 <div class="row">
                     <TaoInputNumber class="grow" size="small" :min="0" :max="price[1]" :step="100" :controls="false" :model-value="price[0]" @update:model-value="(v) => v !== null && (price = [v, price[1]])" />
                     <TaoInputNumber class="grow" size="small" :min="price[0]" :max="5000000" :step="100" :controls="false" :model-value="price[1]" @update:model-value="(v) => v !== null && (price = [price[0], v])" />
@@ -72,34 +73,34 @@ const json = computed(() => JSON.stringify({ single: single.value, price: price.
             </section>
 
             <section class="case">
-                <h2>Carat <small>диапазон, зазор 0.5, шаг 0.1</small></h2>
+                <h2>Carat <small>{{ tr('range, gap 0.5, step 0.1', 'диапазон, зазор 0.5, шаг 0.1') }}</small></h2>
                 <TaoRangeSlider v-model="carat" :min="0.5" :max="30" :step="0.1" :min-gap="0.5" marks show-value :format="(v) => v.toFixed(2)" />
             </section>
 
             <section class="case">
-                <h2>Color <small>ступени с подписями, диапазон</small></h2>
+                <h2>Color <small>{{ tr('captioned steps, range', 'ступени с подписями, диапазон') }}</small></h2>
                 <TaoRangeSlider v-model="color" :min="0" :max="7" :marks="colorMarks" discrete />
             </section>
 
             <section class="case">
-                <h2>Color flat <small>сведи диапазон в точку: виден штрих</small></h2>
+                <h2>Color flat <small>{{ tr('collapse the range into a point: a dash shows', 'сведи диапазон в точку: виден штрих') }}</small></h2>
                 <TaoRangeSlider v-model="color" :min="0" :max="7" :marks="colorMarks" discrete flat />
                 <TaoRangeSlider v-model="color" :min="0" :max="7" :marks="colorMarks" discrete flat :min-gap="1" />
-                <p class="muted">нижний с minGap 1: в точку не сводится (значение снаружи сводит оба)</p>
+                <p class="muted">{{ tr('the lower one has minGap 1: it does not collapse (a value from outside collapses both)', 'нижний с minGap 1: в точку не сводится (значение снаружи сводит оба)') }}</p>
             </section>
 
             <section class="case">
-                <h2>Clarity <small>ступени, диапазон</small></h2>
+                <h2>Clarity <small>{{ tr('steps, range', 'ступени, диапазон') }}</small></h2>
                 <TaoRangeSlider v-model="clarity" :min="0" :max="7" :marks="clarityMarks" discrete />
             </section>
 
             <section class="case">
-                <h2>Cut <small>ступени, одна ручка</small></h2>
+                <h2>Cut <small>{{ tr('steps, one thumb', 'ступени, одна ручка') }}</small></h2>
                 <TaoSlider v-model="cut" :min="0" :max="3" :marks="cutMarks" discrete />
             </section>
 
             <section class="case">
-                <h2>vertical <small>с метками, thin, без меток, flat, метки слева</small></h2>
+                <h2>vertical <small>{{ tr('with marks, thin, without marks, flat, marks on the left', 'с метками, thin, без меток, flat, метки слева') }}</small></h2>
                 <div class="row" style="gap: 40px; padding: 8px 12px">
                     <TaoSlider v-model="level" vertical marks />
                     <TaoRangeSlider v-model="band" vertical marks />
@@ -112,13 +113,13 @@ const json = computed(() => JSON.stringify({ single: single.value, price: price.
             </section>
 
             <section class="case">
-                <h2>Flat <small>без круглых ручек: плоская полоса</small></h2>
+                <h2>Flat <small>{{ tr('no round thumbs: a flat bar', 'без круглых ручек: плоская полоса') }}</small></h2>
                 <TaoSlider v-model="single" flat />
                 <TaoRangeSlider v-model="price" :min="0" :max="5000" :step="100" flat marks :format="money" />
             </section>
 
             <section class="case">
-                <h2>Таймлайн (средняя) <small>bar + метки событий + кнопка</small></h2>
+                <h2>{{ tr('Timeline (medium)', 'Таймлайн (средняя)') }} <small>{{ tr('bar + event marks + a button', 'bar + метки событий + кнопка') }}</small></h2>
                 <div class="row" style="align-items: flex-start">
                     <TaoButton size="small" variant="secondary" @click="toggle">{{ playing ? '❚❚' : '▶' }}</TaoButton>
                     <TaoSlider v-model="time" class="grow" style="margin-top: 5px" size="small" :min="0" :max="LENGTH" :step="0.01" :marks="events" />
@@ -127,7 +128,7 @@ const json = computed(() => JSON.stringify({ single: single.value, price: price.
             </section>
 
             <section class="case">
-                <h2>Таймлайн, шкала сверху <small>marks-side="start", как линейка</small></h2>
+                <h2>{{ tr('Timeline, scale on top', 'Таймлайн, шкала сверху') }} <small>{{ tr('marks-side="start", like a ruler', 'marks-side="start", как линейка') }}</small></h2>
                 <div class="row" style="align-items: flex-end">
                     <TaoButton size="small" variant="secondary" @click="toggle">{{ playing ? '❚❚' : '▶' }}</TaoButton>
                     <TaoSlider v-model="time" class="grow" variant="thin" size="small" :min="0" :max="LENGTH" :step="0.01" :marks="events" marks-side="start" style="margin-bottom: 5px" />
@@ -136,7 +137,7 @@ const json = computed(() => JSON.stringify({ single: single.value, price: price.
             </section>
 
             <section class="case">
-                <h2>Таймлайн (тонкая) <small>thin + метки событий + кнопка</small></h2>
+                <h2>{{ tr('Timeline (thin)', 'Таймлайн (тонкая)') }} <small>{{ tr('thin + event marks + a button', 'thin + метки событий + кнопка') }}</small></h2>
                 <div class="row" style="align-items: flex-start">
                     <TaoButton size="small" variant="secondary" @click="toggle">{{ playing ? '❚❚' : '▶' }}</TaoButton>
                     <TaoSlider v-model="time" class="grow" style="margin-top: 5px" variant="thin" size="small" :min="0" :max="LENGTH" :step="0.01" :marks="events" />

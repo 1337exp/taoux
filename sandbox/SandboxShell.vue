@@ -1,8 +1,11 @@
 <script lang="ts" setup>
 import { TaoSegmented, TaoSegmentedOption } from '@1337exp/taoui';
 import { ref, watch } from 'vue';
+import '../theme/taoui.css';
+import { lang, LANGS, tr } from './lang';
 
-// Общая обёртка страниц песочницы: заголовок, ссылка на список и переключатель темы TaoUI.
+// Shared wrapper of the sandbox pages: title, link to the index, language and TaoUI theme switches.
+// Общая обёртка страниц песочницы: заголовок, ссылка на список, переключатели языка и темы TaoUI.
 defineProps<{ title: string; note?: string }>();
 
 const KEY = 'taoux.sandbox.theme';
@@ -35,13 +38,18 @@ watch(
     <main class="page">
         <header class="head">
             <div>
-                <a class="back" href="./index.html">taoux · sandbox</a>
+                <a class="back" href="./index.html">{{ tr('taoux · sandbox', 'taoux · песочница') }}</a>
                 <h1>{{ title }}</h1>
             </div>
-            <TaoSegmented v-model="theme" size="small">
-                <TaoSegmentedOption value="dark" label="Dark" />
-                <TaoSegmentedOption value="light" label="Light" />
-            </TaoSegmented>
+            <div class="switches">
+                <TaoSegmented v-model="lang" size="small" :aria-label="tr('Language', 'Язык')">
+                    <TaoSegmentedOption v-for="code in LANGS" :key="code" :value="code" :label="code.toUpperCase()" />
+                </TaoSegmented>
+                <TaoSegmented v-model="theme" size="small" :aria-label="tr('Theme', 'Тема')">
+                    <TaoSegmentedOption value="dark" label="Dark" />
+                    <TaoSegmentedOption value="light" label="Light" />
+                </TaoSegmented>
+            </div>
         </header>
         <p v-if="note" class="muted">{{ note }}</p>
         <slot />
@@ -49,18 +57,6 @@ watch(
 </template>
 
 <style>
-:root {
-    /* Модули taoux настраиваются своими переменными; песочница связывает их с токенами TaoUI, как это делают продукты. */
-    --tx-curve-bg: var(--tao-color-surface-sunken);
-    --tx-curve-border: var(--tao-color-border);
-    --tx-curve-grid: var(--tao-color-border);
-    --tx-curve-label: var(--tao-color-text-muted);
-    --tx-curve-accent: var(--tao-color-accent);
-    --tx-gradient-border: var(--tao-color-border);
-    --tx-gradient-stop-border: var(--tao-color-border-strong);
-    --tx-gradient-accent: var(--tao-color-accent);
-}
-
 html,
 body {
     margin: 0;
@@ -88,6 +84,12 @@ body {
     align-items: flex-start;
     justify-content: space-between;
     gap: 12px;
+}
+
+.switches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 .head h1 {

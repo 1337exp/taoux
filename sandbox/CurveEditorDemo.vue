@@ -3,11 +3,12 @@ import { TaoButton, TaoInputNumber, TaoSelect, TaoSwitch } from '@1337exp/taoui'
 import { ref } from 'vue';
 import { DEFAULT_BEZIER, EASE_NAMES, type EaseName } from '../src/ease';
 import { movePoint, setEase, TaoxCurveEditor, type CurvePoint } from '../src/curveeditor';
+import { tr } from './lang';
 import SandboxShell from './SandboxShell.vue';
 
 interface Case {
-    title: string;
-    note: string;
+    title: readonly [en: string, ru: string];
+    note: readonly [en: string, ru: string];
     min?: number;
     max?: number;
     precision?: number;
@@ -16,7 +17,7 @@ interface Case {
     selected: number;
 }
 
-const make = (title: string, note: string, initial: CurvePoint[], min?: number, max?: number, precision?: number): Case => ({
+const make = (title: readonly [string, string], note: readonly [string, string], initial: CurvePoint[], min?: number, max?: number, precision?: number): Case => ({
     title,
     note,
     min,
@@ -31,13 +32,13 @@ const snap = ref(true);
 const guides = ref<'off' | 'lines' | 'values'>('lines');
 const guideOptions = ['off', 'lines', 'values'].map((v) => ({ value: v, label: v }));
 
-// Разные границы значений: именно на них держится сетка, зажим и автопрокрутка
+// Different value bounds (the grid, clamping and auto-scroll hang on them) / Разные границы значений: именно на них держится сетка, зажим и автопрокрутка
 const cases = ref<Case[]>([
-    make('Размер, 0…∞', 'min 0, верх по данным', [{ t: 0, v: 0 }, { t: 0.2, v: 1 }, { t: 1, v: 0 }], 0),
-    make('Непрозрачность, 0…1', 'min 0, max 1: вид стоит', [{ t: 0, v: 1 }, { t: 1, v: 0 }], 0, 1),
-    make('Скорость, −1…1', 'min −1, max 1', [{ t: 0, v: 0 }, { t: 0.5, v: 1 }, { t: 1, v: -1 }], -1, 1),
-    make('Без границ', 'всё авто', [{ t: 0, v: 2 }, { t: 1, v: 2 }]),
-    make('Два знака', 'precision 2, min 0: потяни точку к верхнему краю', [{ t: 0, v: 0 }, { t: 0.5, v: 1 }, { t: 1, v: 0 }], 0, undefined, 2),
+    make(['Size, 0…∞', 'Размер, 0…∞'], ['min 0, the top follows the data', 'min 0, верх по данным'], [{ t: 0, v: 0 }, { t: 0.2, v: 1 }, { t: 1, v: 0 }], 0),
+    make(['Opacity, 0…1', 'Непрозрачность, 0…1'], ['min 0, max 1: the view stays put', 'min 0, max 1: вид стоит'], [{ t: 0, v: 1 }, { t: 1, v: 0 }], 0, 1),
+    make(['Speed, −1…1', 'Скорость, −1…1'], ['min −1, max 1', 'min −1, max 1'], [{ t: 0, v: 0 }, { t: 0.5, v: 1 }, { t: 1, v: -1 }], -1, 1),
+    make(['No bounds', 'Без границ'], ['everything automatic', 'всё авто'], [{ t: 0, v: 2 }, { t: 1, v: 2 }]),
+    make(['Two decimals', 'Два знака'], ['precision 2, min 0: drag a point to the top edge', 'precision 2, min 0: потяни точку к верхнему краю'], [{ t: 0, v: 0 }, { t: 0.5, v: 1 }, { t: 1, v: 0 }], 0, undefined, 2),
 ]);
 
 const current = (c: Case) => c.value[Math.min(c.selected, c.value.length - 1)]!;
@@ -45,7 +46,7 @@ const reset = (c: Case) => {
     c.value = c.initial.map((p) => ({ ...p }));
     c.selected = 0;
 };
-// Переход выбранной точки к следующей: имя из списка или «bezier» (ручки на графике)
+// Transition of the selected point to the next one: a name from the list or "bezier" (handles on the plot) / Переход выбранной точки к следующей: имя из списка или «bezier» (ручки на графике)
 const easeOptions = [...EASE_NAMES, 'bezier'].map((v) => ({ value: v, label: v }));
 const easeOf = (c: Case) => {
     const e = current(c).ease;
@@ -66,21 +67,21 @@ function setField(c: Case, field: 't' | 'v', value: number | null) {
 </script>
 
 <template>
-    <SandboxShell title="curveeditor" note="Двойной клик добавляет точку, Alt+клик или Delete убирает, Shift временно меняет режим шага, у края графика вид едет за точкой.">
+    <SandboxShell title="curveeditor" :note="tr('Double-click adds a point, Alt+click or Delete removes it, Shift temporarily flips snapping, the view follows a point dragged to the edge.', 'Двойной клик добавляет точку, Alt+клик или Delete убирает, Shift временно меняет режим шага, у края графика вид едет за точкой.')">
         <div class="row">
-            <TaoSwitch v-model="snap" label="Шаг сетки" />
+            <TaoSwitch v-model="snap" :label="tr('Snap to grid', 'Шаг сетки')" />
             <TaoSelect v-model="guides" size="small" :clearable="false" :options="guideOptions" />
         </div>
 
         <div class="grid">
-            <section v-for="c in cases" :key="c.title" class="case">
-                <h2>{{ c.title }} <small>{{ c.note }}</small></h2>
+            <section v-for="c in cases" :key="c.title[0]" class="case">
+                <h2>{{ tr(...c.title) }} <small>{{ tr(...c.note) }}</small></h2>
                 <TaoxCurveEditor v-model="c.value" v-model:selected="c.selected" :min="c.min" :max="c.max" :precision="c.precision" :snap="snap" :guides="guides" />
-                <div class="divider">Ниже обвязка на TaoUI: самого редактора это не касается</div>
+                <div class="divider">{{ tr('Below: TaoUI fields around the editor; they are not part of it', 'Ниже обвязка на TaoUI: самого редактора это не касается') }}</div>
                 <div class="row">
                     <TaoInputNumber class="grow" size="small" :min="0" :max="1" :step="0.05" :precision="c.precision" :controls="false" :model-value="current(c).t" @update:model-value="(x) => setField(c, 't', x)" />
                     <TaoInputNumber class="grow" size="small" :min="c.min" :max="c.max" :step="0.1" :precision="c.precision" :controls="false" :model-value="current(c).v" @update:model-value="(x) => setField(c, 'v', x)" />
-                    <TaoButton size="small" variant="ghost" :disabled="!changed(c)" @click="reset(c)">Сбросить</TaoButton>
+                    <TaoButton size="small" variant="ghost" :disabled="!changed(c)" @click="reset(c)">{{ tr('Reset', 'Сбросить') }}</TaoButton>
                 </div>
                 <div class="row">
                     <TaoSelect class="grow" size="small" :clearable="false" :options="easeOptions" :disabled="isLast(c)" :model-value="easeOf(c)" @update:model-value="(v) => setTransition(c, v)" />
