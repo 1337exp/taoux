@@ -259,6 +259,20 @@ describe('TaoxCurveEditor: подписи осей', () => {
         w.unmount();
     });
 
+    it('guides: off ничего не рисует, lines только линии, values линии и значения', () => {
+        const w = mountCurve({ selected: 1, guides: 'off' });
+        expect(w.findAll('.tx-curve-guide')).toHaveLength(0);
+        w.unmount();
+        const l = mountCurve({ selected: 1, guides: 'lines' });
+        expect(l.findAll('.tx-curve-guide')).toHaveLength(2);
+        expect(l.findAll('.tx-curve-tag')).toHaveLength(0);
+        l.unmount();
+        const v = mountCurve({ selected: 1 });
+        expect(v.findAll('.tx-curve-guide')).toHaveLength(2);
+        expect(v.findAll('.tx-curve-tag')).toHaveLength(2);
+        v.unmount();
+    });
+
     it('крайние цифры каждой оси выделены, средние нет', () => {
         const w = mountCurve();
         const labels = w.findAll('.tx-curve-label');

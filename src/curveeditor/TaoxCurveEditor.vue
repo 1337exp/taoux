@@ -2,7 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, ref } from 'vue';
 import { createEdgeScroller } from '../edgescroll';
 import { clampTo, niceStep, roundTo, snapTo, ticks } from '../num';
-import { addPoint, movePoint, removePoint, sampleSegment, setEase, valueBounds, type CurvePoint } from './ops';
+import { addPoint, movePoint, removePoint, sampleSegment, setEase, valueBounds, type CurveGuides, type CurvePoint } from './ops';
 
 const props = withDefaults(
     defineProps<{
@@ -24,10 +24,15 @@ const props = withDefaults(
         hint?: string;
         /** Подпись точки для скринридеров; по умолчанию «Point 1: t, v». */
         pointLabel?: (index: number, point: CurvePoint) => string;
+        /**
+         * Направляющие от выбранной точки к осям: `off` нет, `lines` только пунктирные линии, `values` линии и значения точки на осях.
+         * По умолчанию `values`.
+         */
+        guides?: CurveGuides;
         /** Подпись ручки Безье для скринридеров (n: 1 или 2); по умолчанию «Bezier handle n». */
         handleLabel?: (n: number, index: number) => string;
     }>(),
-    { selected: 0, snap: true, stepT: 0.05, majorT: 0.25 },
+    { selected: 0, snap: true, stepT: 0.05, majorT: 0.25, guides: 'values' },
 );
 const emit = defineEmits<{
     'update:modelValue': [value: CurvePoint[]];
@@ -351,13 +356,15 @@ const labelOf = (i: number, p: CurvePoint) => (props.pointLabel ? props.pointLab
         <text v-for="(v, i) in labelsV" :key="`lv${v}`" class="tx-curve-label" :class="{ edge: i === 0 || i === labelsV.length - 1 }" :x="PAD_L - 4" :y="py(v)" text-anchor="end" dominant-baseline="middle">{{ fmt(v) }}</text>
         <text v-for="x in labelsT" :key="`lt${x}`" class="tx-curve-label" :class="{ edge: x === 0 || x === 1 }" :x="px(x)" :y="H - 4" :text-anchor="x === 0 ? 'start' : x === 1 ? 'end' : 'middle'">{{ fmt(x) }}</text>
 
-        <g v-if="tags" class="tx-curve-tags" aria-hidden="true">
+        <g v-if="tags && guides !== 'off'" class="tx-curve-tags" aria-hidden="true">
             <line class="tx-curve-guide" :x1="tags.x" :x2="tags.x" :y1="tags.y" :y2="PAD_T + PLOT_H" />
             <line class="tx-curve-guide" :x1="PAD_L" :x2="tags.x" :y1="tags.y" :y2="tags.y" />
-            <rect class="tx-curve-tag-bg" :x="tags.t.cx - tags.t.w / 2" :y="H - 12" :width="tags.t.w" height="11" rx="2" />
-            <text class="tx-curve-tag" :x="tags.t.cx" :y="H - 4" text-anchor="middle">{{ tags.t.text }}</text>
-            <rect class="tx-curve-tag-bg" :x="PAD_L - 3 - tags.v.w" :y="tags.v.cy - 5.5" :width="tags.v.w" height="11" rx="2" />
-            <text class="tx-curve-tag" :x="PAD_L - 5" :y="tags.v.cy" text-anchor="end" dominant-baseline="middle">{{ tags.v.text }}</text>
+            <template v-if="guides === 'values'">
+                <rect class="tx-curve-tag-bg" :x="tags.t.cx - tags.t.w / 2" :y="H - 12" :width="tags.t.w" height="11" rx="2" />
+                <text class="tx-curve-tag" :x="tags.t.cx" :y="H - 4" text-anchor="middle">{{ tags.t.text }}</text>
+                <rect class="tx-curve-tag-bg" :x="PAD_L - 3 - tags.v.w" :y="tags.v.cy - 5.5" :width="tags.v.w" height="11" rx="2" />
+                <text class="tx-curve-tag" :x="PAD_L - 5" :y="tags.v.cy" text-anchor="end" dominant-baseline="middle">{{ tags.v.text }}</text>
+            </template>
         </g>
 
         <path class="tx-curve-line" :d="path" />
