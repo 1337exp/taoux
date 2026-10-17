@@ -1,61 +1,63 @@
-# Переходы между точками кривой (`ease`)
+# Transitions between curve points (`ease`)
 
-У каждой точки кривой может быть поле `ease`: оно говорит, **как идти от этой точки к следующей**. У последней точки перехода нет. Без поля участок линейный, поэтому старые файлы читаются как раньше.
+**English** · [Русский](ease.ru.md)
+
+Every curve point may have an `ease` field: it says **how to go from this point to the next one**. The last point has no transition. Without the field the segment is linear, so old files read as before.
 
 ```ts
 const curve: CurvePoint[] = [
-    { t: 0,   v: 0, ease: 'cubic-out' },                       // плавное торможение
-    { t: 0.5, v: 1, ease: { bezier: [0.25, 0.1, 0.25, 1] } },  // своя кривая Безье
+    { t: 0,   v: 0, ease: 'cubic-out' },                       // a smooth deceleration
+    { t: 0.5, v: 1, ease: { bezier: [0.25, 0.1, 0.25, 1] } },  // your own Bezier curve
     { t: 1,   v: 0 },
 ];
 ```
 
-## Что можно указать
+## What you can set
 
-| Значение | Что делает |
+| Value | What it does |
 | --- | --- |
-| `'linear'` | прямая (то же, что отсутствие поля) |
-| `'step'` | ступенька: значение держится до следующей точки и прыгает в ней |
-| `'<семейство>-<направление>'` | готовая функция, список ниже |
-| `{ bezier: [x1, y1, x2, y2] }` | кубическая кривая Безье, как `cubic-bezier()` в CSS |
+| `'linear'` | a straight line (the same as no field) |
+| `'step'` | a step: the value is held until the next point and jumps there |
+| `'<family>-<direction>'` | a ready function, the list is below |
+| `{ bezier: [x1, y1, x2, y2] }` | a cubic Bezier curve, like `cubic-bezier()` in CSS |
 
-Семейства: `sine`, `quad`, `cubic`, `quart`, `expo`, `back`, `elastic`, `bounce`.
-Направления: `in` (разгон), `out` (торможение), `in-out` (и то и другое).
-Примеры: `quad-in`, `elastic-out`, `back-in-out`.
+Families: `sine`, `quad`, `cubic`, `quart`, `expo`, `back`, `elastic`, `bounce`.
+Directions: `in` (acceleration), `out` (deceleration), `in-out` (both).
+Examples: `quad-in`, `elastic-out`, `back-in-out`.
 
-`back`, `elastic` и Безье могут выйти за значения точек (заступ). Это не ошибка, редактор расширит вид, чтобы кривая и ручки были видны. `bounce` остаётся в пределах участка.
+`back`, `elastic` and Bezier may leave the point values (overshoot). This is not an error: the editor widens the view so the curve and the handles stay visible. `bounce` stays within the segment.
 
-В Безье `x1` и `x2` должны быть в диапазоне 0…1 (иначе время пошло бы назад), а `y1` и `y2` свободные.
+In a Bezier `x1` and `x2` must be in the range 0…1 (otherwise time would run backwards), while `y1` and `y2` are free.
 
-## Модуль `@1337exp/taoux/ease`
+## The `@1337exp/taoux/ease` module
 
-Чистая математика без зависимостей (ярус 0). Редактор рисует участки теми же формулами, по которым рантайм считает значение, поэтому картинка и результат совпадают.
+Pure maths with no dependencies (tier 0). The editor draws segments with the same formulas a runtime computes the value with, so the picture and the result match.
 
 ```ts
 import { easeValue, isEase, EASE_NAMES, cubicBezier, DEFAULT_BEZIER } from '@1337exp/taoux/ease';
 
 easeValue('quad-in', 0.5);                  // 0.25
 easeValue({ bezier: [0.42, 0, 0.58, 1] }, 0.5);
-isEase(valueFromFile);                      // проверка значения из файла
+isEase(valueFromFile);                      // validates a value from a file
 ```
 
-- `easeValue(ease, u)` принимает долю участка `u` (вне 0…1 зажимается) и возвращает долю значения.
-- `isEase(x)` проверяет значение из файла: имя из списка или Безье из четырёх конечных чисел с `x` в 0…1.
-- `easeParts(name)` и `easeName(family, direction)` разбирают и собирают имя.
+- `easeValue(ease, u)` takes the fraction `u` of a segment (clamped outside 0…1) and returns the fraction of the value.
+- `isEase(x)` validates a value from a file: a name from the list, or a Bezier of four finite numbers with `x` in 0…1.
+- `easeParts(name)` and `easeName(family, direction)` split and build a name.
 
-Рантайму можно не зависеть от taoux при установке: модуль крошечный, его можно вшить в сборку (так можно сделать в приложении).
+A runtime does not have to depend on taoux at install time: the module is tiny and can be inlined into your build.
 
-## В редакторе кривой
+## In the curve editor
 
-- Участок рисуется по своему переходу. Над началом участка с Безье стоит метка «B» цвета кривой.
-- У **выбранной** точки с Безье видны две ручки. Тяните мышью или двигайте стрелками (шаг 0,05, с Shift ×5). Ручка по `x` не выходит за 0…1.
-- Вид растёт вместе с ручками: если вытянуть ручку далеко, шкала отдалится, и ручку всегда можно достать. Пока идёт перетаскивание, вид стоит на месте, и после отпускания пересчитывается.
-- У участка без перепада высоты (`v` обеих точек равны) ручек нет: вид кривой от них не зависит.
-- Направляющие от выбранной точки к осям: проп `guides` (`off`, `lines`, `values`). `lines` рисует пунктирные линии, `values` добавляет ещё значения точки на осях. По умолчанию `lines`; в `TaoxCurveField` тот же проп.
-- Подписи для скринридеров: `pointLabel` для точек, `handleLabel(n, index)` для ручек.
+- A segment is drawn by its own transition. A "B" mark in the curve colour stands above the start of a Bezier segment.
+- The **selected** point with a Bezier shows two handles. Drag them with the mouse or move them with the arrows (step 0.05, ×5 with Shift). A handle never leaves 0…1 along `x`.
+- The view grows with the handles: pull a handle far and the scale zooms out, so the handle can always be reached. While dragging, the view stands still and is recomputed on release.
+- A segment with no height difference (`v` of both points equal) has no handles: its shape does not depend on them.
+- Guides from the selected point to the axes: the `guides` prop (`off`, `lines`, `values`). `lines` draws dashed lines, `values` adds the point values on the axes. `lines` by default; `TaoxCurveField` has the same prop.
+- Labels for screen readers: `pointLabel` for points, `handleLabel(n, index)` for handles.
 
-Операции: `setEase(points, index, ease)` задаёт переход (`undefined` или `'linear'` убирает поле), `sampleSegment(a, b)` возвращает ломаную участка для отрисовки, `sampleCurve` и `valueBounds` учитывают переходы. `movePoint` сохраняет `ease` у сдвинутой точки.
+Operations: `setEase(points, index, ease)` sets a transition (`undefined` or `'linear'` removes the field), `sampleSegment(a, b)` returns the polyline of a segment for drawing, `sampleCurve` and `valueBounds` take transitions into account. `movePoint` keeps `ease` on the moved point.
 
-## Пока не делаем
+## Not doing yet
 
-Свои функции от хоста (колбэк вместо имени): файл должен оставаться чистыми данными.
+Host-supplied functions (a callback instead of a name): the file must stay pure data.
