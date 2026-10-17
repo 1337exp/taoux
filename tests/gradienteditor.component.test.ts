@@ -104,9 +104,9 @@ describe('TaoxGradientEditor: клавиатура', () => {
     let w: VueWrapper;
     afterEach(() => w?.unmount());
 
-    it('в порядке табуляции только выбранная ручка, у ручек роль и значения для скринридеров', async () => {
+    it('каждая ручка в порядке табуляции (стрелки двигают значение, поэтому переходить между ручками можно только Tab), роль и значения для скринридеров', async () => {
         w = mountBar([stop(0), stop(0.5), stop(1)], { selected: 1 });
-        expect(handles(w).map((h) => h.attributes('tabindex'))).toEqual(['-1', '0', '-1']);
+        expect(handles(w).map((h) => h.attributes('tabindex'))).toEqual(['0', '0', '0']);
         expect(handles(w)[1]!.attributes('role')).toBe('slider');
         expect(handles(w)[1]!.attributes('aria-valuenow')).toBe('0.5');
         expect(handles(w)[1]!.attributes('aria-valuetext')).toBe('50%');

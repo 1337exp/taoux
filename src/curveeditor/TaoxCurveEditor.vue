@@ -244,7 +244,7 @@ const labelOf = (i: number, p: CurvePoint) => (props.pointLabel ? props.pointLab
             :cy="py(p.v)"
             r="5"
             :data-index="i"
-            :tabindex="i === Math.min(selected, points.length - 1) ? 0 : -1"
+            tabindex="0"
             role="button"
             :aria-label="labelOf(i, p)"
             @focus="emit('update:selected', i)"

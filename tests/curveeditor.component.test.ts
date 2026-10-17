@@ -163,9 +163,9 @@ describe('TaoxCurveEditor: клавиатура', () => {
     let w: VueWrapper;
     afterEach(() => w?.unmount());
 
-    it('в порядке табуляции только выбранная точка, фокус выбирает точку', async () => {
+    it('каждая точка в порядке табуляции (стрелки двигают точку, поэтому переходить между точками можно только Tab), фокус выбирает точку', async () => {
         w = mountCurve({ selected: 1 });
-        expect(dots(w).map((d) => d.attributes('tabindex'))).toEqual(['-1', '0', '-1']);
+        expect(dots(w).map((d) => d.attributes('tabindex'))).toEqual(['0', '0', '0']);
         await dots(w)[2]!.trigger('focus');
         expect(last(w.emitted('update:selected')!)).toEqual([2]);
     });

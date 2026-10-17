@@ -145,7 +145,7 @@ function onBarClick(e: MouseEvent) {
             class="tx-gradient-stop"
             :class="{ on: i === selected }"
             :style="{ left: `${s.t * 100}%`, color: stopColor(s) }"
-            :tabindex="i === Math.min(selected, modelValue.length - 1) ? 0 : -1"
+            tabindex="0"
             role="slider"
             aria-orientation="horizontal"
             aria-valuemin="0"
