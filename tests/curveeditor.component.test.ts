@@ -242,6 +242,23 @@ describe('TaoxCurveEditor: фокус после правки', () => {
 });
 
 describe('TaoxCurveEditor: подписи осей', () => {
+    it('значения выбранной точки показаны на осях и следуют за выбором и перетаскиванием', async () => {
+        const w = mountCurve({ selected: 1 });
+        const tags = () => w.findAll('.tx-curve-tag').map((t) => t.text());
+        expect(tags()).toEqual(['0.5', '1']); // время, значение
+        expect(w.findAll('.tx-curve-guide')).toHaveLength(2);
+
+        await w.setProps({ selected: 0 });
+        expect(tags()).toEqual(['0', '0']);
+
+        await w.setProps({ selected: 1 });
+        await dots(w)[1]!.trigger('pointerdown', { clientX: x(0.5), clientY: y(1), pointerId: 1, button: 0 });
+        await dots(w)[1]!.trigger('pointermove', { clientX: x(0.3), clientY: y(0.8), pointerId: 1 });
+        await w.setProps({ modelValue: model(w) });
+        expect(tags()).toEqual(['0.3', '0.8']);
+        w.unmount();
+    });
+
     it('крайние цифры каждой оси выделены, средние нет', () => {
         const w = mountCurve();
         const labels = w.findAll('.tx-curve-label');

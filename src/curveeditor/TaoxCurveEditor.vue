@@ -77,6 +77,26 @@ const path = computed(() => {
 });
 const fmt = (n: number) => String(Math.round(n * 1000) / 1000);
 
+// Значения выбранной точки на осях: время под графиком, значение слева. Они видны, пока точку тянут, и не надо искать глазами поля.
+const CHAR_W = 4.6;
+const tagWidth = (text: string) => text.length * CHAR_W + 5;
+const tags = computed(() => {
+    const p = points.value[Math.min(props.selected, points.value.length - 1)];
+    if (!p) return null;
+    const t = fmt(p.t);
+    const v = fmt(p.v);
+    const wt = tagWidth(t);
+    const wv = tagWidth(v);
+    const cx = Math.min(W - wt / 2 - 1, Math.max(wt / 2 + 1, px(p.t)));
+    const cy = Math.min(PAD_T + PLOT_H - 5, Math.max(PAD_T + 5, py(p.v)));
+    return {
+        x: px(p.t),
+        y: py(p.v),
+        t: { text: t, cx, w: wt },
+        v: { text: v, cy, w: wv },
+    };
+});
+
 interface PointerSample {
     clientX: number;
     clientY: number;
@@ -331,6 +351,15 @@ const labelOf = (i: number, p: CurvePoint) => (props.pointLabel ? props.pointLab
         <text v-for="(v, i) in labelsV" :key="`lv${v}`" class="tx-curve-label" :class="{ edge: i === 0 || i === labelsV.length - 1 }" :x="PAD_L - 4" :y="py(v)" text-anchor="end" dominant-baseline="middle">{{ fmt(v) }}</text>
         <text v-for="x in labelsT" :key="`lt${x}`" class="tx-curve-label" :class="{ edge: x === 0 || x === 1 }" :x="px(x)" :y="H - 4" :text-anchor="x === 0 ? 'start' : x === 1 ? 'end' : 'middle'">{{ fmt(x) }}</text>
 
+        <g v-if="tags" class="tx-curve-tags" aria-hidden="true">
+            <line class="tx-curve-guide" :x1="tags.x" :x2="tags.x" :y1="tags.y" :y2="PAD_T + PLOT_H" />
+            <line class="tx-curve-guide" :x1="PAD_L" :x2="tags.x" :y1="tags.y" :y2="tags.y" />
+            <rect class="tx-curve-tag-bg" :x="tags.t.cx - tags.t.w / 2" :y="H - 12" :width="tags.t.w" height="11" rx="2" />
+            <text class="tx-curve-tag" :x="tags.t.cx" :y="H - 4" text-anchor="middle">{{ tags.t.text }}</text>
+            <rect class="tx-curve-tag-bg" :x="PAD_L - 3 - tags.v.w" :y="tags.v.cy - 5.5" :width="tags.v.w" height="11" rx="2" />
+            <text class="tx-curve-tag" :x="PAD_L - 5" :y="tags.v.cy" text-anchor="end" dominant-baseline="middle">{{ tags.v.text }}</text>
+        </g>
+
         <path class="tx-curve-line" :d="path" />
 
         <!-- Метка «B» над началом участка с Безье: видно, что у точки есть ручки, даже когда она не выбрана -->
@@ -405,6 +434,27 @@ const labelOf = (i: number, p: CurvePoint) => (props.pointLabel ? props.pointLab
 .tx-curve-grid.major {
     stroke-width: 1;
     opacity: 1;
+}
+
+.tx-curve-guide {
+    stroke: var(--tx-curve-accent, #4fc3f7);
+    stroke-width: 1;
+    stroke-dasharray: 2 3;
+    opacity: 0.45;
+    pointer-events: none;
+}
+
+.tx-curve-tag-bg {
+    fill: var(--tx-curve-bg, #15171b);
+    pointer-events: none;
+}
+
+.tx-curve-tag {
+    fill: var(--tx-curve-accent, #4fc3f7);
+    font-size: 8px;
+    font-weight: 700;
+    pointer-events: none;
+    user-select: none;
 }
 
 .tx-curve-label.edge {
