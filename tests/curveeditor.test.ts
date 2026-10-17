@@ -90,7 +90,10 @@ describe('переходы между точками', () => {
         const flat = valueBounds([{ t: 0, v: 0 }, { t: 1, v: 1 }]);
         const overshoot = valueBounds([{ t: 0, v: 0, ease: 'back-out' as const }, { t: 1, v: 1 }]);
         expect(overshoot.max).toBeGreaterThan(flat.max);
-        expect(valueBounds([{ t: 0, v: 0, ease: 'back-out' as const }, { t: 1, v: 1 }], 0, 1)).toEqual({ min: 0, max: 1 }); // заданные границы главнее
+        const fixed = valueBounds([{ t: 0, v: 0, ease: 'back-in' as const }, { t: 1, v: 1 }], 0, 1);
+        expect(fixed.min).toBeLessThan(0); // заступ раздвигает и заданные границы: иначе он спрятан за краем
+        expect(valueBounds([{ t: 0, v: 0, ease: 'cubic-out' as const }, { t: 1, v: 1 }], 0, 1)).toEqual({ min: 0, max: 1 });
+        expect(valueBounds([{ t: 0, v: 0, ease: { bezier: [0.2, -1, 0.8, 1] } }, { t: 1, v: 1 }], 0).min).toBeLessThan(0); // ручка ниже нуля
     });
 
     it('вид растёт вместе с ручками Безье', () => {

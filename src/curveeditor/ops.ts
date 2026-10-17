@@ -89,6 +89,15 @@ export function valueBounds(points: readonly CurvePoint[], min?: number, max?: n
         lo = Math.min(lo, p.v);
         hi = Math.max(hi, p.v);
     }
+    // то, что выходит за значения точек (заступ, ручки): границы поля это допустимые значения точек, а видеть это нужно всё
+    let outLo = Infinity;
+    let outHi = -Infinity;
+    const see = (v: number) => {
+        lo = Math.min(lo, v);
+        hi = Math.max(hi, v);
+        outLo = Math.min(outLo, v);
+        outHi = Math.max(outHi, v);
+    };
     // переходы с заступом (back, elastic, Безье) выходят за значения точек: вид подбираем по самой кривой
     for (let i = 0; i < points.length - 1; i++) {
         const a = points[i]!;
@@ -96,18 +105,13 @@ export function valueBounds(points: readonly CurvePoint[], min?: number, max?: n
         // ручки Безье тоже должны попадать в вид: иначе уехавшую за край ручку не достать
         if (typeof a.ease === 'object') {
             const dv = points[i + 1]!.v - a.v;
-            for (const y of [a.ease.bezier[1], a.ease.bezier[3]]) {
-                lo = Math.min(lo, a.v + y * dv);
-                hi = Math.max(hi, a.v + y * dv);
-            }
+            for (const y of [a.ease.bezier[1], a.ease.bezier[3]]) see(a.v + y * dv);
         }
-        for (const s of sampleSegment(points[i]!, points[i + 1]!)) {
-            lo = Math.min(lo, s.v);
-            hi = Math.max(hi, s.v);
-        }
+        for (const s of sampleSegment(points[i]!, points[i + 1]!)) see(s.v);
     }
     const auto = { min: lo, max: hi === lo ? lo + 1 : hi * 1.1 };
-    const a = min ?? auto.min;
-    const b = max ?? auto.max;
+    // заданная граница фиксирует вид, но заступ и ручки её раздвигают: так они не прячутся за край
+    const a = min === undefined ? auto.min : Math.min(min, outLo);
+    const b = max === undefined ? auto.max : Math.max(max, outHi);
     return b > a ? { min: a, max: b } : { min: a, max: a + 1 };
 }
