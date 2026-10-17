@@ -328,8 +328,8 @@ const labelOf = (i: number, p: CurvePoint) => (props.pointLabel ? props.pointLab
         <line v-for="x in gridT" :key="`gt${x}`" class="tx-curve-grid" :class="{ major: isMajorT(x) }" :x1="px(x)" :x2="px(x)" :y1="PAD_T" :y2="H - PAD_B" />
         <line v-for="v in gridV" :key="`gv${v}`" class="tx-curve-grid" :class="{ major: isMajorV(v) }" :x1="PAD_L" :x2="W - PAD_R" :y1="py(v)" :y2="py(v)" />
 
-        <text v-for="v in labelsV" :key="`lv${v}`" class="tx-curve-label" :x="PAD_L - 4" :y="py(v)" text-anchor="end" dominant-baseline="middle">{{ fmt(v) }}</text>
-        <text v-for="x in labelsT" :key="`lt${x}`" class="tx-curve-label" :x="px(x)" :y="H - 4" :text-anchor="x === 0 ? 'start' : x === 1 ? 'end' : 'middle'">{{ fmt(x) }}</text>
+        <text v-for="(v, i) in labelsV" :key="`lv${v}`" class="tx-curve-label" :class="{ edge: i === 0 || i === labelsV.length - 1 }" :x="PAD_L - 4" :y="py(v)" text-anchor="end" dominant-baseline="middle">{{ fmt(v) }}</text>
+        <text v-for="x in labelsT" :key="`lt${x}`" class="tx-curve-label" :class="{ edge: x === 0 || x === 1 }" :x="px(x)" :y="H - 4" :text-anchor="x === 0 ? 'start' : x === 1 ? 'end' : 'middle'">{{ fmt(x) }}</text>
 
         <path class="tx-curve-line" :d="path" />
 
@@ -380,6 +380,7 @@ const labelOf = (i: number, p: CurvePoint) => (props.pointLabel ? props.pointLab
 /*
  * Настройка через CSS-переменные на любом предке:
  *   --tx-curve-bg, --tx-curve-border, --tx-curve-grid, --tx-curve-label, --tx-curve-accent,
+ *   --tx-curve-text (цифры у краёв осей: начало и конец шкалы, ярче остальных),
  *   --tx-curve-dot-opacity (непрозрачность невыбранных точек, по умолчанию 0.3).
  */
 .tx-curve {
@@ -404,6 +405,10 @@ const labelOf = (i: number, p: CurvePoint) => (props.pointLabel ? props.pointLab
 .tx-curve-grid.major {
     stroke-width: 1;
     opacity: 1;
+}
+
+.tx-curve-label.edge {
+    fill: var(--tx-curve-text, #d6d9e0);
 }
 
 .tx-curve-label {

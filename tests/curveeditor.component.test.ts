@@ -241,6 +241,19 @@ describe('TaoxCurveEditor: фокус после правки', () => {
     });
 });
 
+describe('TaoxCurveEditor: подписи осей', () => {
+    it('крайние цифры каждой оси выделены, средние нет', () => {
+        const w = mountCurve();
+        const labels = w.findAll('.tx-curve-label');
+        const edge = labels.filter((l) => l.classes('edge')).map((l) => l.text());
+        expect(edge).toContain('0');
+        expect(edge).toContain('1');
+        const times = labels.filter((l) => l.attributes('y') === '128'); // нижний ряд: время
+        expect(times.map((l) => l.classes('edge'))).toEqual([true, false, false, false, true]);
+        w.unmount();
+    });
+});
+
 describe('TaoxCurveEditor: переходы и ручки Безье', () => {
     let w: VueWrapper;
     afterEach(() => w?.unmount());

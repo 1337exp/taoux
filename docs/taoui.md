@@ -54,6 +54,7 @@ Put this into the project's global CSS. The variables are set on `:root`, so a T
     --tx-curve-border: var(--tao-color-border);
     --tx-curve-grid: var(--tao-color-border);
     --tx-curve-label: var(--tao-color-text-muted);
+    --tx-curve-text: var(--tao-color-text);
     --tx-curve-accent: var(--tao-color-accent);
 
     /* Gradient editor */

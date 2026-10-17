@@ -166,6 +166,7 @@ function setDirection(v: unknown) {
     --tx-curve-border: var(--tao-color-border);
     --tx-curve-grid: var(--tao-color-border);
     --tx-curve-label: var(--tao-color-text-muted);
+    --tx-curve-text: var(--tao-color-text);
     --tx-curve-accent: var(--tao-color-accent);
 
     display: flex;
