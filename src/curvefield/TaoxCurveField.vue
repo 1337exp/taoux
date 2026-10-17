@@ -142,13 +142,13 @@ function setDirection(v: unknown) {
         </div>
 
         <div class="tx-curve-field__ease">
-            <label>
-                {{ text.transition }}
-                <TaoSelect size="small" :clearable="false" :options="kindOptions" :disabled="isLast" :model-value="kind" @update:model-value="setKind" />
-            </label>
-            <TaoSegmented size="small" :disabled="!hasDirection" :model-value="hasDirection ? direction : undefined" @update:model-value="setDirection">
-                <TaoSegmentedOption v-for="d in EASE_DIRECTIONS" :key="d" :value="d" :label="d" />
-            </TaoSegmented>
+            <span class="tx-curve-field__title" aria-hidden="true">{{ text.transition }}</span>
+            <div class="tx-curve-field__ease-row" role="group" :aria-label="text.transition">
+                <TaoSelect class="tx-curve-field__kind" size="small" :clearable="false" :options="kindOptions" :disabled="isLast" :model-value="kind" @update:model-value="setKind" />
+                <TaoSegmented size="small" :disabled="!hasDirection" :model-value="hasDirection ? direction : undefined" @update:model-value="setDirection">
+                    <TaoSegmentedOption v-for="d in EASE_DIRECTIONS" :key="d" :value="d" :label="d" />
+                </TaoSegmented>
+            </div>
         </div>
 
         <div class="tx-curve-field__bar">
@@ -179,8 +179,7 @@ function setDirection(v: unknown) {
     gap: 8px;
 }
 
-.tx-curve-field__fields > label,
-.tx-curve-field__ease > label {
+.tx-curve-field__fields > label {
     display: flex;
     flex-direction: column;
     gap: 2px;
@@ -191,7 +190,28 @@ function setDirection(v: unknown) {
 .tx-curve-field__ease {
     display: flex;
     flex-direction: column;
+    gap: 2px;
+}
+
+.tx-curve-field__title {
+    color: var(--tao-color-text-muted);
+    font-size: 11px;
+}
+
+/* Список и направление в одну строку: список забирает остаток, переключатель держит свою ширину */
+.tx-curve-field__ease-row {
+    display: flex;
+    align-items: center;
     gap: 6px;
+}
+
+.tx-curve-field__kind {
+    flex: 1;
+    min-width: 0;
+}
+
+.tx-curve-field__ease-row > :last-child {
+    flex: none;
 }
 
 .tx-curve-field__bar {
