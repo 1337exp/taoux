@@ -243,7 +243,7 @@ describe('TaoxCurveEditor: фокус после правки', () => {
 
 describe('TaoxCurveEditor: подписи осей', () => {
     it('значения выбранной точки показаны на осях и следуют за выбором и перетаскиванием', async () => {
-        const w = mountCurve({ selected: 1 });
+        const w = mountCurve({ selected: 1, guides: 'values' });
         const tags = () => w.findAll('.tx-curve-tag').map((t) => t.text());
         expect(tags()).toEqual(['0.5', '1']); // время, значение
         expect(w.findAll('.tx-curve-guide')).toHaveLength(2);
@@ -267,7 +267,11 @@ describe('TaoxCurveEditor: подписи осей', () => {
         expect(l.findAll('.tx-curve-guide')).toHaveLength(2);
         expect(l.findAll('.tx-curve-tag')).toHaveLength(0);
         l.unmount();
-        const v = mountCurve({ selected: 1 });
+        const d = mountCurve({ selected: 1 }); // по умолчанию lines
+        expect(d.findAll('.tx-curve-guide')).toHaveLength(2);
+        expect(d.findAll('.tx-curve-tag')).toHaveLength(0);
+        d.unmount();
+        const v = mountCurve({ selected: 1, guides: 'values' });
         expect(v.findAll('.tx-curve-guide')).toHaveLength(2);
         expect(v.findAll('.tx-curve-tag')).toHaveLength(2);
         v.unmount();

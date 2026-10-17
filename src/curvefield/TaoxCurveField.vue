@@ -25,13 +25,13 @@ const props = withDefaults(
         snap?: boolean;
         /** Надписи на языке приложения; недостающие берутся английские. */
         labels?: Partial<CurveFieldLabels>;
-        /** Направляющие от выбранной точки к осям: `off`, `lines` или `values` (по умолчанию). */
+        /** Направляющие от выбранной точки к осям: `off`, `lines` (по умолчанию) или `values`. */
         guides?: CurveGuides;
         /** Подписи для скринридеров: см. TaoxCurveEditor. */
         pointLabel?: (index: number, point: CurvePoint) => string;
         handleLabel?: (n: number, index: number) => string;
     }>(),
-    { stepT: 0.05, snap: true, guides: 'values' },
+    { stepT: 0.05, snap: true, guides: 'lines' },
 );
 const emit = defineEmits<{ 'update:modelValue': [value: CurvePoint[]]; commit: [] }>();
 

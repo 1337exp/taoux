@@ -26,13 +26,13 @@ const props = withDefaults(
         pointLabel?: (index: number, point: CurvePoint) => string;
         /**
          * Направляющие от выбранной точки к осям: `off` нет, `lines` только пунктирные линии, `values` линии и значения точки на осях.
-         * По умолчанию `values`.
+         * По умолчанию `lines`: заметно, но не перегружает.
          */
         guides?: CurveGuides;
         /** Подпись ручки Безье для скринридеров (n: 1 или 2); по умолчанию «Bezier handle n». */
         handleLabel?: (n: number, index: number) => string;
     }>(),
-    { selected: 0, snap: true, stepT: 0.05, majorT: 0.25, guides: 'values' },
+    { selected: 0, snap: true, stepT: 0.05, majorT: 0.25, guides: 'lines' },
 );
 const emit = defineEmits<{
     'update:modelValue': [value: CurvePoint[]];

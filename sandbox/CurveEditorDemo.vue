@@ -28,6 +28,8 @@ const make = (title: string, note: string, initial: CurvePoint[], min?: number, 
 });
 
 const snap = ref(true);
+const guides = ref<'off' | 'lines' | 'values'>('lines');
+const guideOptions = ['off', 'lines', 'values'].map((v) => ({ value: v, label: v }));
 
 // Разные границы значений: именно на них держится сетка, зажим и автопрокрутка
 const cases = ref<Case[]>([
@@ -65,12 +67,15 @@ function setField(c: Case, field: 't' | 'v', value: number | null) {
 
 <template>
     <SandboxShell title="curveeditor" note="Двойной клик добавляет точку, Alt+клик или Delete убирает, Shift временно меняет режим шага, у края графика вид едет за точкой.">
-        <TaoSwitch v-model="snap" label="Шаг сетки" />
+        <div class="row">
+            <TaoSwitch v-model="snap" label="Шаг сетки" />
+            <TaoSelect v-model="guides" size="small" :clearable="false" :options="guideOptions" />
+        </div>
 
         <div class="grid">
             <section v-for="c in cases" :key="c.title" class="case">
                 <h2>{{ c.title }} <small>{{ c.note }}</small></h2>
-                <TaoxCurveEditor v-model="c.value" v-model:selected="c.selected" :min="c.min" :max="c.max" :precision="c.precision" :snap="snap" />
+                <TaoxCurveEditor v-model="c.value" v-model:selected="c.selected" :min="c.min" :max="c.max" :precision="c.precision" :snap="snap" :guides="guides" />
                 <div class="divider">Ниже обвязка на TaoUI: самого редактора это не касается</div>
                 <div class="row">
                     <TaoInputNumber class="grow" size="small" :min="0" :max="1" :step="0.05" :precision="c.precision" :controls="false" :model-value="current(c).t" @update:model-value="(x) => setField(c, 't', x)" />
