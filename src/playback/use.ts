@@ -2,14 +2,23 @@ import { computed, onBeforeUnmount, reactive, toRefs, type ComputedRef, type Wri
 import { createPlayback, type Playback, type PlaybackOptions } from './core';
 
 export interface UsePlayback {
-    /** Время, с. Запись перематывает (`v-model` у таймлайна). */
+    /**
+     * Time, s. Writing seeks (`v-model` of the timeline).
+     * Время, с. Запись перематывает (`v-model` у таймлайна).
+     */
     time: WritableComputedRef<number>;
-    /** Идёт ли воспроизведение. Запись включает и выключает (`v-model:playing`). */
+    /**
+     * Whether playback is running. Writing starts and stops it (`v-model:playing`).
+     * Идёт ли воспроизведение. Запись включает и выключает (`v-model:playing`).
+     */
     playing: WritableComputedRef<boolean>;
     length: ComputedRef<number>;
     loop: WritableComputedRef<boolean>;
     speed: WritableComputedRef<number>;
-    /** Доля пройденного 0…1. */
+    /**
+     * The fraction played, 0…1.
+     * Доля пройденного 0…1.
+     */
     progress: ComputedRef<number>;
     play(): void;
     pause(): void;
@@ -17,11 +26,17 @@ export interface UsePlayback {
     restart(): void;
     seek(time: number): void;
     setLength(length: number): void;
-    /** Модель без Vue: для случаев, когда нужен её полный API (advance, subscribe). */
+    /**
+     * The model without Vue: for cases that need its full API (advance, subscribe).
+     * Модель без Vue: для случаев, когда нужен её полный API (advance, subscribe).
+     */
     playback: Playback;
 }
 
-/** Воспроизведение для компонента Vue: реактивные время и состояние поверх `createPlayback`; при размонтировании останавливается. */
+/**
+ * Playback for a Vue component: reactive time and state on top of `createPlayback`; it stops on unmount.
+ * Воспроизведение для компонента Vue: реактивные время и состояние поверх `createPlayback`; при размонтировании останавливается.
+ */
 export function usePlayback(options: PlaybackOptions): UsePlayback {
     const playback = createPlayback(options);
     const state = reactive({ time: playback.time, length: playback.length, playing: playback.playing, loop: playback.loop, speed: playback.speed });

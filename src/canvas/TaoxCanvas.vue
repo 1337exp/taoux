@@ -6,10 +6,16 @@ import { useCanvasGestures } from './useCanvasGestures';
 
 const props = withDefaults(
     defineProps<{
-        /** Мост к приложению. Должен быть стабильным объектом: холст берёт его один раз. */
+        /**
+         * The bridge to the app. Must be a stable object: the canvas takes it once.
+         * Мост к приложению. Должен быть стабильным объектом: холст берёт его один раз.
+         */
         host: CanvasHost<P>;
         options: CanvasOptions<P>;
-        /** Шаг мелкой сетки на фоне, мировые единицы. */
+        /**
+         * The step of the fine background grid, world units.
+         * Шаг мелкой сетки на фоне, мировые единицы.
+         */
         grid?: number;
     }>(),
     { grid: GRID },
@@ -64,7 +70,7 @@ defineExpose({ root });
         @contextmenu.prevent
         @dblclick="handlers.onDblClick"
     >
-        <!-- Мир: сюда приложение кладёт контейнеры, слой связей и ноды в нужном порядке. -->
+        <!-- The world: the app puts containers, the links layer and nodes here in the right order. / Мир: сюда приложение кладёт контейнеры, слой связей и ноды в нужном порядке. -->
         <div class="tx-canvas-world" :style="world">
             <slot />
         </div>
@@ -72,13 +78,14 @@ defineExpose({ root });
         <div v-if="marquee" class="tx-canvas-marquee" :style="marqueeStyle" />
         <div v-if="debug" class="tx-canvas-debug">{{ debugText }}</div>
 
-        <!-- Поверх мира, в экранных координатах. -->
+        <!-- On top of the world, in screen coordinates. / Поверх мира, в экранных координатах. -->
         <slot name="overlay" />
     </div>
 </template>
 
 <style>
 /*
+ * Configured with CSS variables on the canvas or an ancestor:
  * Настройка через CSS-переменные на холсте или предке:
  *   --tx-canvas-bg, --tx-canvas-grid-minor, --tx-canvas-grid-major, --tx-canvas-accent, --tx-canvas-accent-subtle.
  */
@@ -95,7 +102,7 @@ defineExpose({ root });
         linear-gradient(to right, var(--tx-canvas-grid-major, rgba(255, 255, 255, 0.07)) 1px, transparent 1px),
         linear-gradient(to bottom, var(--tx-canvas-grid-major, rgba(255, 255, 255, 0.07)) 1px, transparent 1px);
     touch-action: none;
-    /* Сенсор: без выделения текста, лупы и подсветки тапа; в полях ввода текст выделяется как обычно. */
+    /* Touch: no text selection, magnifier or tap highlight; text in inputs is selected as usual. / Сенсор: без выделения текста, лупы и подсветки тапа; в полях ввода текст выделяется как обычно. */
     -webkit-user-select: none;
     user-select: none;
     -webkit-touch-callout: none;

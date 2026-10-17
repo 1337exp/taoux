@@ -1,4 +1,6 @@
 /**
+ * Camera: screen point = world * z + (x, y).
+ * Screen coordinates here are relative to the top-left corner of the canvas.
  * Камера: экранная точка = мировая * z + (x, y).
  * Экранные координаты здесь — относительно левого верхнего угла холста.
  */
@@ -25,7 +27,10 @@ export function panBy(cam: Camera, dx: number, dy: number): Camera {
     return { ...cam, x: cam.x + dx, y: cam.y + dy };
 }
 
-/** Масштаб в `factor` раз; точка под курсором (sx, sy) остаётся на месте. */
+/**
+ * Zoom by `factor`; the point under the cursor (sx, sy) stays where it is.
+ * Масштаб в `factor` раз; точка под курсором (sx, sy) остаётся на месте.
+ */
 export function zoomAt(cam: Camera, sx: number, sy: number, factor: number): Camera {
     const z = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, cam.z * factor));
     const k = z / cam.z;

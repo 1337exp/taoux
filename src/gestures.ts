@@ -1,22 +1,39 @@
 /**
+ * Recognition of touch gestures. Pure logic with no DOM and no timers: time and coordinates come from outside,
+ * so everything is covered by tests. Events and timers (long press) live in EditorCanvas.
  * Распознавание сенсорных жестов. Чистая логика без DOM и таймеров: время и координаты приходят снаружи,
  * поэтому всё проверяется тестами. События и таймеры (долгое нажатие) живут в EditorCanvas.
  */
 
-/** На сколько px палец может сместиться и всё ещё считаться «стоящим на месте». */
+/**
+ * By how many px a finger may move and still count as "standing still".
+ * На сколько px палец может сместиться и всё ещё считаться «стоящим на месте».
+ */
 export const TAP_SLOP_PX = 8;
-/** Дольше этого касание уже не тап. */
+/**
+ * A touch longer than this is no longer a tap.
+ * Дольше этого касание уже не тап.
+ */
 export const TAP_MAX_MS = 300;
-/** Сколько надо держать палец неподвижно для долгого нажатия. */
+/**
+ * How long the finger must be held still for a long press.
+ * Сколько надо держать палец неподвижно для долгого нажатия.
+ */
 export const LONG_PRESS_MS = 500;
-/** Второй тап должен прийти не позже и не дальше этого от первого. */
+/**
+ * The second tap must come no later and no further than this from the first.
+ * Второй тап должен прийти не позже и не дальше этого от первого.
+ */
 export const DOUBLE_TAP_MS = 300;
 export const DOUBLE_TAP_RADIUS_PX = 30;
 
 export interface Sample {
     x: number;
     y: number;
-    /** Время, мс (любая монотонная шкала). */
+    /**
+     * Time, ms (any monotonic scale).
+     * Время, мс (любая монотонная шкала).
+     */
     t: number;
 }
 
@@ -24,7 +41,10 @@ const dist = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.
 
 export type TapResult = 'tap' | 'double' | null;
 
-/** Разбирает касание одним пальцем: тап, двойной тап, сдвиг, готовность долгого нажатия. */
+/**
+ * Parses a one-finger touch: tap, double tap, movement, readiness of a long press.
+ * Разбирает касание одним пальцем: тап, двойной тап, сдвиг, готовность долгого нажатия.
+ */
 export class TapRecognizer {
     private start: Sample | null = null;
     private moved = false;
@@ -32,6 +52,8 @@ export class TapRecognizer {
     private doubleDown = false;
 
     /**
+     * The finger landed. Returns true if this is the second touch of a double tap (it is not finished yet:
+     * a drag may follow, as in "double tap and drag").
      * Палец лёг. Возвращает true, если это второе касание двойного тапа (оно ещё не закончено:
      * дальше может быть протяжка, как «двойной тап и тянуть»).
      */
@@ -43,7 +65,10 @@ export class TapRecognizer {
         return this.doubleDown;
     }
 
-    /** Палец сдвинулся. Возвращает true, если он уже ушёл дальше допуска (не тап и не долгое нажатие). */
+    /**
+     * The finger moved. Returns true if it already left the slop (neither a tap nor a long press).
+     * Палец сдвинулся. Возвращает true, если он уже ушёл дальше допуска (не тап и не долгое нажатие).
+     */
     move(s: Sample): boolean {
         if (this.start && !this.moved && dist(s, this.start) > TAP_SLOP_PX) this.moved = true;
         return this.moved;
@@ -53,12 +78,18 @@ export class TapRecognizer {
         return this.moved;
     }
 
-    /** Пора ли считать касание долгим нажатием: палец лежит на месте дольше `LONG_PRESS_MS`. */
+    /**
+     * Whether it is time to count the touch as a long press: the finger lies still longer than `LONG_PRESS_MS`.
+     * Пора ли считать касание долгим нажатием: палец лежит на месте дольше `LONG_PRESS_MS`.
+     */
     longPressDue(now: number): boolean {
         return this.start !== null && !this.moved && now - this.start.t >= LONG_PRESS_MS;
     }
 
-    /** Палец поднят: что это было. После `double` следующий тап снова считается одиночным. */
+    /**
+     * The finger was lifted: what that was. After `double` the next tap counts as single again.
+     * Палец поднят: что это было. После `double` следующий тап снова считается одиночным.
+     */
     up(s: Sample): TapResult {
         const start = this.start;
         this.start = null;
@@ -77,7 +108,10 @@ export class TapRecognizer {
         return 'tap';
     }
 
-    /** Жест оказался чем-то другим (долгое нажатие, щипок, прерывание): забываем и текущее касание, и предыдущий тап. */
+    /**
+     * The gesture turned out to be something else (a long press, a pinch, an interruption): forget both the current touch and the previous tap.
+     * Жест оказался чем-то другим (долгое нажатие, щипок, прерывание): забываем и текущее касание, и предыдущий тап.
+     */
     cancel(): void {
         this.start = null;
         this.lastTap = null;
@@ -86,15 +120,22 @@ export class TapRecognizer {
 }
 
 //--------------------------------------------------
+// Pinch and a two-finger gesture
 // Щипок и жест двумя пальцами
 
 type Point = { x: number; y: number };
 
 export interface Pinch {
-    /** Центр между пальцами. */
+    /**
+     * The centre between the fingers.
+     * Центр между пальцами.
+     */
     cx: number;
     cy: number;
-    /** Расстояние между пальцами; 0, если палец один (тогда только сдвиг). */
+    /**
+     * The distance between the fingers; 0 if there is one finger (then only a shift).
+     * Расстояние между пальцами; 0, если палец один (тогда только сдвиг).
+     */
     dist: number;
 }
 
@@ -104,24 +145,48 @@ export function pinchOf(a: Point, b?: Point): Pinch {
 }
 
 export interface PinchStep {
-    /** Во сколько раз изменить масштаб. */
+    /**
+     * By how many times to change the scale.
+     * Во сколько раз изменить масштаб.
+     */
     factor: number;
-    /** Вокруг какой точки (центр до шага). */
+    /**
+     * Around which point (the centre before the step).
+     * Вокруг какой точки (центр до шага).
+     */
     pivot: [number, number];
-    /** На сколько сдвинуть камеру после масштаба. */
+    /**
+     * By how much to shift the camera after the scale.
+     * На сколько сдвинуть камеру после масштаба.
+     */
     pan: [number, number];
 }
 
-/** Пока расстояние между пальцами не изменилось на столько, жест считается просто сдвигом: масштаб не трогаем. */
+/**
+ * Until the distance between the fingers has changed by this much, the gesture counts as a plain shift: the scale is not touched.
+ * Пока расстояние между пальцами не изменилось на столько, жест считается просто сдвигом: масштаб не трогаем.
+ */
 export const PINCH_ENGAGE_PX = 20;
-/** Изменения расстояния мельче этого считаем дрожанием пальцев и игнорируем. */
+/**
+ * Distance changes smaller than this count as finger jitter and are ignored.
+ * Изменения расстояния мельче этого считаем дрожанием пальцев и игнорируем.
+ */
 export const PINCH_DEADBAND_PX = 1.5;
-/** Сколько последних шагов смотрим, решая «сдвигают или масштабируют». */
+/**
+ * How many last steps we look at when deciding "shifting or scaling".
+ * Сколько последних шагов смотрим, решая «сдвигают или масштабируют».
+ */
 export const PINCH_WINDOW = 6;
-/** Для включения масштаба расстояние за окно должно меняться не меньше, чем сдвигается центр, и не меньше этого. */
+/**
+ * To turn the scale on, the distance over the window must change at least as much as the centre moves, and at least this much.
+ * Для включения масштаба расстояние за окно должно меняться не меньше, чем сдвигается центр, и не меньше этого.
+ */
 export const PINCH_DOMINANCE = 1;
 export const PINCH_MIN_NET_PX = 4;
-/** Масштаб выключается обратно, когда центр за окно уходит в столько раз дальше, чем меняется расстояние (и не меньше `PINCH_RELEASE_MIN_PX`). */
+/**
+ * The scale turns off again when the centre moves this many times further than the distance changes over the window (and at least `PINCH_RELEASE_MIN_PX`).
+ * Масштаб выключается обратно, когда центр за окно уходит в столько раз дальше, чем меняется расстояние (и не меньше `PINCH_RELEASE_MIN_PX`).
+ */
 export const PINCH_RELEASE_RATIO = 2;
 export const PINCH_RELEASE_MIN_PX = 12;
 
@@ -132,9 +197,17 @@ interface PinchDelta {
 }
 
 /**
+ * A two-finger gesture: shift and/or scale. The scale is the ratio of distances, and the distance between the fingers
+ * drifts during an ordinary two-finger shift too, so it cannot be applied just like that.
  * Жест двумя пальцами: сдвиг и/или масштаб. Масштаб считается как отношение расстояний, а расстояние между
  * пальцами при обычном сдвиге двумя пальцами тоже «плывёт», поэтому его нельзя применять просто так.
  *
+ * - The distance must change deliberately (`PINCH_ENGAGE_PX`), not build up by drift.
+ * - Over the last `PINCH_WINDOW` steps the distance must change more than the centre moves:
+ *   while the fingers are carried together, the scale does not turn on however the distance floats. We look at the signed sum:
+ *   the browser sends finger movement one at a time, and "one moved, the other caught up" cancels out.
+ * - Once the scale is on there is no jump (counting is from the current distance), and small jitter is cut by a
+ *   dead zone. If the fingers are then carried together, the scale turns off again.
  * - Расстояние должно измениться осознанно (`PINCH_ENGAGE_PX`), а не накопиться дрейфом.
  * - При этом за последние `PINCH_WINDOW` шагов расстояние должно меняться сильнее, чем сдвигается центр:
  *   пока пальцы везут вместе, масштаб не включается, как бы расстояние ни плавало. Смотрим на сумму со знаком:
@@ -142,6 +215,7 @@ interface PinchDelta {
  * - Когда масштаб включился, скачка нет (отсчёт идёт от текущего расстояния), а мелкое дрожание отсекается
  *   мёртвой зоной. Если потом пальцы повезли вместе, масштаб выключается обратно.
  *
+ * The centre shift always works.
  * Сдвиг центра работает всегда.
  */
 export class PinchTracker {
@@ -151,7 +225,10 @@ export class PinchTracker {
     private engaged = false;
     private recent: PinchDelta[] = [];
 
-    /** Новый набор пальцев (жест начался или число пальцев изменилось): отсчёт заново, скачка не будет. */
+    /**
+     * A new set of fingers (a gesture began or the number of fingers changed): count from scratch, there will be no jump.
+     * Новый набор пальцев (жест начался или число пальцев изменилось): отсчёт заново, скачка не будет.
+     */
     begin(p: Pinch): void {
         this.prev = p;
         this.startDist = p.dist;
@@ -171,6 +248,7 @@ export class PinchTracker {
             pan: [next.cx - this.prev.cx, next.cy - this.prev.cy],
         };
 
+        // With one finger (the distance is 0 either way) there is no scale.
         // С одним пальцем (расстояние 0 с любой стороны) масштаба нет.
         const twoFingers = this.startDist > 0 && next.dist > 0 && this.prev.dist > 0;
         this.recent.push({ dx: step.pan[0], dy: step.pan[1], dd: twoFingers ? next.dist - this.prev.dist : 0 });
@@ -193,9 +271,10 @@ export class PinchTracker {
             const intentional = Math.abs(next.dist - this.startDist) >= PINCH_ENGAGE_PX;
             if (intentional && netDist >= PINCH_MIN_NET_PX && netDist >= PINCH_DOMINANCE * netCenter) {
                 this.engaged = true;
-                this.baseDist = next.dist; // отсчёт с этого момента: без скачка
+                this.baseDist = next.dist; // counted from this moment: no jump / отсчёт с этого момента: без скачка
             }
         } else if (netCenter >= PINCH_RELEASE_MIN_PX && netCenter >= PINCH_RELEASE_RATIO * netDist) {
+            // The fingers were carried together: the scale turns off, the new threshold is counted from the current distance.
             // Пальцы повезли вместе: масштаб выключаем, новый порог отсчитываем от нынешнего расстояния.
             this.engaged = false;
             this.startDist = next.dist;

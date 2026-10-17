@@ -4,17 +4,35 @@ import { addStop, DEFAULT_PRECISION, gradientCss, moveStop, pickFromStack, remov
 
 const props = withDefaults(
     defineProps<{
-        /** Остановки по возрастанию t (минимум одна). */
+        /**
+         * Stops in ascending t (at least one).
+         * Остановки по возрастанию t (минимум одна).
+         */
         modelValue: readonly GradientStop[];
-        /** Индекс выбранной остановки. */
+        /**
+         * Index of the selected stop.
+         * Индекс выбранной остановки.
+         */
         selected?: number;
-        /** Подсказка при наведении на полосу. */
+        /**
+         * A hint on hover over the bar.
+         * Подсказка при наведении на полосу.
+         */
         hint?: string;
-        /** Знаков после запятой у t и непрозрачности в том, что компонент отдаёт; `null` не обрезает. По умолчанию три; компоненты цвета получают на два знака больше. */
+        /**
+         * Decimals of t and opacity in what the component emits; `null` does not round. Three by default; the colour components get two more.
+         * Знаков после запятой у t и непрозрачности в том, что компонент отдаёт; `null` не обрезает. По умолчанию три; компоненты цвета получают на два знака больше.
+         */
         precision?: number | null;
-        /** Шаг стрелки с клавиатуры по t (Shift: в 10 раз крупнее). */
+        /**
+         * The keyboard arrow step along t (Shift: 10 times larger).
+         * Шаг стрелки с клавиатуры по t (Shift: в 10 раз крупнее).
+         */
         keyStep?: number;
-        /** Подпись остановки для скринридеров; по умолчанию «Stop 1». */
+        /**
+         * The stop label for screen readers; "Stop 1" by default.
+         * Подпись остановки для скринридеров; по умолчанию «Stop 1».
+         */
         stopLabel?: (index: number, stop: GradientStop) => string;
     }>(),
     { selected: 0, precision: DEFAULT_PRECISION, keyStep: 0.01 },
@@ -22,7 +40,10 @@ const props = withDefaults(
 const emit = defineEmits<{
     'update:modelValue': [value: GradientStop[]];
     'update:selected': [index: number];
-    /** Правка закончена (отпустили, добавили, убрали): момент для записи в историю. */
+    /**
+     * An edit is finished (released, added, removed): the moment to record into history.
+     * Правка закончена (отпустили, добавили, убрали): момент для записи в историю.
+     */
     commit: [];
 }>();
 
@@ -33,13 +54,22 @@ function tAt(e: PointerEvent | MouseEvent): number {
     return (e.clientX - r.left) / r.width;
 }
 
-/** Ручки ближе этого расстояния (px) считаются наложенными друг на друга. */
+/**
+ * Handles closer than this distance (px) count as overlapping each other.
+ * Ручки ближе этого расстояния (px) считаются наложенными друг на друга.
+ */
 const STACK_PX = 7;
-/** Сдвиг указателя (px), после которого понятно, в какую сторону тащат стопку. */
+/**
+ * The pointer shift (px) after which it is clear which way the pile is being dragged.
+ * Сдвиг указателя (px), после которого понятно, в какую сторону тащат стопку.
+ */
 const PICK_PX = 3;
 
 let dragging = -1;
-/** Нажали на стопку наложенных ручек: какую из них взять, решает первое движение. */
+/**
+ * A pile of overlapping handles was pressed: which one to take is decided by the first movement.
+ * Нажали на стопку наложенных ручек: какую из них взять, решает первое движение.
+ */
 let pending: { cluster: number[]; x: number } | null = null;
 
 function onStopDown(e: PointerEvent, i: number) {
@@ -53,12 +83,14 @@ function onStopDown(e: PointerEvent, i: number) {
     try {
         (e.currentTarget as Element).setPointerCapture(e.pointerId);
     } catch {
+        // the pointer has already gone or the capture is unavailable: dragging works without it
         // указатель уже ушёл или захват недоступен: тянуть можно и без него
     }
 
     const width = bar.value!.getBoundingClientRect().width;
     const cluster = stackAround(props.modelValue, i, width, STACK_PX);
     dragging = i;
+    // A pile of overlapping handles: which one to take is decided by the direction of the first movement
     // Стопка наложенных ручек: какую из них взять, решит направление первого движения
     if (cluster.length > 1) pending = { cluster, x: e.clientX };
 }
@@ -85,7 +117,10 @@ function onUp() {
 
 const stopColor = (s: GradientStop) => `rgb(${s.color.map((c) => Math.round(255 * toSrgb(Math.min(1, Math.max(0, c))))).join(' ')})`;
 
-/** Клавиши остановки (фокус на ней): стрелки двигают по t, Home/End в начало и конец, Insert добавляет, Delete убирает. */
+/**
+ * Stop keys (focus on it): arrows move along t, Home/End to the start and end, Insert adds, Delete removes.
+ * Клавиши остановки (фокус на ней): стрелки двигают по t, Home/End в начало и конец, Insert добавляет, Delete убирает.
+ */
 function onStopKey(e: KeyboardEvent, i: number) {
     const stop = props.modelValue[i];
     if (!stop) return;
@@ -102,6 +137,7 @@ function onStopKey(e: KeyboardEvent, i: number) {
         emit('update:modelValue', moveStop(props.modelValue, i, to, props.precision));
         emit('commit');
     } else if (e.key === 'Insert') {
+        // between this stop and the next (for the last: between it and the previous), with the gradient colour at that point
         // между этой остановкой и следующей (у последней: между ней и предыдущей), с цветом градиента в этой точке
         e.preventDefault();
         const other = props.modelValue[i + 1] ?? props.modelValue[i - 1];
@@ -121,7 +157,10 @@ function onStopKey(e: KeyboardEvent, i: number) {
     }
 }
 
-/** Фокус на ручку `i` после перерисовки: клавиши идут к той, что выбрана, и фокус не должен оставаться на старой. */
+/**
+ * Focus on handle `i` after a re-render: keys go to the selected one, and focus must not stay on the old one.
+ * Фокус на ручку `i` после перерисовки: клавиши идут к той, что выбрана, и фокус не должен оставаться на старой.
+ */
 function focusStop(i: number) {
     void nextTick(() => bar.value?.querySelectorAll<HTMLElement>('.tx-gradient-stop')[i]?.focus());
 }
@@ -160,7 +199,7 @@ function onBarClick(e: MouseEvent) {
             @pointerup="onUp"
             @pointercancel="onUp"
         >
-            <!-- залитый треугольник цвета остановки, остриём к полосе: на светлом и тёмном фоне его видно по обводке -->
+            <!-- a filled triangle of the stop colour, tip towards the bar: on a light and a dark background it shows by its outline / залитый треугольник цвета остановки, остриём к полосе: на светлом и тёмном фоне его видно по обводке -->
             <svg viewBox="0 0 12 12">
                 <polygon class="tx-gradient-halo" points="6,0.5 11.5,11.5 0.5,11.5" />
                 <polygon points="6,0.5 11.5,11.5 0.5,11.5" />
@@ -171,16 +210,17 @@ function onBarClick(e: MouseEvent) {
 
 <style>
 /*
+ * Configured with CSS variables on any ancestor:
  * Настройка через CSS-переменные на любом предке:
  *   --tx-gradient-border, --tx-gradient-stop-border, --tx-gradient-stop-outline, --tx-gradient-accent.
  */
 .tx-gradient {
     position: relative;
     height: 22px;
-    margin-bottom: 20px; /* место под ручки остановок и отметку выбранной */
+    margin-bottom: 20px; /* room for the stop handles and the mark of the selected one / место под ручки остановок и отметку выбранной */
     border: 1px solid var(--tx-gradient-border, #2a2d33);
     border-radius: 4px;
-    /* шахматка под полосой показывает прозрачность */
+    /* a checkerboard under the bar shows transparency / шахматка под полосой показывает прозрачность */
     background-color: #fff;
     background-size: 100% 100%, 12px 12px;
     cursor: crosshair;
@@ -203,7 +243,7 @@ function onBarClick(e: MouseEvent) {
     outline: none;
 }
 
-/* фокус с клавиатуры: свечение акцентного цвета вокруг треугольника */
+/* keyboard focus: a glow of the accent colour around the triangle / фокус с клавиатуры: свечение акцентного цвета вокруг треугольника */
 .tx-gradient-stop:focus-visible svg {
     filter: drop-shadow(0 0 3px var(--tx-gradient-accent, #4fc3f7));
 }
@@ -215,7 +255,7 @@ function onBarClick(e: MouseEvent) {
     overflow: visible;
 }
 
-/* тёмная обводка в 1px снаружи основной: ручка видна и на светлых цветах полосы за ней */
+/* a dark 1px outline outside the main one: the handle is visible on light bar colours behind it too / тёмная обводка в 1px снаружи основной: ручка видна и на светлых цветах полосы за ней */
 .tx-gradient-stop .tx-gradient-halo {
     fill: none;
     stroke: var(--tx-gradient-stop-outline, rgba(0, 0, 0, 0.85));
@@ -224,13 +264,15 @@ function onBarClick(e: MouseEvent) {
 }
 
 .tx-gradient-stop polygon:not(.tx-gradient-halo) {
-    fill: currentColor; /* цвет остановки задаёт сам компонент */
+    fill: currentColor; /* the stop colour is set by the component itself / цвет остановки задаёт сам компонент */
     stroke: var(--tx-gradient-stop-border, #5a606b);
     stroke-width: 1.5;
     stroke-linejoin: round;
 }
 
 /*
+ * The selected handle: above the others (not hidden in a pile), slightly larger and with an accent stroke under it.
+ * The fill stays the stop colour: the accent must not argue with it, so the outline is not coloured.
  * Выбранная ручка: выше остальных (в стопке не прячется), чуть крупнее и с акцентной черточкой под ней.
  * Заливка остаётся цветом остановки: акцент не должен спорить с ним, поэтому обводку не красим.
  */

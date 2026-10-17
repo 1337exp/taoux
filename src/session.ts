@@ -5,14 +5,20 @@ import type { SavedStorage } from './storage';
 
 export type NoticeArgs = readonly (string | number)[];
 
-/** Короткое сообщение пользователю. Хранит ключ перевода: текст собирает интерфейс. */
+/**
+ * A short message to the user. Holds a translation key: the interface builds the text.
+ * Короткое сообщение пользователю. Хранит ключ перевода: текст собирает интерфейс.
+ */
 export interface SessionNotice<K extends string = string> {
     kind: 'info' | 'error';
     key: K;
     args?: NoticeArgs;
 }
 
-/** Причина отказа открыть файл; текст для пользователя собирает интерфейс по `code`. */
+/**
+ * Why opening a file was refused; the interface builds the user text from `code`.
+ * Причина отказа открыть файл; текст для пользователя собирает интерфейс по `code`.
+ */
 export interface LoadError {
     code: string;
     detail?: string | number;
@@ -22,19 +28,28 @@ export type LoadResult<D> =
     | { ok: true; doc: D; view?: Camera; dropped: number }
     | { ok: false; error: LoadError };
 
-/** Ключи сообщений, которые сессия показывает сама. Словарь приложения обязан их содержать. */
+/**
+ * Message keys the session shows by itself. The app dictionary must contain them.
+ * Ключи сообщений, которые сессия показывает сама. Словарь приложения обязан их содержать.
+ */
 export interface SessionKeys<K extends string> {
-    loaded: K; // {0} — число нод
-    loadedWithDropped: K; // {0} — число нод, {1} — сколько связей отброшено
+    loaded: K; // {0} is the number of nodes / {0} — число нод
+    loadedWithDropped: K; // {0} is the number of nodes, {1} how many links were dropped / {0} — число нод, {1} — сколько связей отброшено
     newDocument: K;
     saveFailed: K;
     restoreFailed: K;
-    /** Ключ для причины отказа открыть файл. */
+    /**
+     * The key for the reason a file was refused.
+     * Ключ для причины отказа открыть файл.
+     */
     loadError(code: string): K;
 }
 
 export interface SessionOptions<D, K extends string> {
-    /** Документ в сторе приложения. */
+    /**
+     * The document in the app store.
+     * Документ в сторе приложения.
+     */
     document: { get(): D; set(doc: D): void };
     camera: { get(): Camera; set(camera: Camera): void };
     storage: SavedStorage;
@@ -43,16 +58,31 @@ export interface SessionOptions<D, K extends string> {
         parse(text: string): LoadResult<D>;
     };
     empty(): D;
-    /** Сколько нод в документе: подставляется в сообщение об открытии файла. */
+    /**
+     * How many nodes are in the document: substituted into the message about opening a file.
+     * Сколько нод в документе: подставляется в сообщение об открытии файла.
+     */
     countNodes(doc: D): number;
     keys: SessionKeys<K>;
-    /** Документ подменён целиком (открытие, новый, восстановление): сбросить выделение, протягивание, палитру. */
+    /**
+     * The document was replaced as a whole (open, new, restore): reset the selection, the drag, the palette.
+     * Документ подменён целиком (открытие, новый, восстановление): сбросить выделение, протягивание, палитру.
+     */
     onReset?(): void;
-    /** Состояние восстановлено из истории (undo/redo): убрать ссылки на то, чего больше нет. */
+    /**
+     * The state was restored from history (undo/redo): drop references to what is gone.
+     * Состояние восстановлено из истории (undo/redo): убрать ссылки на то, чего больше нет.
+     */
     onRestore?(doc: D): void;
-    /** Пауза перед автосохранением, мс. */
+    /**
+     * The pause before autosave, ms.
+     * Пауза перед автосохранением, мс.
+     */
     autosaveDelay?: number;
-    /** Сколько секунд показывать уведомление, мс. */
+    /**
+     * How long to show a notice, ms.
+     * Сколько секунд показывать уведомление, мс.
+     */
     noticeMs?: number;
 }
 
@@ -60,6 +90,9 @@ const DEFAULT_NOTICE_MS = 5000;
 const DEFAULT_AUTOSAVE_MS = 400;
 
 /**
+ * The lifecycle of an editor document: history (undo/redo with merged edits), autosave guarded against storage
+ * failures, opening and saving a file, restore after a reload, notices.
+ * The document, the camera and the file format belong to the app, only the mechanics are here.
  * Жизненный цикл документа редактора: история (undo/redo со склейкой правок), автосохранение с защитой от сбоев
  * хранилища, открытие и сохранение файла, восстановление после перезагрузки, уведомления.
  * Документ, камера и формат файла принадлежат приложению, здесь только механика.
@@ -70,6 +103,7 @@ export function createDocumentSession<D, K extends string>(options: SessionOptio
     const autosaveDelay = options.autosaveDelay ?? DEFAULT_AUTOSAVE_MS;
 
     //---]>
+    // notices
     // уведомления
 
     const notice = ref<SessionNotice<K> | null>(null);
@@ -82,13 +116,17 @@ export function createDocumentSession<D, K extends string>(options: SessionOptio
     }
 
     //---]>
+    // autosave
     // автосохранение
 
     let autosaveOn = false;
     let saveTimer: ReturnType<typeof setTimeout> | undefined;
     let saveFailedShown = false;
 
-    /** Записывает документ и положение камеры в хранилище. */
+    /**
+     * Writes the document and the camera position to storage.
+     * Записывает документ и положение камеры в хранилище.
+     */
     function flushSave() {
         clearTimeout(saveTimer);
         saveTimer = undefined;
@@ -97,7 +135,7 @@ export function createDocumentSession<D, K extends string>(options: SessionOptio
         if (storage.write(codec.serialize(doc.get(), camera.get(), false))) {
             saveFailedShown = false;
         } else if (!saveFailedShown) {
-            saveFailedShown = true; // сообщаем один раз, а не при каждой правке
+            saveFailedShown = true; // tell once, not on every edit / сообщаем один раз, а не при каждой правке
             showNotice('error', keys.saveFailed);
         }
     }
@@ -109,6 +147,9 @@ export function createDocumentSession<D, K extends string>(options: SessionOptio
     }
 
     /**
+     * Turns autosave on. Off by default (nothing is written in tests and before restore).
+     * Edits are saved with a small delay, and at once when the tab is hidden or closed.
+     * Returns a function that turns everything off.
      * Включает автосохранение. Выключено по умолчанию (в тестах и до восстановления ничего не пишется).
      * Правки сохраняются с небольшой задержкой, а при скрытии вкладки и закрытии сразу.
      * Возвращает функцию, которая всё отключает.
@@ -130,6 +171,7 @@ export function createDocumentSession<D, K extends string>(options: SessionOptio
     }
 
     //---]>
+    // history
     // история
 
     const snapshot = () => JSON.stringify(doc.get());
@@ -140,10 +182,13 @@ export function createDocumentSession<D, K extends string>(options: SessionOptio
     function syncHistory() {
         canUndo.value = history.canUndo;
         canRedo.value = history.canRedo;
-        scheduleSave(); // документ изменился (правка, undo или redo): автосохранение подхватит
+        scheduleSave(); // the document changed (an edit, undo or redo): autosave will pick it up / документ изменился (правка, undo или redo): автосохранение подхватит
     }
 
-    /** Запоминает текущее состояние как шаг истории. Одинаковый `key` подряд склеивает правки (набор текста). */
+    /**
+     * Remembers the current state as a history step. The same `key` in a row merges edits (typing text).
+     * Запоминает текущее состояние как шаг истории. Одинаковый `key` подряд склеивает правки (набор текста).
+     */
     function commit(key?: string) {
         history.commit(snapshot(), key);
         syncHistory();
@@ -161,7 +206,10 @@ export function createDocumentSession<D, K extends string>(options: SessionOptio
     const undo = () => restore(history.undo());
     const redo = () => restore(history.redo());
 
-    /** Действие, меняющее документ: после него состояние попадает в историю. */
+    /**
+     * An action that changes the document: afterwards the state goes into history.
+     * Действие, меняющее документ: после него состояние попадает в историю.
+     */
     function recorded<A extends unknown[], R>(fn: (...args: A) => R, key?: (...args: A) => string): (...args: A) => R {
         return (...args) => {
             const result = fn(...args);
@@ -171,9 +219,13 @@ export function createDocumentSession<D, K extends string>(options: SessionOptio
     }
 
     //---]>
+    // opening, files, restore
     // открытие, файлы, восстановление
 
-    /** Подменяет документ целиком. Без `resetHistory` это обычная правка: её можно отменить. */
+    /**
+     * Replaces the document as a whole. Without `resetHistory` it is an ordinary edit: it can be undone.
+     * Подменяет документ целиком. Без `resetHistory` это обычная правка: её можно отменить.
+     */
     function load(next: D, view?: Camera, resetHistory = false) {
         doc.set(next);
         options.onReset?.();
@@ -187,10 +239,16 @@ export function createDocumentSession<D, K extends string>(options: SessionOptio
         }
     }
 
-    /** Текст файла для скачивания. */
+    /**
+     * The file text for download.
+     * Текст файла для скачивания.
+     */
     const exportText = () => codec.serialize(doc.get(), camera.get(), true);
 
-    /** Открывает документ из текста файла. При ошибке документ не меняется. Результат показывается уведомлением. */
+    /**
+     * Opens a document from file text. On an error the document is unchanged. The result is shown as a notice.
+     * Открывает документ из текста файла. При ошибке документ не меняется. Результат показывается уведомлением.
+     */
     function importText(text: string): LoadError | null {
         const result = codec.parse(text);
         if (!result.ok) {
@@ -211,7 +269,10 @@ export function createDocumentSession<D, K extends string>(options: SessionOptio
         showNotice('info', keys.newDocument);
     }
 
-    /** При старте приложения: поднимает документ из автосохранения. Возвращает true, если было что поднимать. */
+    /**
+     * At app start: brings the document back from autosave. Returns true if there was something to restore.
+     * При старте приложения: поднимает документ из автосохранения. Возвращает true, если было что поднимать.
+     */
     function restoreSaved(): boolean {
         const text = storage.read();
         if (text === null) return false;

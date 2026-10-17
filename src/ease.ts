@@ -1,26 +1,44 @@
+// Easing functions: how a value goes from 0 to 1 while time goes from 0 to 1. Pure maths with no dependencies:
+// the curve editor (draws a segment) and a runtime (computes the value) both use it, so they get the same result.
 // Функции смягчения (easing): как значение идёт от 0 к 1, пока время идёт от 0 к 1. Чистая математика без зависимостей:
 // ею пользуется редактор кривой (рисует участок) и рантайм (считает значение), поэтому результат у них один и тот же.
 
-/** Семейства: у каждого три направления. */
+/**
+ * Families: each has three directions.
+ * Семейства: у каждого три направления.
+ */
 export const EASE_FAMILIES = ['sine', 'quad', 'cubic', 'quart', 'expo', 'back', 'elastic', 'bounce'] as const;
-/** `in` разгон, `out` торможение, `in-out` и то и другое. */
+/**
+ * `in` accelerates, `out` decelerates, `in-out` does both.
+ * `in` разгон, `out` торможение, `in-out` и то и другое.
+ */
 export const EASE_DIRECTIONS = ['in', 'out', 'in-out'] as const;
 
 export type EaseFamily = (typeof EASE_FAMILIES)[number];
 export type EaseDirection = (typeof EASE_DIRECTIONS)[number];
-/** Именованный переход: `linear`, `step` (держит значение до следующей точки) или `семейство-направление`. */
+/**
+ * A named transition: `linear`, `step` (holds the value until the next point) or `family-direction`.
+ * Именованный переход: `linear`, `step` (держит значение до следующей точки) или `семейство-направление`.
+ */
 export type EaseName = 'linear' | 'step' | `${EaseFamily}-${EaseDirection}`;
-/** Переход: имя или кубическая кривая Безье `[x1, y1, x2, y2]`, как `cubic-bezier()` в CSS (x в 0…1, y свободный). */
+/**
+ * A transition: a name or a cubic Bezier `[x1, y1, x2, y2]`, like CSS `cubic-bezier()` (x in 0…1, y free).
+ * Переход: имя или кубическая кривая Безье `[x1, y1, x2, y2]`, как `cubic-bezier()` в CSS (x в 0…1, y свободный).
+ */
 export type Ease = EaseName | { bezier: readonly [number, number, number, number] };
 
 export const EASE_NAMES: readonly EaseName[] = ['linear', 'step', ...EASE_FAMILIES.flatMap((f) => EASE_DIRECTIONS.map((d) => `${f}-${d}` as EaseName))];
 
 const NAMES = new Set<string>(EASE_NAMES);
 
-/** Безье по умолчанию, когда пользователь выбрал «своя кривая»: мягкий старт и финиш (как `ease` в CSS). */
+/**
+ * Default Bezier when the user picks "own curve": a soft start and finish (like CSS `ease`).
+ * Безье по умолчанию, когда пользователь выбрал «своя кривая»: мягкий старт и финиш (как `ease` в CSS).
+ */
 export const DEFAULT_BEZIER: readonly [number, number, number, number] = [0.25, 0.1, 0.25, 1];
 
 //--------------------------------------------------
+// Formulas: each family defines the deceleration (`out`), the rest is derived from it by mirroring
 // Формулы: в каждом семействе задано торможение (`out`), остальное выводится из него зеркалом
 
 const PI = Math.PI;
@@ -54,6 +72,8 @@ function family(f: EaseFamily, dir: EaseDirection, t: number): number {
 }
 
 /**
+ * A cubic Bezier as a function of time: points (0,0), (x1,y1), (x2,y2), (1,1). The parameter is found by x (Newton, bisection on a flat
+ * slope), then y is taken from it. x is limited to 0…1, y may leave 0…1 (overshoot).
  * Кубическая кривая Безье как функция времени: точки (0,0), (x1,y1), (x2,y2), (1,1). По x ищем параметр (Ньютон, при плоском
  * наклоне деление пополам), по нему берём y. x ограничен 0…1, y может выходить за 0…1 (заступ).
  */
@@ -89,17 +109,26 @@ export function cubicBezier(x1: number, y1: number, x2: number, y2: number): (t:
     };
 }
 
-/** Разбирает имя перехода на семейство и направление; у `linear` и `step` их нет (null). */
+/**
+ * Splits a transition name into family and direction; `linear` and `step` have none (null).
+ * Разбирает имя перехода на семейство и направление; у `linear` и `step` их нет (null).
+ */
 export function easeParts(name: EaseName): { family: EaseFamily; direction: EaseDirection } | null {
     if (name === 'linear' || name === 'step') return null;
     const i = name.indexOf('-');
     return { family: name.slice(0, i) as EaseFamily, direction: name.slice(i + 1) as EaseDirection };
 }
 
-/** Собирает имя из семейства и направления. */
+/**
+ * Builds a name from a family and a direction.
+ * Собирает имя из семейства и направления.
+ */
 export const easeName = (f: EaseFamily, d: EaseDirection): EaseName => `${f}-${d}`;
 
-/** Проверка значения из файла: имя из списка или Безье из четырёх конечных чисел с x в 0…1. */
+/**
+ * Validates a value from a file: a name from the list or a Bezier of four finite numbers with x in 0…1.
+ * Проверка значения из файла: имя из списка или Безье из четырёх конечных чисел с x в 0…1.
+ */
 export function isEase(value: unknown): value is Ease {
     if (typeof value === 'string') return NAMES.has(value);
     if (typeof value !== 'object' || value === null) return false;
@@ -110,6 +139,8 @@ export function isEase(value: unknown): value is Ease {
 const cache = new Map<string, (t: number) => number>();
 
 /**
+ * Applies a transition to the fraction `u` of a segment (0…1, clamped outside). Without a transition it is linear. `back`, `elastic` and Bezier may
+ * leave 0…1: that is overshoot, not an error.
  * Применяет переход к доле `u` участка (0…1, вне зажимается). Без перехода линейно. `back`, `elastic` и Безье могут
  * выйти за 0…1: это заступ, а не ошибка.
  */

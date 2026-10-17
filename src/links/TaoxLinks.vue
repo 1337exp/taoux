@@ -5,7 +5,10 @@ defineProps<{
     lines: readonly LinkLine[];
     selectedId?: string | null;
     preview?: LinkPreview | null;
-    /** Подсвечивать наведённую и выбранную связь размытым свечением. */
+    /**
+     * Highlight the hovered and selected link with a blurred glow.
+     * Подсвечивать наведённую и выбранную связь размытым свечением.
+     */
     glow?: boolean;
 }>();
 
@@ -37,8 +40,10 @@ const colorStyle = (line: LinkLine) => (line.color ? { '--tx-link-line-color': l
 
 <style>
 /*
+ * Configured with CSS variables on any ancestor:
  * Настройка через CSS-переменные на любом предке:
  *   --tx-link-color, --tx-link-hover-color, --tx-link-selected-color, --tx-link-preview-color, --tx-link-invalid-color,
+ * --tx-link-width, --tx-link-width-active, --tx-link-hit, --tx-link-hit-coarse, --tx-link-glow (opacity of the glow).
  *   --tx-link-width, --tx-link-width-active, --tx-link-hit, --tx-link-hit-coarse, --tx-link-glow (непрозрачность свечения).
  */
 .tx-links {
@@ -52,7 +57,7 @@ const colorStyle = (line: LinkLine) => (line.color ? { '--tx-link-line-color': l
 .tx-links path {
     fill: none;
     stroke-linecap: round;
-    /* толщина в экранных пикселях, не зависит от зума */
+    /* thickness in screen pixels, independent of zoom / толщина в экранных пикселях, не зависит от зума */
     vector-effect: non-scaling-stroke;
 }
 
@@ -60,7 +65,7 @@ const colorStyle = (line: LinkLine) => (line.color ? { '--tx-link-line-color': l
     --tx-link-now: var(--tx-link-line-color, var(--tx-link-color, #9ca3af));
 }
 
-/* Своего цвета у связи нет: наведение красит её в hover-цвет. Свой цвет при наведении остаётся (утолщается и светится). */
+/* A link without its own colour turns the hover colour on hover. An own colour stays on hover (it gets thicker and glows). / Своего цвета у связи нет: наведение красит её в hover-цвет. Свой цвет при наведении остаётся (утолщается и светится). */
 .tx-link:hover {
     --tx-link-now: var(--tx-link-line-color, var(--tx-link-hover-color, #fff));
 }
@@ -106,7 +111,7 @@ const colorStyle = (line: LinkLine) => (line.color ? { '--tx-link-line-color': l
     cursor: pointer;
 }
 
-/* Палец толще курсора: зона попадания по связи шире. */
+/* A finger is thicker than a cursor: the hit area of a link is wider. / Палец толще курсора: зона попадания по связи шире. */
 @media (pointer: coarse) {
     .tx-link-hit {
         stroke-width: var(--tx-link-hit-coarse, 30);

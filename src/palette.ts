@@ -1,5 +1,9 @@
+// Pure node-palette logic: search and groups by category. The palette window and the pin compatibility rules stay in the app.
 // Чистая логика палитры нод: поиск и группы по категориям. Окно палитры и правила совместимости пинов остаются в приложении.
-/** Минимум, что палитра знает о ноде. */
+/**
+ * The least the palette knows about a node.
+ * Минимум, что палитра знает о ноде.
+ */
 export interface PaletteItem {
     id: string;
     title: string;
@@ -11,10 +15,15 @@ export interface NodeGroup<T> {
     nodes: T[];
 }
 
-/** Категория: часть id до «/» (`math/add` → `math`), без «/» — `other`. */
+/**
+ * Category: the part of the id before "/" (`math/add` → `math`); without "/" it is `other`.
+ * Категория: часть id до «/» (`math/add` → `math`), без «/» — `other`.
+ */
 export const categoryOf = (def: { id: string }): string => (def.id.includes('/') ? def.id.split('/')[0]! : 'other');
 
 /**
+ * Nodes matching a query (every word must occur in the name or id), by category and name.
+ * Hidden ones (`hidden`) are not shown. `extraText` adds translations to the search text, so one can search in any language.
  * Ноды, подходящие под запрос (все слова должны встретиться в названии или id), по категориям и названиям.
  * Скрытые (`hidden`) не показываются. `extraText` добавляет к тексту поиска переводы, чтобы искать можно было на любом языке.
  */
@@ -30,7 +39,10 @@ export function filterNodes<T extends PaletteItem>(defs: readonly T[], query: st
         .sort((a, b) => categoryOf(a).localeCompare(categoryOf(b)) || a.title.localeCompare(b.title));
 }
 
-/** Группы идущих подряд нод одной категории (вход должен быть отсортирован `filterNodes`). */
+/**
+ * Groups of consecutive nodes of one category (the input must be sorted by `filterNodes`).
+ * Группы идущих подряд нод одной категории (вход должен быть отсортирован `filterNodes`).
+ */
 export function groupByCategory<T extends { id: string }>(defs: readonly T[]): NodeGroup<T>[] {
     const groups: NodeGroup<T>[] = [];
     for (const def of defs) {

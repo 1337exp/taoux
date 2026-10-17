@@ -6,30 +6,59 @@ import { addPoint, movePoint, removePoint, sampleSegment, setEase, valueBounds, 
 
 const props = withDefaults(
     defineProps<{
-        /** Точки кривой по возрастанию t (минимум две). */
+        /**
+         * Curve points in ascending t (at least two).
+         * Точки кривой по возрастанию t (минимум две).
+         */
         modelValue: readonly CurvePoint[];
-        /** Индекс выбранной точки. */
+        /**
+         * Index of the selected point.
+         * Индекс выбранной точки.
+         */
         selected?: number;
-        /** Допустимые значения: фиксируют вид графика и не дают утащить точку за границу. */
+        /**
+         * Allowed values: they fix the plot view and do not let a point be dragged past the bound.
+         * Допустимые значения: фиксируют вид графика и не дают утащить точку за границу.
+         */
         min?: number;
         max?: number;
-        /** Сколько знаков после запятой оставлять у t и v; не задано — не обрезать. */
+        /**
+         * How many decimals to keep in t and v; not set means do not round.
+         * Сколько знаков после запятой оставлять у t и v; не задано — не обрезать.
+         */
         precision?: number;
-        /** Прилипание к сетке (Shift на время меняет режим). */
+        /**
+         * Snapping to the grid (Shift flips the mode for the moment).
+         * Прилипание к сетке (Shift на время меняет режим).
+         */
         snap?: boolean;
-        /** Шаг по времени и расстояние между подписанными линиями. */
+        /**
+         * The time step and the distance between labelled lines.
+         * Шаг по времени и расстояние между подписанными линиями.
+         */
         stepT?: number;
         majorT?: number;
-        /** Подсказка при наведении на поле. */
+        /**
+         * A hint on hover over the field.
+         * Подсказка при наведении на поле.
+         */
         hint?: string;
-        /** Подпись точки для скринридеров; по умолчанию «Point 1: t, v». */
+        /**
+         * The point label for screen readers; "Point 1: t, v" by default.
+         * Подпись точки для скринридеров; по умолчанию «Point 1: t, v».
+         */
         pointLabel?: (index: number, point: CurvePoint) => string;
         /**
+         * Guides from the selected point to the axes: `off` none, `lines` dashed lines only, `values` lines and the point values on the axes.
+         * `lines` by default: noticeable, but not overloaded.
          * Направляющие от выбранной точки к осям: `off` нет, `lines` только пунктирные линии, `values` линии и значения точки на осях.
          * По умолчанию `lines`: заметно, но не перегружает.
          */
         guides?: CurveGuides;
-        /** Подпись ручки Безье для скринридеров (n: 1 или 2); по умолчанию «Bezier handle n». */
+        /**
+         * The label of a Bezier handle for screen readers (n: 1 or 2); "Bezier handle n" by default.
+         * Подпись ручки Безье для скринридеров (n: 1 или 2); по умолчанию «Bezier handle n».
+         */
         handleLabel?: (n: number, index: number) => string;
     }>(),
     { selected: 0, snap: true, stepT: 0.05, majorT: 0.25, guides: 'lines' },
@@ -37,7 +66,10 @@ const props = withDefaults(
 const emit = defineEmits<{
     'update:modelValue': [value: CurvePoint[]];
     'update:selected': [index: number];
-    /** Правка закончена (отпустили точку, добавили, убрали): момент для записи в историю. */
+    /**
+     * An edit is finished (a point was released, added, removed): the moment to record into history.
+     * Правка закончена (отпустили точку, добавили, убрали): момент для записи в историю.
+     */
     commit: [];
 }>();
 
@@ -53,8 +85,10 @@ const PLOT_H = H - PAD_T - PAD_B;
 const svg = ref<SVGSVGElement | null>(null);
 
 const points = computed(() => props.modelValue);
+// The limits are remembered for the duration of a drag: otherwise the plot would "float" under the hand
 // Пределы запоминаем на время перетаскивания: иначе график «плыл» бы под рукой
 const frozen = ref<{ min: number; max: number } | null>(null);
+// The view shift by value: accumulated by auto-scroll at the edge while a point is dragged
 // Сдвиг вида по значению: накапливает автопрокрутка у края, пока тянут точку
 const shift = ref(0);
 const bounds = computed(() => (frozen.value ? { min: frozen.value.min + shift.value, max: frozen.value.max + shift.value } : valueBounds(points.value, props.min, props.max)));
@@ -71,6 +105,7 @@ const isMajorV = (v: number) => Math.abs(v / majorV.value - Math.round(v / major
 
 const px = (tt: number) => PAD_L + tt * PLOT_W;
 const py = (v: number) => PAD_T + (1 - (v - bounds.value.min) / span.value) * PLOT_H;
+// Segments are drawn by their transitions: a straight one has two ends, smooth ones dozens of pieces, a step a corner
 // Участки рисуются по своим переходам: у прямой два конца, у плавных десятки отрезков, у ступеньки угол
 const path = computed(() => {
     const pts = points.value;
@@ -82,6 +117,7 @@ const path = computed(() => {
 });
 const fmt = (n: number) => String(Math.round(n * 1000) / 1000);
 
+// The values of the selected point on the axes: time under the plot, value on the left. They show while the point is dragged, so there is no need to look for the fields.
 // Значения выбранной точки на осях: время под графиком, значение слева. Они видны, пока точку тянут, и не надо искать глазами поля.
 const CHAR_W = 4.6;
 const tagWidth = (text: string) => text.length * CHAR_W + 5;
@@ -108,7 +144,10 @@ interface PointerSample {
     shiftKey: boolean;
 }
 
-/** Координаты указателя в единицах кривой, как есть: без прилипания, округления и границ. */
+/**
+ * Pointer coordinates in curve units as they are: no snapping, rounding or bounds.
+ * Координаты указателя в единицах кривой, как есть: без прилипания, округления и границ.
+ */
 function rawCurve(e: PointerSample): { t: number; v: number } {
     const r = svg.value!.getBoundingClientRect();
     const x = ((e.clientX - r.left) / r.width) * W;
@@ -117,7 +156,10 @@ function rawCurve(e: PointerSample): { t: number; v: number } {
     return { t: (x - PAD_L) / PLOT_W, v: min + (1 - (y - PAD_T) / PLOT_H) * (max - min) };
 }
 
-/** Координаты указателя в единицах кривой; Shift временно меняет режим шага. */
+/**
+ * Pointer coordinates in curve units; Shift temporarily flips the snapping mode.
+ * Координаты указателя в единицах кривой; Shift временно меняет режим шага.
+ */
 function toCurve(e: PointerSample): { t: number; v: number } {
     let { t: tt, v } = rawCurve(e);
     if (props.snap !== e.shiftKey) {
@@ -130,13 +172,18 @@ function toCurve(e: PointerSample): { t: number; v: number } {
 let dragging = -1;
 let lastPointer: PointerSample = { clientX: 0, clientY: 0, shiftKey: false };
 
-/** Точка идёт за указателем: и при его движении, и когда вид уехал под неподвижным указателем. */
+/**
+ * The point follows the pointer: both when it moves and when the view moved under a still pointer.
+ * Точка идёт за указателем: и при его движении, и когда вид уехал под неподвижным указателем.
+ */
 function followPointer() {
     if (dragging < 0) return;
     const { t: tt, v } = toCurve(lastPointer);
     emit('update:modelValue', movePoint(points.value, dragging, tt, v));
 }
 
+// Dragging a point to the top/bottom edge of the plot: the view by value follows (by time it is always 0…1).
+// The field bounds are not crossed: with min and max set the view stands still.
 // Тянем точку к верхнему/нижнему краю графика: вид по значению едет следом (по времени он всегда 0…1).
 // Границы поля не пересекаем: при заданных min и max вид стоит.
 const scroller = createEdgeScroller({
@@ -149,6 +196,7 @@ const scroller = createEdgeScroller({
         const base = frozen.value;
         const r = svg.value?.getBoundingClientRect();
         if (!base || !r) return;
+        // The visible area moved down by dy px: the view values decreased
         // Видимая область уехала вниз на dy px: значения вида уменьшились
         const dv = ((dy * H) / r.height / PLOT_H) * (base.max - base.min);
         const lo = props.min === undefined ? -Infinity : props.min - base.min;
@@ -174,6 +222,7 @@ function onDown(e: PointerEvent, i: number) {
     try {
         (e.currentTarget as Element).setPointerCapture(e.pointerId);
     } catch {
+        // the pointer has already gone or the capture is unavailable: dragging works without it
         // указатель уже ушёл или захват недоступен: тянуть можно и без него
     }
 }
@@ -195,9 +244,13 @@ function onUp() {
 }
 
 //--------------------------------------------------
+// Handles of the cubic Bezier curve of the selected segment
 // Ручки кубической кривой Безье у выбранного участка
 
-/** Участок, который начинается в выбранной точке и идёт по Безье: ручки есть только у него (и только если у участка есть высота). */
+/**
+ * The segment that starts at the selected point and follows a Bezier: only it has handles (and only if the segment has height).
+ * Участок, который начинается в выбранной точке и идёт по Безье: ручки есть только у него (и только если у участка есть высота).
+ */
 const bezierSegment = computed(() => {
     const i = Math.min(props.selected, points.value.length - 1);
     const a = points.value[i];
@@ -206,7 +259,10 @@ const bezierSegment = computed(() => {
     return { i, a, b, bezier: a.ease.bezier };
 });
 
-/** Две ручки участка в координатах плота. */
+/**
+ * The two handles of the segment in plot coordinates.
+ * Две ручки участка в координатах плота.
+ */
 const bezierHandles = computed(() => {
     const s = bezierSegment.value;
     if (!s) return [];
@@ -217,13 +273,19 @@ const bezierHandles = computed(() => {
     ];
 });
 
-/** Начала участков с Безье: над ними рисуется метка «B». */
+/**
+ * Starts of segments with a Bezier: the "B" mark is drawn above them.
+ * Начала участков с Безье: над ними рисуется метка «B».
+ */
 const bezierMarks = computed(() => points.value.flatMap((p, i) => (typeof p.ease === 'object' && i < points.value.length - 1 ? [{ i, t: p.t, v: p.v }] : [])));
 
 const round2 = (x: number) => Math.round(x * 100) / 100;
 const BEZIER_STEP = 0.05;
 
-/** Ручка `n` ставится в (x, y) нормализованного участка: x в 0…1, y свободный в разумных пределах (заступ). */
+/**
+ * Handle `n` is put at (x, y) of the normalised segment: x in 0…1, y free within reasonable limits (overshoot).
+ * Ручка `n` ставится в (x, y) нормализованного участка: x в 0…1, y свободный в разумных пределах (заступ).
+ */
 function setBezierHandle(n: 0 | 1, x: number, y: number, commitNow = false) {
     const s = bezierSegment.value;
     if (!s) return;
@@ -242,6 +304,7 @@ function onHandleDown(e: PointerEvent, n: number) {
     try {
         (e.currentTarget as Element).setPointerCapture(e.pointerId);
     } catch {
+        // the pointer has already gone or the capture is unavailable: dragging works without it
         // указатель уже ушёл или захват недоступен: тянуть можно и без него
     }
 }
@@ -260,7 +323,10 @@ function onHandleUp() {
     emit('commit');
 }
 
-/** Стрелки на ручке сдвигают её на шаг (Shift крупнее): влево и вправо по x, вверх и вниз по y. */
+/**
+ * Arrows on a handle move it by a step (Shift larger): left and right along x, up and down along y.
+ * Стрелки на ручке сдвигают её на шаг (Shift крупнее): влево и вправо по x, вверх и вниз по y.
+ */
 function onHandleKey(e: KeyboardEvent, n: number) {
     const s = bezierSegment.value;
     const arrows: Record<string, [number, number]> = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] };
@@ -272,7 +338,10 @@ function onHandleKey(e: KeyboardEvent, n: number) {
     setBezierHandle(n as 0 | 1, s.bezier[n * 2]! + d[0] * k, s.bezier[n * 2 + 1]! + d[1] * k, true);
 }
 
-/** Двойной клик по графику не должен выделять текст страницы вокруг. */
+/**
+ * A double click on the plot must not select the page text around it.
+ * Двойной клик по графику не должен выделять текст страницы вокруг.
+ */
 function noSelect(e: MouseEvent) {
     if (e.detail > 1) e.preventDefault();
 }
@@ -285,10 +354,16 @@ function onDouble(e: MouseEvent) {
     emit('commit');
 }
 
-/** Шаг стрелки с Shift: во столько раз крупнее. */
+/**
+ * The arrow step with Shift: this many times larger.
+ * Шаг стрелки с Shift: во столько раз крупнее.
+ */
 const COARSE = 5;
 
-/** Сдвигает точку `i` на `dx` шагов по времени и `dy` шагов по значению (шаги сетки), с прижатием, округлением и границами. */
+/**
+ * Moves point `i` by `dx` steps in time and `dy` steps in value (grid steps), with snapping, rounding and bounds.
+ * Сдвигает точку `i` на `dx` шагов по времени и `dy` шагов по значению (шаги сетки), с прижатием, округлением и границами.
+ */
 function nudge(i: number, dx: number, dy: number, coarse: boolean) {
     const p = points.value[i];
     if (!p) return;
@@ -299,8 +374,14 @@ function nudge(i: number, dx: number, dy: number, coarse: boolean) {
     emit('commit');
 }
 
-/** Insert добавляет точку между выбранной и следующей (у последней: между ней и предыдущей) на самой кривой. */
-/** Фокус на точку `i` после перерисовки: клавиши идут к той точке, что выбрана, и фокус не должен оставаться на старой. */
+/**
+ * Insert adds a point between the selected one and the next (for the last: between it and the previous) on the curve itself.
+ * Insert добавляет точку между выбранной и следующей (у последней: между ней и предыдущей) на самой кривой.
+ */
+/**
+ * Focus on point `i` after a re-render: keys go to the selected point, and focus must not stay on the old one.
+ * Фокус на точку `i` после перерисовки: клавиши идут к той точке, что выбрана, и фокус не должен оставаться на старой.
+ */
 function focusDot(i: number) {
     void nextTick(() => svg.value?.querySelectorAll<SVGElement>('.tx-curve-dot')[i]?.focus());
 }
@@ -324,8 +405,12 @@ function removeAt(i: number) {
     focusDot(next);
 }
 
-/** Клавиши точки (фокус на ней): стрелки двигают на шаг сетки, Shift крупнее; Insert добавляет, Delete убирает. */
+/**
+ * Point keys (focus on it): arrows move by a grid step, Shift larger; Insert adds, Delete removes.
+ * Клавиши точки (фокус на ней): стрелки двигают на шаг сетки, Shift крупнее; Insert добавляет, Delete убирает.
+ */
 function onKey(e: KeyboardEvent) {
+    // the point that has focus; if the key came from the field itself (after a click on it), then the selected one
     // точка, на которой фокус; если клавиша пришла с самого поля (после клика по нему), то выбранная
     const target = (e.target as Element | null)?.closest('.tx-curve-dot');
     const index = target ? Number(target.getAttribute('data-index')) : NaN;
@@ -349,7 +434,7 @@ const labelOf = (i: number, p: CurvePoint) => (props.pointLabel ? props.pointLab
 
 <template>
     <svg ref="svg" class="tx-curve" :viewBox="`0 0 ${W} ${H}`" :title="hint" tabindex="-1" role="group" @dblclick.self="onDouble" @mousedown="noSelect" @keydown="onKey">
-        <!-- мелкая сетка: те же шаги, что у прилипания -->
+        <!-- fine grid: the same steps as snapping / мелкая сетка: те же шаги, что у прилипания -->
         <line v-for="x in gridT" :key="`gt${x}`" class="tx-curve-grid" :class="{ major: isMajorT(x) }" :x1="px(x)" :x2="px(x)" :y1="PAD_T" :y2="H - PAD_B" />
         <line v-for="v in gridV" :key="`gv${v}`" class="tx-curve-grid" :class="{ major: isMajorV(v) }" :x1="PAD_L" :x2="W - PAD_R" :y1="py(v)" :y2="py(v)" />
 
@@ -369,7 +454,7 @@ const labelOf = (i: number, p: CurvePoint) => (props.pointLabel ? props.pointLab
 
         <path class="tx-curve-line" :d="path" />
 
-        <!-- Метка «B» над началом участка с Безье: видно, что у точки есть ручки, даже когда она не выбрана -->
+        <!-- The "B" mark above the start of a Bezier segment: shows the point has handles even when it is not selected / Метка «B» над началом участка с Безье: видно, что у точки есть ручки, даже когда она не выбрана -->
         <text v-for="m in bezierMarks" :key="`b${m.i}`" class="tx-curve-mark" :x="px(m.t)" :y="py(m.v) - 8" text-anchor="middle" aria-hidden="true">B</text>
 
         <g v-if="bezierHandles.length" class="tx-curve-bezier">
@@ -414,8 +499,11 @@ const labelOf = (i: number, p: CurvePoint) => (props.pointLabel ? props.pointLab
 
 <style>
 /*
+ * Configured with CSS variables on any ancestor:
  * Настройка через CSS-переменные на любом предке:
  *   --tx-curve-bg, --tx-curve-border, --tx-curve-grid, --tx-curve-label, --tx-curve-accent,
+ * --tx-curve-text (the numbers at the ends of the axes: start and end of the scale, brighter than the rest),
+ * --tx-curve-dot-opacity (opacity of unselected points, 0.3 by default).
  *   --tx-curve-text (цифры у краёв осей: начало и конец шкалы, ярче остальных),
  *   --tx-curve-dot-opacity (непрозрачность невыбранных точек, по умолчанию 0.3).
  */
@@ -432,7 +520,7 @@ const labelOf = (i: number, p: CurvePoint) => (props.pointLabel ? props.pointLab
 }
 
 .tx-curve-grid {
-    pointer-events: none; /* иначе двойной клик попадает в линию сетки, а не в поле */
+    pointer-events: none; /* otherwise a double click hits the grid line, not the field / иначе двойной клик попадает в линию сетки, а не в поле */
     stroke: var(--tx-curve-grid, #2a2d33);
     stroke-width: 0.5;
     opacity: 0.45;
@@ -529,7 +617,7 @@ const labelOf = (i: number, p: CurvePoint) => (props.pointLabel ? props.pointLab
     outline: none;
 }
 
-/* фокус с клавиатуры: утолщённая обводка и свечение (контур у SVG-форм браузеры рисуют по-разному) */
+/* keyboard focus: a thicker outline and a glow (browsers draw the outline of SVG shapes differently) / фокус с клавиатуры: утолщённая обводка и свечение (контур у SVG-форм браузеры рисуют по-разному) */
 .tx-curve-dot:focus-visible {
     stroke-width: 3;
     filter: drop-shadow(0 0 3px var(--tx-curve-accent, #4fc3f7));

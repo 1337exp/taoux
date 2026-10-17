@@ -6,28 +6,57 @@ import { DEFAULT_BEZIER, EASE_DIRECTIONS, EASE_FAMILIES, easeName, easeParts, ty
 import { clampTo, niceStep, roundTo } from '../num';
 import type { CurveFieldLabels } from './labels';
 
+// A curve with fields: the plot (TaoxCurveEditor), the fields of the selected point, the transition to the next point, the grid step, remove and reset.
+// The first taoux module on top of TaoUI: the plot and the logic stay in taoux, the fields and buttons are TaoUI components.
 // Кривая с полями: график (TaoxCurveEditor), поля выбранной точки, переход к следующей точке, шаг сетки, удаление и сброс.
 // Первый модуль taoux поверх TaoUI: график и логика остаются в taoux, поля и кнопки это компоненты TaoUI.
 const props = withDefaults(
     defineProps<{
-        /** Точки кривой. */
+        /**
+         * Curve points.
+         * Точки кривой.
+         */
         modelValue: readonly CurvePoint[];
-        /** Допустимые значения: фиксируют вид графика и не дают утащить точку за границу. */
+        /**
+         * Allowed values: they fix the plot view and do not let a point be dragged past the bound.
+         * Допустимые значения: фиксируют вид графика и не дают утащить точку за границу.
+         */
         min?: number;
         max?: number;
-        /** Кривая «по умолчанию»: без неё кнопки сброса нет. */
+        /**
+         * The "default" curve: without it there is no reset button.
+         * Кривая «по умолчанию»: без неё кнопки сброса нет.
+         */
         defaultValue?: readonly CurvePoint[];
-        /** Сколько знаков после запятой оставлять у времени и значения; не задано — не обрезать. */
+        /**
+         * How many decimals to keep in time and value; not set means do not round.
+         * Сколько знаков после запятой оставлять у времени и значения; не задано — не обрезать.
+         */
         precision?: number;
-        /** Шаг по времени у сетки и у поля времени. */
+        /**
+         * The time step of the grid and of the time field.
+         * Шаг по времени у сетки и у поля времени.
+         */
         stepT?: number;
-        /** Прилипание к сетке при старте. */
+        /**
+         * Snapping to the grid at start.
+         * Прилипание к сетке при старте.
+         */
         snap?: boolean;
-        /** Надписи на языке приложения; недостающие берутся английские. */
+        /**
+         * Labels in the app language; missing ones fall back to English.
+         * Надписи на языке приложения; недостающие берутся английские.
+         */
         labels?: Partial<CurveFieldLabels>;
-        /** Направляющие от выбранной точки к осям: `off`, `lines` (по умолчанию) или `values`. */
+        /**
+         * Guides from the selected point to the axes: `off`, `lines` (default) or `values`.
+         * Направляющие от выбранной точки к осям: `off`, `lines` (по умолчанию) или `values`.
+         */
         guides?: CurveGuides;
-        /** Подписи для скринридеров: см. TaoxCurveEditor. */
+        /**
+         * Labels for screen readers: see TaoxCurveEditor.
+         * Подписи для скринридеров: см. TaoxCurveEditor.
+         */
         pointLabel?: (index: number, point: CurvePoint) => string;
         handleLabel?: (n: number, index: number) => string;
     }>(),
@@ -84,6 +113,8 @@ function reset() {
 }
 
 //--------------------------------------------------
+// The transition from the selected point to the next: the kind (linear, step, a family or bezier) and the direction.
+// Function names are not translated: they are known from CSS and animation libraries and would not be found by a translation.
 // Переход от выбранной точки к следующей: вид (linear, step, семейство или bezier) и направление.
 // Названия функций не переводятся: их знают по CSS и библиотекам анимации, по переводу не найдут.
 
@@ -98,6 +129,7 @@ const direction = computed<EaseDirection>(() => {
     const e = current.value.ease;
     return typeof e === 'string' ? (easeParts(e)?.direction ?? 'in-out') : 'in-out';
 });
+// linear, step and Bezier have no direction: the switch stays in place, inactive, so that it is visible how this works
 // У linear, step и Безье направления нет: переключатель остаётся на месте неактивным, чтобы было видно, как это устроено
 const hasDirection = computed(() => !isLast.value && typeof current.value.ease === 'string' && easeParts(current.value.ease) !== null);
 const kindOptions = ['linear', 'step', ...EASE_FAMILIES, 'bezier'].map((v) => ({ value: v, label: v }));
@@ -202,7 +234,7 @@ function setDirection(v: unknown) {
     font-size: 11px;
 }
 
-/* Список и направление в одну строку: список забирает остаток, переключатель держит свою ширину */
+/* The list and the direction in one row: the list takes the rest, the switch keeps its own width / Список и направление в одну строку: список забирает остаток, переключатель держит свою ширину */
 .tx-curve-field__ease-row {
     display: flex;
     align-items: center;
