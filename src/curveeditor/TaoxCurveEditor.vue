@@ -1,7 +1,8 @@
 <script lang="ts" setup>
 import { computed, onBeforeUnmount, ref } from 'vue';
 import { createEdgeScroller } from '../edgescroll';
-import { addPoint, clampTo, movePoint, niceStep, removePoint, roundTo, snapTo, ticks, valueBounds, type CurvePoint } from './ops';
+import { clampTo, niceStep, roundTo, snapTo, ticks } from '../num';
+import { addPoint, movePoint, removePoint, valueBounds, type CurvePoint } from './ops';
 
 const props = withDefaults(
     defineProps<{

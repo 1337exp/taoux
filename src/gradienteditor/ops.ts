@@ -1,3 +1,5 @@
+import { clamp01, roundTo } from '../num';
+
 /**
  * Остановка градиента: t в 0…1, цвет в линейном RGB 0…1 (не sRGB), alpha 0…1.
  * Линейный цвет нужен рендеру; в CSS-полоску он переводится в sRGB (`gradientCss`).
@@ -8,19 +10,11 @@ export interface GradientStop {
     alpha: number;
 }
 
-const clamp01 = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x);
 
 const copy = (stops: readonly GradientStop[]): GradientStop[] => stops.map((s) => ({ ...s, color: [...s.color] as GradientStop['color'] }));
 
 /** Знаков после запятой по умолчанию у t и непрозрачности: «0.5700000000000001» в файле никому не нужно. */
 export const DEFAULT_PRECISION = 3;
-
-/** Обрезает до `digits` знаков после запятой; `null` и `undefined` оставляют значение как есть. */
-export function roundTo(x: number, digits?: number | null): number {
-    if (digits === undefined || digits === null) return x;
-    const k = Math.pow(10, Math.max(0, Math.floor(digits)));
-    return Math.round(x * k) / k + 0;
-}
 
 /**
  * Знаков у компонент цвета при `precision` у t и непрозрачности. Цвет линейный, а в тёмной части шкалы sRGB круто растёт

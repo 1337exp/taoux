@@ -1,6 +1,7 @@
 // Модель воспроизведения: время, пауза, цикл, скорость, перемотка. Без Vue и без привязки к виду: ею можно вести
 // таймлайн из любого UI-кита, а можно крутить анимацию вообще без интерфейса. Время считается по кадрам браузера
 // (requestAnimationFrame) и идёт в секундах.
+import { clamp } from '../num';
 
 /** Самый большой шаг времени за кадр, с: после сна вкладки воспроизведение не «прыгает». */
 export const MAX_FRAME_DT = 0.1;
@@ -60,8 +61,6 @@ export interface Playback extends PlaybackState {
     subscribe(listener: (state: PlaybackState) => void): () => void;
     dispose(): void;
 }
-
-const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), hi);
 
 export function createPlayback(options: PlaybackOptions): Playback {
     const schedule = options.schedule ?? ((cb) => requestAnimationFrame(cb));

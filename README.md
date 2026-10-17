@@ -26,6 +26,7 @@ import { History } from '@1337exp/taoux/history';
 | `touch` | `coarse`: is there a coarse pointer (a finger) | vue (peer) |
 | `curve` | link paths: bezier between pins, arrowheads of constant screen size | nothing |
 | `ids` | `uid(prefix, taken)` | nothing |
+| `num` | small numeric helpers: `clamp`, `roundTo`, `snapTo`, `niceStep`, `ticks` (shared by the curve, gradient and playback modules) | nothing |
 | `session` | document lifecycle: history, autosave, files, restore, notices | vue (peer) |
 | `palette` | search and groups of nodes for a palette | nothing |
 | `links` (Vue) | links layer: SVG from ready geometry, `--tx-link-*` | vue (peer) |

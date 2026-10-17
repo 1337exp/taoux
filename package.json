@@ -84,6 +84,10 @@
       "types": "./dist/palette.d.ts",
       "import": "./dist/palette.js"
     },
+    "./num": {
+      "types": "./dist/num.d.ts",
+      "import": "./dist/num.js"
+    },
     "./pins": {
       "types": "./dist/pins.d.ts",
       "import": "./dist/pins.js"
