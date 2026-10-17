@@ -195,6 +195,10 @@ function onBarClick(e: MouseEvent) {
     cursor: grab;
 }
 
+.tx-gradient-stop:active {
+    cursor: grabbing;
+}
+
 .tx-gradient-stop:focus {
     outline: none;
 }

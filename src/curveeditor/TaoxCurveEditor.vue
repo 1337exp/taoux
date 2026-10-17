@@ -441,6 +441,10 @@ const labelOf = (i: number, p: CurvePoint) => (props.pointLabel ? props.pointLab
     cursor: grab;
 }
 
+.tx-curve-handle:active {
+    cursor: grabbing;
+}
+
 .tx-curve-handle:hover,
 .tx-curve-handle:focus-visible {
     fill: var(--tx-curve-accent, #4fc3f7);
@@ -453,6 +457,10 @@ const labelOf = (i: number, p: CurvePoint) => (props.pointLabel ? props.pointLab
     stroke-width: 2;
     opacity: var(--tx-curve-dot-opacity, 0.3);
     cursor: grab;
+}
+
+.tx-curve-dot:active {
+    cursor: grabbing;
 }
 
 .tx-curve-dot:focus {
