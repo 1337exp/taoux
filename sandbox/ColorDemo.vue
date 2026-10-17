@@ -54,7 +54,7 @@ const state = computed(() => JSON.stringify({ plain: plain.value, withAlpha: wit
             <section class="case">
                 <h2>colorModel <small>{{ tr('your own storage', 'свои хранилища') }}</small></h2>
                 <div class="row"><TaoColorInput v-model="rgbHex" size="small" /> <span class="muted">{{ tr('object 0…255', 'объект 0…255') }}</span></div>
-                <div class="row"><TaoColorInput v-model="linearHex" size="small" /> <span class="muted">{{ tr('array 0…1, linear colour (like the TaoFX gradient)', 'массив 0…1, линейный цвет (как у градиента TaoFX)') }}</span></div>
+                <div class="row"><TaoColorInput v-model="linearHex" size="small" /> <span class="muted">{{ tr('array 0…1, linear colour (like the gradient editor)', 'массив 0…1, линейный цвет (как у редактора градиента)') }}</span></div>
                 <div class="row"><TaoColorInput v-model="rgbaHex" size="small" alpha /> <span class="muted">{{ tr('object with alpha', 'объект с alpha') }}</span></div>
                 <div class="row"><TaoColorInput v-model="cssHex" size="small" alpha /> <span class="muted">{{ tr('css string', 'строка css') }}</span></div>
             </section>

@@ -4,7 +4,7 @@ import { onMounted, onUnmounted, onUpdated, reactive, type Ref } from 'vue';
  * Pin positions for editors where pins are rows inside a node and their position depends on the layout (node-graph editors).
  * The layout cannot be guessed from the model, so it is measured from the DOM: the node view puts `data-pin="<name>"`
  * and `data-dir="in|out"` on every pin, and the pin centre is remembered relative to the node's top-left corner in world units.
- * Позиции пинов для редакторов, где пины это строки внутри ноды и их положение зависит от вёрстки (graph-up, taofx).
+ * Позиции пинов для редакторов, где пины это строки внутри ноды и их положение зависит от вёрстки (редакторы графов нод).
  * Вёрстку не угадать по модели, поэтому её измеряют по DOM: вид ноды ставит на каждый пин `data-pin="<имя>"`
  * и `data-dir="in|out"`, а центр пина запоминается относительно левого верхнего угла ноды в мировых единицах.
  */

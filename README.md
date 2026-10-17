@@ -103,7 +103,7 @@ import { History } from '@1337exp/taoux/history';
 | `pins` | row pin positions measured from the DOM: `usePinMeasure`, `createPinRegistry` | vue (peer) |
 | `i18n` | typed i18n: `createI18n({ locales, fallback, storageKey })` | vue (peer, optional) |
 
-Vue modules (`links`, `canvas`, `curveeditor`, `curvefield`, `gradienteditor`) need their styles imported explicitly: `import '@1337exp/taoux/canvas.css'`. Composite modules (session, palette, links, canvas, pins, curveeditor, gradienteditor, playback) import only primitives. Tier 2, fields (`curvefield`), assemble composites into a ready field on TaoUI components: it is the only tier allowed to import TaoUI, which is why `@1337exp/taoui` is an optional peer dependency. `curvefield` needs both `curveeditor.css` and `curvefield.css`. The `tiers.test.ts` test guards all of that. The canvas contract is described in [docs/canvas.md](docs/canvas.md) (in Russian).
+Vue modules (`links`, `canvas`, `curveeditor`, `curvefield`, `gradienteditor`) need their styles imported explicitly: `import '@1337exp/taoux/canvas.css'`. Composite modules (session, palette, links, canvas, pins, curveeditor, gradienteditor, playback) import only primitives. Tier 2, fields (`curvefield`), assemble composites into a ready field on TaoUI components: it is the only tier allowed to import TaoUI, which is why `@1337exp/taoui` is an optional peer dependency. `curvefield` needs both `curveeditor.css` and `curvefield.css`. The `tiers.test.ts` test guards all of that. The canvas contract is described in [docs/canvas.md](docs/canvas.md) ([Русский](docs/canvas.ru.md)).
 
 The rule: a module lands here when a second project needs it. A module's core knows nothing about Vue or the DOM unless that is its job.
 

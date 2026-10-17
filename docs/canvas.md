@@ -1,167 +1,169 @@
-# Общий холст: дизайн
+# The shared canvas: design
 
-Статус: **реализовано и подключено в workspace и graph-up: session, palette, links, canvas**. `pins` тоже готов (graph-up на нём), taofx получил редактор на этом холсте. Цель: один холст на трёх потребителей (workspace, graph-up, taofx) вместо трёх копий, без разрастания в «мега-фреймворк».
+**English** · [Русский](canvas.ru.md)
 
-## 1. Что нашли
+Status: **implemented: session, palette, links, canvas, pins**. The goal: one canvas for three editors (A, B, C) instead of three copies, without growing into a "mega-framework".
 
-Сравнение `EditorCanvas.vue` и сторов двух проектов (workspace ≈ 800 + 590 строк, graph-up ≈ 300 + 530).
+## 1. What we found
 
-**Общее (≈85% поведения):** камера и сетка, машина жестов (pan, drag, marquee, connect), выделение, история снимков, автосохранение, импорт/экспорт файла, уведомления, палитра нод. В graph-up это старая версия того же кода: workspace его надмножество (плюс touch, автопрокрутка, resize, привязка к сетке, контейнеры).
+A comparison of `EditorCanvas.vue` and the stores of two editors (A ≈ 800 + 590 lines, B ≈ 300 + 530).
 
-**Разное:** модель данных. Нода с размером (workspace) против автоматического размера по DOM (graph-up); пины как геометрия (4 якоря на грань) против пинов-строк с типами, чьё положение измеряется по DOM; проверка связи; формат файла; внешний вид ноды.
+**Common (≈85% of the behaviour):** the camera and the grid, the gesture machine (pan, drag, marquee, connect), selection, snapshot history, autosave, file import/export, notices, the node palette. In B this is an older version of the same code: A is its superset (plus touch, auto-scroll, resize, grid snapping, containers).
 
-**taofx** по устройству ближе к graph-up (типизированные пины), но без exec. Ему нужен тот же холст.
+**Different:** the data model. A node with a size (A) versus a size taken from the DOM (B); pins as geometry (4 anchors per side) versus typed row pins whose position is measured from the DOM; link validation; the file format; the look of a node.
 
-Вывод: общим должно стать **поведение**, а модель, вид ноды и правила связей остаются в приложении. Граница проходит ровно по тем методам, которые холст сейчас вызывает у стора.
+Editor **C** is closer to B by design (typed pins). It needs the same canvas.
 
-## 2. Слои и правило ярусов
+The conclusion: what becomes shared is the **behaviour**, while the model, the node view and the link rules stay in the app. The boundary runs exactly along the methods the canvas currently calls on the store.
 
-| Ярус | Что | Может импортировать |
+## 2. Layers and the tier rule
+
+| Tier | What | May import |
 |---|---|---|
-| 0, примитивы | `camera`, `history`, `snap`, `wheel`, `edgescroll`, `gestures`, `curve`, `ids`, `storage`, `file`, `i18n`, `touch` | ничего из taoux |
-| 1, составные | `session`, `canvas`, `links`, `palette`, `pins`, `curveeditor`, `gradienteditor`, `playback` | только ярус 0, и не друг друга |
+| 0, primitives | `camera`, `history`, `snap`, `wheel`, `edgescroll`, `gestures`, `curve`, `ids`, `storage`, `file`, `i18n`, `touch` | nothing from taoux |
+| 1, composite | `session`, `canvas`, `links`, `palette`, `pins`, `curveeditor`, `gradienteditor`, `playback` | tier 0 only, and not each other |
 
-Так ответ на вопрос про изоляцию остаётся честным: примитивы по-прежнему самодостаточны, а составные явно собирают их. Правило проверяет тест: он читает импорты и падает, если ярус 0 что-то импортирует или ярус 1 тянет соседа из своего яруса.
+This keeps the answer about isolation honest: primitives are still self-contained, and composites assemble them explicitly. A test enforces the rule: it reads the imports and fails if tier 0 imports anything or tier 1 pulls in a neighbour of its own tier. (Tier 2, `curvefield`, is the only one allowed to import TaoUI.)
 
-## 3. Новые модули
+## 3. The new modules
 
 ### `canvas` (Vue)
 
-Компонент `TaoxCanvas` и композабл `useCanvasGestures`. Холст не знает модель данных: он разбирает жесты и зовёт методы `CanvasHost`.
+The `TaoxCanvas` component and the `useCanvasGestures` composable. The canvas does not know the data model: it parses gestures and calls the methods of `CanvasHost`.
 
 ```vue
 <TaoxCanvas :host="host" :options="options">
-    <!-- мир: сюда приложение кладёт контейнеры, слой связей и ноды в нужном порядке -->
+    <!-- the world: the app puts containers, the links layer and nodes here in the right order -->
     <NodeView v-for="n in containers" :node="n" />
     <TaoxLinks :lines="lines" :selected-id="..." :preview="preview" />
     <NodeView v-for="n in nodes" :node="n" />
-    <template #overlay><!-- поверх мира, в экранных координатах --></template>
+    <template #overlay><!-- on top of the world, in screen coordinates --></template>
 </TaoxCanvas>
 ```
 
-Что делает холст: transform мира и сетка, рамка выделения, мышь, сенсор (тап, двойной тап, долгое нажатие, щипок), колесо, автопрокрутка у края, клавиши Delete/Esc/Ctrl+Z/Y (по физической клавише, работает в русской раскладке), захват и отмена указателя, оборванные жесты.
+What the canvas does: the world transform and the grid, the selection frame, the mouse, touch (tap, double tap, long press, pinch), the wheel, auto-scroll at the edge, the keys Delete/Esc/Ctrl+Z/Y (by physical key, so they work in non-Latin layouts), pointer capture and cancel, broken-off gestures.
 
-### Контракт `CanvasHost<P>`
+### The `CanvasHost<P>` contract
 
-`P` — адрес пина. Для холста он непрозрачный: его создаёт и понимает только приложение.
+`P` is a pin address. It is opaque to the canvas: only the app creates and understands it.
 
 ```ts
-export type Point = [number, number]; // изменяемый: сторы принимают именно такие кортежи
+export type Point = [number, number]; // mutable: stores accept exactly such tuples
 
 export interface CanvasHost<P = unknown> {
-    // вид
+    // view
     readonly camera: Camera;
     setCamera(camera: Camera): void;
     setViewport(size: Size): void;
 
-    // выделение
+    // selection
     readonly selection: ReadonlySet<string>;
     setSelection(ids: Iterable<string>): void;
     toggleSelected(nodeId: string): void;
     selectConnection(id: string | null): void;
 
-    // перетаскивание (привязка к сетке и «едущие» контейнеры: забота приложения)
+    // dragging (grid snapping and "travelling" containers are the app's business)
     raise?(nodeId: string): void;
     beginDrag(primary: string): void;
     moveSelected(dx: number, dy: number, snap: boolean): void;
     endDrag(): void;
 
-    // история и удаление
+    // history and deletion
     commit(): void;
     undo(): void;
     redo(): void;
     removeSelected(): void;
 
-    // палитра
+    // palette
     readonly paletteOpen: boolean;
     openPalette(screen: Point, world: Point, origin: P | null): void;
     closePalette(): void;
 
-    // необязательные возможности: нет члена, нет и жеста
+    // optional features: no member, no gesture
     connect?: ConnectHost<P>; // start / update / finish / cancel, origin
     resize?: ResizeHost; // rectOf / from
-    activate?(target: ActivateTarget): void; // двойной клик по связи или по полосе ноды
+    activate?(target: ActivateTarget): void; // a double click on a link or a node strip
     readonly snapEnabled?: boolean;
-    readonly selectMode?: boolean; // сенсорный режим «Выделение»
+    readonly selectMode?: boolean; // the touch "Select" mode
 }
 
 export interface CanvasOptions<P> {
-    pinAt(target: EventTarget | null): P | null; // пин под указателем
-    pinNear?(point: { clientX: number; clientY: number }): P | null; // ближайший пин (сторона ноды)
+    pinAt(target: EventTarget | null): P | null; // the pin under the pointer
+    pinNear?(point: { clientX: number; clientY: number }): P | null; // the nearest pin (a node side)
 }
 ```
 
-Полный текст типов с `ConnectHost`, `ResizeHost`, `ActivateTarget`, `Rect`, `ResizeEdge` войдёт в `canvas/host.ts` при реализации.
+The full text of the types, with `ConnectHost`, `ResizeHost`, `ActivateTarget`, `Rect` and `ResizeEdge`, is in `src/canvas/host.ts`.
 
-**DOM-контракт.** Это часть API холста, `NodeView` приложения обязан его соблюдать: `data-node-id` на корне ноды, `data-conn-id` на линии связи, `data-resize="n|s|e|w|ne|nw|se|sw"` на ручках, `data-node-container` (нода-контейнер: в рамку выделения попадает только её полоса) и `data-node-handle` (полоса, за которую тянут), а пины размечает приложение; как их читать, знает его `pinAt`.
+**The DOM contract.** It is part of the canvas API, and the app's `NodeView` must keep it: `data-node-id` on the node root, `data-conn-id` on the link line, `data-resize="n|s|e|w|ne|nw|se|sw"` on the handles, `data-node-container` (a container node: only its strip counts for the selection frame) and `data-node-handle` (the strip a node is dragged by); pins are marked up by the app, and its `pinAt` knows how to read them.
 
 ### `links` (Vue)
 
-`TaoxLinks`: только отрисовка SVG из готовой геометрии. Пути строит приложение (из `curve`: `curvePath` или `linkShape`).
+`TaoxLinks`: only SVG rendering from ready geometry. Paths are built by the app (from `curve`: `curvePath` or `linkShape`).
 
 ```ts
 interface LinkLine { id: string; d: string; head?: string | null; color?: string }
 // props: lines, selectedId, preview?: LinkLine & { invalid?: boolean }
 ```
 
-Толщина в экранных px (`vector-effect`), широкая невидимая зона попадания, подсветка выбранной связи.
+Thickness in screen px (`vector-effect`), a wide invisible hit area, highlighting of the selected link.
 
-### `session` (логика на Vue-рефах)
+### `session` (logic on Vue refs)
 
-Самый большой кусок, который сейчас дублируется целиком (≈200 строк в каждом сторе): история, автосохранение, импорт/экспорт, восстановление, уведомления.
+The biggest piece, which used to be duplicated whole (≈200 lines in every store): history, autosave, import/export, restore, notices.
 
 ```ts
 createDocumentSession<D>({
-    document: { get, set },        // ссылка на документ в сторе
+    document: { get, set },        // a reference to the document in the store
     camera: { get, set },
     storage,                       // createSavedStorage(...)
     codec: { serialize, parse },   // parse → { ok, doc, view, dropped } | { ok: false, error }
     empty: () => D,
-    onReset: () => void,           // сбросить выделение, протягивание и палитру
+    onReset: () => void,           // reset the selection, the drag and the palette
 })
 // → commit(key?), undo, redo, canUndo, canRedo, recorded(fn, key?),
 //   notice, showNotice, startAutosave, flushSave, exportText, importText, restoreSaved, load
 ```
 
-Сообщения (`file.loaded`, `file.error.saveFailed` и т.д.) идут ключами i18n: словарь приложения обязан их содержать, тип это проверит.
+Messages (`file.loaded`, `file.error.saveFailed`, etc.) go as i18n keys: the app dictionary must contain them, and the type checks it.
 
-### `palette` и `pins`
+### `palette` and `pins`
 
-- `palette`: чистые `filterNodes` и `groupByCategory` (сейчас в graph-up). Всплывающее окно остаётся в приложении: оно завязано на его i18n и правила совместимости пинов.
-- `pins`: композабл `usePinMeasure` для проектов с типизированными пинами (graph-up, taofx): измеряет центры пинов по DOM в мировых единицах и сообщает их стору.
+- `palette`: the pure `filterNodes` and `groupByCategory`. The popup stays in the app: it is tied to its i18n and its pin compatibility rules.
+- `pins`: the `usePinMeasure` composable for editors with typed pins: it measures pin centres from the DOM in world units and reports them to the store.
 
-## 4. Остаётся в приложениях
+## 4. What stays in the apps
 
-Модель и формат файла, `NodeView` (вид ноды), правила и проверка связей, геометрия пинов (якоря или измерение), содержимое палитры и тексты, всё про тему.
+The model and the file format, `NodeView` (the node view), the link rules and validation, pin geometry (anchors or measuring), the palette content and texts, everything about the theme.
 
-## 5. Как проверили, что граница верна
+## 5. How we checked the boundary is right
 
-Написан черновик `CanvasHost`/`CanvasOptions` и **адаптеры к обоим реальным сторам** (≈60 строк каждый), проверены `vue-tsc` (с контрольной ошибкой, чтобы убедиться, что проверка настоящая). Оба сходятся без правок сторов. Что выяснилось:
+We wrote a draft of `CanvasHost`/`CanvasOptions` and **adapters to both real stores** (≈60 lines each), and checked them with `vue-tsc` (with a deliberate error, to make sure the check is real). Both converge without changes to the stores. What turned out:
 
-- Точки (`Point`) должны быть изменяемыми кортежами: сторы принимают `[number, number]`, `readonly` не проходит.
-- Из-за разной модели у graph-up `beginDrag`/`endDrag` пустые, а `moveSelected` игнорирует `snap`. Это нормально: методы обязательные, реализация может быть пустой.
-- **В graph-up нет `cancelConnect`.** Если указатель потерян посреди протягивания, связь «зависает». Общий холст это исправит (в стор добавится одна строка).
-- graph-up бесплатно получит touch, автопрокрутку, привязку к сетке и изменение размера (если захочет), taofx сразу стартует с ними.
+- Points (`Point`) must be mutable tuples: the stores accept `[number, number]`, and `readonly` does not pass.
+- Because of the different model, B has empty `beginDrag`/`endDrag`, and its `moveSelected` ignores `snap`. That is fine: the methods are required, the implementation may be empty.
+- **B had no `cancelConnect`.** If the pointer is lost in the middle of dragging out a link, the link "hangs". The shared canvas fixes this (one line is added to the store).
+- B gets touch, auto-scroll, grid snapping and resizing for free (if it wants them), and C starts with them at once.
 
-## 6. Упаковка Vue-компонентов
+## 6. Packaging the Vue components
 
-Проверено на пробном пакете: `vite build` в режиме библиотеки с `cssCodeSplit: true` даёт отдельные `<модуль>.js` и `<модуль>.css` на каждую точку входа, общие куски уходят в `chunks/`; `vue-tsc --emitDeclarationOnly` даёт `.d.ts` и для `.vue`. Tree-shaking по модулям работает.
+Checked on a trial package: `vite build` in library mode with `cssCodeSplit: true` gives a separate `<module>.js` and `<module>.css` per entry point, shared pieces go to `chunks/`; `vue-tsc --emitDeclarationOnly` gives `.d.ts` for `.vue` as well. Tree-shaking by module works.
 
-Следствие: **JS не подключает стили сам**, приложение добавляет одну строку `import '@1337exp/taoux/canvas.css'`. Цвета и размеры холста идут через CSS-переменные `--tx-*` с запасными значениями, чтобы тема приложения (в том числе TaoUI) подменяла их без правки библиотеки. `typescript` держим `~6.0.x`: с более новым `vue-tsc` не запускается.
+The consequence: **the JS does not import styles itself**, and the app adds one line, `import '@1337exp/taoux/canvas.css'`. The colours and sizes of the canvas go through `--tx-*` CSS variables with fallback values, so the app theme (TaoUI included, see the `taoui.css` bridge) overrides them without editing the library.
 
-## 7. План миграции
+## 7. The migration plan (done)
 
-Каждый шаг заканчивается зелёными typecheck, тестами и сборкой всех проектов.
+Every step ended with green typecheck, tests and builds of all projects.
 
-1. ~~Тест ярусов и каркас сборки Vue~~ (готово).
-2. ~~`session`~~ (готово: workspace и graph-up переведены, store короче на ≈130 строк у каждого).
-3. ~~`links` и `palette`~~ (готово: `TaoxLinks` с переменными `--tx-link-*`, проверено в браузере в обоих проектах).
-4. ~~`canvas`~~ (готово: `EditorCanvas.vue` стал 37 строк у workspace (было 803) и 26 у graph-up (было 298); жесты проверены в браузере; у graph-up появились touch, автопрокрутка и `cancelConnect`).
-5. ~~taofx~~ (готово: стор на `session`, `NodeView` с типизированными пинами, палитра с фильтром по совместимости, предпросмотр рядом).
+1. ~~The tier test and the Vue build scaffold~~.
+2. ~~`session`~~: the stores of editors A and B became ≈130 lines shorter each.
+3. ~~`links` and `palette`~~: `TaoxLinks` with `--tx-link-*` variables, checked in the browser.
+4. ~~`canvas`~~: `EditorCanvas.vue` became 37 lines in A (was 803) and 26 in B (was 298); the gestures were checked in the browser; B got touch, auto-scroll and `cancelConnect`.
+5. ~~Editor C~~: a store on `session`, a `NodeView` with typed pins, a palette filtered by compatibility, a preview next to it.
 
-## 8. Решения, которые нужны от человека
+## 8. Decisions taken
 
-1. Правило ярусов (составные модули могут импортировать примитивы) и тест, который его охраняет.
-2. Стили отдельным `.css` на модуль + переменные `--tx-*` (вместо внедрения CSS из JS).
-3. Порядок: `session` раньше `canvas`.
-4. Колесо у graph-up/taofx: решено как в workspace: колесо двигает, Ctrl масштабирует (опции `wheel` в API нет).
+1. The tier rule (composite modules may import primitives) and the test that guards it.
+2. Styles as a separate `.css` per module + `--tx-*` variables (instead of injecting CSS from JS).
+3. The order: `session` before `canvas`.
+4. The wheel: it moves the canvas, Ctrl zooms (there is no `wheel` option in the API).
