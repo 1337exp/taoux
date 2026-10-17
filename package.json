@@ -47,6 +47,10 @@
       "import": "./dist/gradienteditor.js"
     },
     "./gradienteditor.css": "./dist/gradienteditor.css",
+    "./ease": {
+      "types": "./dist/ease.d.ts",
+      "import": "./dist/ease.js"
+    },
     "./edgescroll": {
       "types": "./dist/edgescroll.d.ts",
       "import": "./dist/edgescroll.js"

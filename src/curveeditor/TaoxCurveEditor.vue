@@ -2,7 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, ref } from 'vue';
 import { createEdgeScroller } from '../edgescroll';
 import { clampTo, niceStep, roundTo, snapTo, ticks } from '../num';
-import { addPoint, movePoint, removePoint, valueBounds, type CurvePoint } from './ops';
+import { addPoint, movePoint, removePoint, sampleSegment, setEase, valueBounds, type CurvePoint } from './ops';
 
 const props = withDefaults(
     defineProps<{
@@ -64,7 +64,15 @@ const isMajorV = (v: number) => Math.abs(v / majorV.value - Math.round(v / major
 
 const px = (tt: number) => PAD_L + tt * PLOT_W;
 const py = (v: number) => PAD_T + (1 - (v - bounds.value.min) / span.value) * PLOT_H;
-const path = computed(() => points.value.map((p, i) => `${i === 0 ? 'M' : 'L'} ${px(p.t).toFixed(1)} ${py(p.v).toFixed(1)}`).join(' '));
+// Участки рисуются по своим переходам: у прямой два конца, у плавных десятки отрезков, у ступеньки угол
+const path = computed(() => {
+    const pts = points.value;
+    const out: string[] = [];
+    for (let i = 0; i < pts.length - 1; i++) {
+        sampleSegment(pts[i]!, pts[i + 1]!).forEach((p, k) => out.push(`${i === 0 && k === 0 ? 'M' : 'L'} ${px(p.t).toFixed(1)} ${py(p.v).toFixed(1)}`));
+    }
+    return out.join(' ');
+});
 const fmt = (n: number) => String(Math.round(n * 1000) / 1000);
 
 interface PointerSample {
@@ -73,14 +81,18 @@ interface PointerSample {
     shiftKey: boolean;
 }
 
-/** Координаты указателя в единицах кривой; Shift временно меняет режим шага. */
-function toCurve(e: PointerSample): { t: number; v: number } {
+/** Координаты указателя в единицах кривой, как есть: без прилипания, округления и границ. */
+function rawCurve(e: PointerSample): { t: number; v: number } {
     const r = svg.value!.getBoundingClientRect();
     const x = ((e.clientX - r.left) / r.width) * W;
     const y = ((e.clientY - r.top) / r.height) * H;
     const { min, max } = bounds.value;
-    let tt = (x - PAD_L) / PLOT_W;
-    let v = min + (1 - (y - PAD_T) / PLOT_H) * (max - min);
+    return { t: (x - PAD_L) / PLOT_W, v: min + (1 - (y - PAD_T) / PLOT_H) * (max - min) };
+}
+
+/** Координаты указателя в единицах кривой; Shift временно меняет режим шага. */
+function toCurve(e: PointerSample): { t: number; v: number } {
+    let { t: tt, v } = rawCurve(e);
     if (props.snap !== e.shiftKey) {
         tt = snapTo(tt, props.stepT);
         v = snapTo(v, stepV.value);
@@ -153,6 +165,81 @@ function onUp() {
     frozen.value = null;
     shift.value = 0;
     emit('commit');
+}
+
+//--------------------------------------------------
+// Ручки кубической кривой Безье у выбранного участка
+
+/** Участок, который начинается в выбранной точке и идёт по Безье: ручки есть только у него (и только если у участка есть высота). */
+const bezierSegment = computed(() => {
+    const i = Math.min(props.selected, points.value.length - 1);
+    const a = points.value[i];
+    const b = points.value[i + 1];
+    if (!a || !b || typeof a.ease !== 'object' || Math.abs(b.v - a.v) < 1e-9 || b.t - a.t <= 0) return null;
+    return { i, a, b, bezier: a.ease.bezier };
+});
+
+/** Две ручки участка в координатах плота. */
+const bezierHandles = computed(() => {
+    const s = bezierSegment.value;
+    if (!s) return [];
+    const [x1, y1, x2, y2] = s.bezier;
+    return [
+        { n: 0, t: s.a.t + x1 * (s.b.t - s.a.t), v: s.a.v + y1 * (s.b.v - s.a.v), from: s.a },
+        { n: 1, t: s.a.t + x2 * (s.b.t - s.a.t), v: s.a.v + y2 * (s.b.v - s.a.v), from: s.b },
+    ];
+});
+
+const round2 = (x: number) => Math.round(x * 100) / 100;
+const BEZIER_STEP = 0.05;
+
+/** Ручка `n` ставится в (x, y) нормализованного участка: x в 0…1, y свободный в разумных пределах (заступ). */
+function setBezierHandle(n: 0 | 1, x: number, y: number, commitNow = false) {
+    const s = bezierSegment.value;
+    if (!s) return;
+    const next: [number, number, number, number] = [...s.bezier];
+    next[n * 2] = Math.min(1, Math.max(0, round2(x)));
+    next[n * 2 + 1] = Math.min(3, Math.max(-2, round2(y)));
+    emit('update:modelValue', setEase(points.value, s.i, { bezier: next }));
+    if (commitNow) emit('commit');
+}
+
+let handleDrag = -1;
+
+function onHandleDown(e: PointerEvent, n: number) {
+    handleDrag = n;
+    frozen.value = valueBounds(points.value, props.min, props.max);
+    try {
+        (e.currentTarget as Element).setPointerCapture(e.pointerId);
+    } catch {
+        // указатель уже ушёл или захват недоступен: тянуть можно и без него
+    }
+}
+
+function onHandleMove(e: PointerEvent) {
+    const s = bezierSegment.value;
+    if (handleDrag < 0 || !s) return;
+    const { t, v } = rawCurve(e);
+    setBezierHandle(handleDrag as 0 | 1, (t - s.a.t) / (s.b.t - s.a.t), (v - s.a.v) / (s.b.v - s.a.v));
+}
+
+function onHandleUp() {
+    if (handleDrag < 0) return;
+    handleDrag = -1;
+    frozen.value = null;
+    emit('commit');
+}
+
+/** Стрелки на ручке сдвигают её на шаг (Shift крупнее): влево и вправо по x, вверх и вниз по y. */
+function onHandleKey(e: KeyboardEvent, n: number) {
+    const s = bezierSegment.value;
+    const arrows: Record<string, [number, number]> = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] };
+    const d = arrows[e.key];
+    if (!s || !d) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const k = BEZIER_STEP * (e.shiftKey ? 5 : 1);
+    setBezierHandle(n as 0 | 1, s.bezier[n * 2]! + d[0] * k, s.bezier[n * 2 + 1]! + d[1] * k, true);
 }
 
 function onDouble(e: MouseEvent) {
@@ -235,6 +322,26 @@ const labelOf = (i: number, p: CurvePoint) => (props.pointLabel ? props.pointLab
         <text v-for="x in labelsT" :key="`lt${x}`" class="tx-curve-label" :x="px(x)" :y="H - 4" :text-anchor="x === 0 ? 'start' : x === 1 ? 'end' : 'middle'">{{ fmt(x) }}</text>
 
         <path class="tx-curve-line" :d="path" />
+
+        <g v-if="bezierHandles.length" class="tx-curve-bezier">
+            <template v-for="h in bezierHandles" :key="h.n">
+                <line class="tx-curve-arm" :x1="px(h.from.t)" :y1="py(h.from.v)" :x2="px(h.t)" :y2="py(h.v)" />
+                <circle
+                    class="tx-curve-handle"
+                    :cx="px(h.t)"
+                    :cy="py(h.v)"
+                    r="4"
+                    tabindex="0"
+                    role="slider"
+                    :aria-label="`Bezier handle ${h.n + 1}`"
+                    @pointerdown.stop="onHandleDown($event, h.n)"
+                    @pointermove="onHandleMove"
+                    @pointerup="onHandleUp"
+                    @pointercancel="onHandleUp"
+                    @keydown="onHandleKey($event, h.n)"
+                />
+            </template>
+        </g>
         <circle
             v-for="(p, i) in points"
             :key="i"
@@ -297,6 +404,26 @@ const labelOf = (i: number, p: CurvePoint) => (props.pointLabel ? props.pointLab
     stroke: var(--tx-curve-accent, #4fc3f7);
     stroke-width: 2;
     pointer-events: none;
+}
+
+.tx-curve-arm {
+    stroke: var(--tx-curve-label, #8b929c);
+    stroke-width: 1;
+    stroke-dasharray: 3 2;
+    pointer-events: none;
+}
+
+.tx-curve-handle {
+    fill: var(--tx-curve-label, #8b929c);
+    stroke: var(--tx-curve-bg, #15171b);
+    stroke-width: 1.5;
+    cursor: grab;
+}
+
+.tx-curve-handle:hover,
+.tx-curve-handle:focus-visible {
+    fill: var(--tx-curve-accent, #4fc3f7);
+    outline: none;
 }
 
 .tx-curve-dot {

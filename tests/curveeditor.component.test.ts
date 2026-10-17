@@ -240,3 +240,70 @@ describe('TaoxCurveEditor: фокус после правки', () => {
         w.unmount();
     });
 });
+
+describe('TaoxCurveEditor: переходы и ручки Безье', () => {
+    let w: VueWrapper;
+    afterEach(() => w?.unmount());
+
+    const bez = (): CurvePoint[] => [
+        { t: 0, v: 0, ease: { bezier: [0.25, 0.25, 0.75, 0.75] } },
+        { t: 1, v: 1 },
+    ];
+    const bezierOf = (p: CurvePoint) => (p.ease as unknown as { bezier: number[] }).bezier;
+    const handles = (wr: VueWrapper) => wr.findAll('.tx-curve-handle');
+
+    it('участок с плавным переходом рисуется ломаной из многих отрезков, прямой из одного', () => {
+        w = mountCurve({ modelValue: [{ t: 0, v: 0, ease: 'quad-in' }, { t: 1, v: 1 }] });
+        expect(w.find('.tx-curve-line').attributes('d')!.split('L').length).toBeGreaterThan(10);
+        w.unmount();
+        w = mountCurve({ modelValue: [{ t: 0, v: 0 }, { t: 1, v: 1 }] });
+        expect(w.find('.tx-curve-line').attributes('d')!.split('L')).toHaveLength(2);
+    });
+
+    it('ручки есть только у выбранного участка с Безье', () => {
+        w = mountCurve({ modelValue: bez() });
+        expect(handles(w)).toHaveLength(2);
+        w.unmount();
+        w = mountCurve({ modelValue: bez(), selected: 1 });
+        expect(handles(w)).toHaveLength(0);
+        w.unmount();
+        w = mountCurve({ modelValue: [{ t: 0, v: 0, ease: 'cubic-out' }, { t: 1, v: 1 }] });
+        expect(handles(w)).toHaveLength(0);
+    });
+
+    it('перетаскивание ручки меняет Безье участка и сохраняет правку при отпускании', async () => {
+        w = mountCurve({ modelValue: bez() });
+        await handles(w)[0]!.trigger('pointerdown', { clientX: x(0.25), clientY: y(0.25), pointerId: 1, button: 0 });
+        await handles(w)[0]!.trigger('pointermove', { clientX: x(0.5), clientY: y(0.9), pointerId: 1 });
+        const e = bezierOf(model(w)[0]!);
+        expect(e[0]).toBeCloseTo(0.5);
+        expect(e[1]).toBeCloseTo(0.9);
+        expect(e.slice(2)).toEqual([0.75, 0.75]);
+        expect(w.emitted('commit')).toBeUndefined();
+        await handles(w)[0]!.trigger('pointerup', { pointerId: 1 });
+        expect(w.emitted('commit')).toHaveLength(1);
+    });
+
+    it('x ручки не выходит за 0…1', async () => {
+        w = mountCurve({ modelValue: bez() });
+        await handles(w)[1]!.trigger('pointerdown', { clientX: x(0.75), clientY: y(0.75), pointerId: 1, button: 0 });
+        await handles(w)[1]!.trigger('pointermove', { clientX: x(1.4), clientY: y(0.75), pointerId: 1 });
+        expect(bezierOf(model(w)[0]!)[2]).toBe(1);
+    });
+
+    it('стрелки двигают ручку на шаг', async () => {
+        w = mountCurve({ modelValue: bez() });
+        await handles(w)[0]!.trigger('keydown', { key: 'ArrowRight' });
+        expect(bezierOf(model(w)[0]!)[0]).toBeCloseTo(0.3);
+        expect(w.emitted('commit')).toHaveLength(1);
+        await handles(w)[0]!.trigger('keydown', { key: 'ArrowUp', shiftKey: true });
+        expect(bezierOf(model(w)[0]!)[1]).toBeCloseTo(0.5);
+    });
+
+    it('перетаскивание точки не теряет её переход', async () => {
+        w = mountCurve({ modelValue: bez() });
+        await dots(w)[0]!.trigger('pointerdown', { clientX: x(0), clientY: y(0), pointerId: 1, button: 0 });
+        await dots(w)[0]!.trigger('pointermove', { clientX: x(0.1), clientY: y(0), pointerId: 1 });
+        expect(model(w)[0]!.ease).toEqual({ bezier: [0.25, 0.25, 0.75, 0.75] });
+    });
+});

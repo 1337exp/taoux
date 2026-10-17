@@ -1,12 +1,17 @@
+import { easeValue, type Ease } from '../ease';
 import { clamp01 } from '../num';
 
-/** Точка кривой: t в 0…1, v значение. Между точками кривая линейна. */
+/**
+ * Точка кривой: t в 0…1, v значение. `ease` задаёт, как идти от этой точки к следующей (по умолчанию линейно);
+ * у последней точки он ни на что не влияет.
+ */
 export interface CurvePoint {
     t: number;
     v: number;
+    ease?: Ease;
 }
 
-/** Значение кривой в t: вне крайних точек равно крайней, между ними линейно. */
+/** Значение кривой в t: вне крайних точек равно крайней, между ними по переходу `ease` левой точки (без него линейно). */
 export function sampleCurve(points: readonly CurvePoint[], t: number): number {
     const n = points.length;
     if (n === 0) return 0;
@@ -18,7 +23,7 @@ export function sampleCurve(points: readonly CurvePoint[], t: number): number {
         if (x <= b.t) {
             const a = points[i - 1]!;
             const span = b.t - a.t;
-            return span <= 0 ? b.v : a.v + ((b.v - a.v) * (x - a.t)) / span;
+            return span <= 0 ? b.v : a.v + (b.v - a.v) * easeValue(a.ease, (x - a.t) / span);
         }
     }
     return points[n - 1]!.v;
@@ -29,7 +34,7 @@ export function movePoint(points: readonly CurvePoint[], i: number, t: number, v
     const next = points.map((p) => ({ ...p }));
     const lo = i > 0 ? next[i - 1]!.t : 0;
     const hi = i < next.length - 1 ? next[i + 1]!.t : 1;
-    next[i] = { t: Math.min(hi, Math.max(lo, clamp01(t))), v };
+    next[i] = { ...next[i]!, t: Math.min(hi, Math.max(lo, clamp01(t))), v };
     return next;
 }
 
@@ -49,6 +54,30 @@ export function removePoint(points: readonly CurvePoint[], i: number): CurvePoin
     return points.filter((_, k) => k !== i).map((p) => ({ ...p }));
 }
 
+/** Переход участка, который не прямая и не ступенька: его форму нужно рисовать и учитывать при подборе вида. */
+const curved = (e: Ease | undefined) => e !== undefined && e !== 'linear' && e !== 'step';
+
+/** Ломаная участка a→b для рисования: у прямой два конца, у остальных переходов `steps` отрезков (ступенька: угол). */
+export function sampleSegment(a: CurvePoint, b: CurvePoint, steps = 24): { t: number; v: number }[] {
+    if (a.ease === 'step') return [{ t: a.t, v: a.v }, { t: b.t, v: a.v }, { t: b.t, v: b.v }];
+    if (!curved(a.ease)) return [{ t: a.t, v: a.v }, { t: b.t, v: b.v }];
+    const out: { t: number; v: number }[] = [];
+    for (let i = 0; i <= steps; i++) {
+        const u = i / steps;
+        out.push({ t: a.t + (b.t - a.t) * u, v: a.v + (b.v - a.v) * easeValue(a.ease, u) });
+    }
+    return out;
+}
+
+/** Копия списка с переходом точки `i` (`undefined` и `linear` убирают поле: файл остаётся коротким). */
+export function setEase(points: readonly CurvePoint[], i: number, ease: Ease | undefined): CurvePoint[] {
+    return points.map((p, k) => {
+        if (k !== i) return { ...p };
+        const { ease: _old, ...rest } = p;
+        return ease === undefined || ease === 'linear' ? rest : { ...rest, ease };
+    });
+}
+
 /**
  * Пределы значений для отрисовки: от 0 (или ниже минимума) до максимума с запасом, не уже чем 0…1.
  * Заданные `min`/`max` (границы поля) фиксируют вид: график не плывёт и не выходит за допустимое.
@@ -59,6 +88,14 @@ export function valueBounds(points: readonly CurvePoint[], min?: number, max?: n
     for (const p of points) {
         lo = Math.min(lo, p.v);
         hi = Math.max(hi, p.v);
+    }
+    // переходы с заступом (back, elastic, Безье) выходят за значения точек: вид подбираем по самой кривой
+    for (let i = 0; i < points.length - 1; i++) {
+        if (!curved(points[i]!.ease)) continue;
+        for (const s of sampleSegment(points[i]!, points[i + 1]!)) {
+            lo = Math.min(lo, s.v);
+            hi = Math.max(hi, s.v);
+        }
     }
     const auto = { min: lo, max: hi === lo ? lo + 1 : hi * 1.1 };
     const a = min ?? auto.min;

@@ -26,12 +26,13 @@ import { History } from '@1337exp/taoux/history';
 | `touch` | `coarse`: is there a coarse pointer (a finger) | vue (peer) |
 | `curve` | link paths: bezier between pins, arrowheads of constant screen size | nothing |
 | `ids` | `uid(prefix, taken)` | nothing |
+| `ease` | easing functions between curve points: 8 families × in / out / in-out, `linear`, `step`, cubic Bezier; `easeValue`, `isEase` (the editor draws with it, a runtime evaluates with it) | nothing |
 | `num` | small numeric helpers: `clamp`, `roundTo`, `snapTo`, `niceStep`, `ticks` (shared by the curve, gradient and playback modules) | nothing |
 | `session` | document lifecycle: history, autosave, files, restore, notices | vue (peer) |
 | `palette` | search and groups of nodes for a palette | nothing |
 | `links` (Vue) | links layer: SVG from ready geometry, `--tx-link-*` | vue (peer) |
 | `canvas` (Vue) | canvas: mouse and touch gestures, wheel, auto-scroll, keys; the `CanvasHost` contract | vue (peer) |
-| `curveeditor` (Vue) | curve editor plot: grid, snapping, bounds, decimals, auto-scroll at the edge; point operations; keyboard (Tab, arrows, Shift, Insert, Delete) | vue (peer) |
+| `curveeditor` (Vue) | curve editor plot: grid, snapping, bounds, decimals, auto-scroll at the edge; point operations; per-segment transitions with Bezier handles; keyboard (Tab, arrows, Shift, Insert, Delete) | vue (peer) |
 | `gradienteditor` (Vue) | gradient bar with stop handles; stop operations, `gradientCss`; keyboard (Tab, arrows, Home/End, Insert, Delete) | vue (peer) |
 | `playback` | playback model: time, pause, loop, speed, seeking; `createPlayback` without Vue and `usePlayback` for a component | vue (peer, for `usePlayback`) |
 | `pins` | row pin positions measured from the DOM: `usePinMeasure`, `createPinRegistry` | vue (peer) |
