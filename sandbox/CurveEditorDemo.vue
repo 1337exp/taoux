@@ -71,6 +71,7 @@ function setField(c: Case, field: 't' | 'v', value: number | null) {
             <section v-for="c in cases" :key="c.title" class="case">
                 <h2>{{ c.title }} <small>{{ c.note }}</small></h2>
                 <TaoxCurveEditor v-model="c.value" v-model:selected="c.selected" :min="c.min" :max="c.max" :precision="c.precision" :snap="snap" />
+                <div class="divider">Ниже обвязка на TaoUI: самого редактора это не касается</div>
                 <div class="row">
                     <TaoInputNumber class="grow" size="small" :min="0" :max="1" :step="0.05" :precision="c.precision" :controls="false" :model-value="current(c).t" @update:model-value="(x) => setField(c, 't', x)" />
                     <TaoInputNumber class="grow" size="small" :min="c.min" :max="c.max" :step="0.1" :precision="c.precision" :controls="false" :model-value="current(c).v" @update:model-value="(x) => setField(c, 'v', x)" />
@@ -84,3 +85,25 @@ function setField(c: Case, field: 't' | 'v', value: number | null) {
         </div>
     </SandboxShell>
 </template>
+
+<style scoped>
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0;
+    color: var(--tao-color-text-muted);
+    font-size: 11px;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    border-top: 1px dashed var(--tao-color-border-strong);
+}
+
+.divider::before {
+    flex: 0 0 12px;
+}
+</style>
