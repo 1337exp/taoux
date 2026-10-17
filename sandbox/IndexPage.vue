@@ -5,6 +5,7 @@ import SandboxShell from './SandboxShell.vue';
 const pages = [
     { name: 'curveeditor', note: 'редактор кривой: сетка, шаг, границы, знаки, автопрокрутка' },
     { name: 'gradienteditor', note: 'полоса градиента: остановки, добавление и удаление' },
+    { name: 'color', note: 'TaoColorPicker и TaoColorInput из TaoUI 3.1: палитра, прозрачность, образцы, colorModel для своего хранилища' },
     { name: 'playback', note: 'usePlayback (TaoUX) ведёт время, TaoTimeline (TaoUI) показывает: цикл, скорость, перемотка' },
     { name: 'slider', note: 'TaoSlider и TaoRangeSlider из TaoUI 3: диапазон, метки, ступени, вертикальный, таймлайн' },
 ];

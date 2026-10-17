@@ -65,4 +65,4 @@ Link notes:
 
 ## Sandbox
 
-The `sandbox/` folder is a demo and a testing ground for components: pages import modules straight from `src/`, with no build. A new component is `sandbox/<name>.html` + `.ts` + a demo `.vue` and a link in `sandbox/index.html`. Run it with `npm run sandbox`. It holds `curveeditor`, `gradienteditor`, `slider` and `playback` for now. The sandbox is built together with TaoUI (a dev dependency that does not ship in the package), so you can see how the modules work as a pair, and there is a dark/light theme switch. TaoUX itself does not depend on TaoUI.
+The `sandbox/` folder is a demo and a testing ground for components: pages import modules straight from `src/`, with no build. A new component is `sandbox/<name>.html` + `.ts` + a demo `.vue` and a link in `sandbox/index.html`. Run it with `npm run sandbox`. It holds `curveeditor`, `gradienteditor`, `slider`, `color` and `playback` for now. The sandbox is built together with TaoUI (a dev dependency that does not ship in the package), so you can see how the modules work as a pair, and there is a dark/light theme switch. TaoUX itself does not depend on TaoUI.

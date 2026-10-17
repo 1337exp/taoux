@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import { TaoButton, TaoSlider } from '@1337exp/taoui';
+import { colorModel, TaoButton, TaoColorInput, TaoSlider } from '@1337exp/taoui';
 import { computed, ref } from 'vue';
-import { patchStop, removeStop, TaoxGradientEditor, toLinear, toSrgb, type GradientStop } from '../src/gradienteditor';
+import { patchStop, removeStop, TaoxGradientEditor, type GradientStop } from '../src/gradienteditor';
 import SandboxShell from './SandboxShell.vue';
 
 const stops = ref<GradientStop[]>([
@@ -13,14 +13,12 @@ const selected = ref(0);
 const initial = JSON.stringify(stops.value);
 
 const stop = computed(() => stops.value[Math.min(selected.value, stops.value.length - 1)]!);
-const hex = computed(() => '#' + stop.value.color.map((c) => Math.round(toSrgb(c) * 255).toString(16).padStart(2, '0')).join(''));
+// Цвет остановки хранится линейным массивом 0…1, TaoColorInput говорит hex в sRGB: colorModel переводит туда и обратно
+const color = computed({ get: () => stop.value.color as number[], set: (c) => patch({ color: c as GradientStop['color'] }) });
+const hex = colorModel(color, { format: 'array', range: 1, space: 'linear' });
 
 function patch(p: Partial<GradientStop>) {
     stops.value = patchStop(stops.value, selected.value, p); // альфа и t обрезаются до трёх знаков
-}
-function onColor(e: Event) {
-    const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec((e.target as HTMLInputElement).value);
-    if (m) patch({ color: [m[1]!, m[2]!, m[3]!].map((h) => toLinear(parseInt(h, 16) / 255)) as GradientStop['color'] });
 }
 function remove() {
     stops.value = removeStop(stops.value, selected.value);
@@ -37,7 +35,7 @@ function reset() {
         <section class="case" style="max-width: 380px">
             <TaoxGradientEditor v-model="stops" v-model:selected="selected" hint="Клик по полосе добавляет остановку" />
             <div class="row">
-                <input type="color" :value="hex" @input="onColor" />
+                <TaoColorInput v-model="hex" size="small" />
                 <TaoSlider class="grow" variant="thin" size="small" :min="0" :max="1" :step="0.01" :model-value="stop.alpha" @update:model-value="(v) => patch({ alpha: Number(v) })" />
                 <TaoButton size="small" variant="ghost" :disabled="stops.length <= 1" @click="remove">Убрать</TaoButton>
                 <TaoButton size="small" variant="ghost" @click="reset">Сбросить</TaoButton>

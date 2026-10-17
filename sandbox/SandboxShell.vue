@@ -109,6 +109,11 @@ body {
     color: var(--tao-color-text-muted);
 }
 
+pre {
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
