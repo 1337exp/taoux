@@ -26,7 +26,7 @@ export default defineConfig({
         minify: false,
         sourcemap: true,
         rollupOptions: {
-            external: [/^vue(\/|$)/],
+            external: [/^vue(\/|$)/, /^@1337exp\/taoui(\/|$)/],
             output: {
                 entryFileNames: '[name].js',
                 chunkFileNames: 'chunks/[name]-[hash].js',

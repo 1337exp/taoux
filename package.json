@@ -42,6 +42,11 @@
       "import": "./dist/curveeditor.js"
     },
     "./curveeditor.css": "./dist/curveeditor.css",
+    "./curvefield": {
+      "types": "./dist/curvefield/index.d.ts",
+      "import": "./dist/curvefield.js"
+    },
+    "./curvefield.css": "./dist/curvefield.css",
     "./gradienteditor": {
       "types": "./dist/gradienteditor/index.d.ts",
       "import": "./dist/gradienteditor.js"
@@ -133,9 +138,13 @@
     "prepublishOnly": "npm run typecheck && npm test && npm run build"
   },
   "peerDependencies": {
+    "@1337exp/taoui": "^3.1.0",
     "vue": "^3.4.0"
   },
   "peerDependenciesMeta": {
+    "@1337exp/taoui": {
+      "optional": true
+    },
     "vue": {
       "optional": true
     }

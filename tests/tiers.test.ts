@@ -7,10 +7,13 @@ import { describe, expect, it } from 'vitest';
 /**
  * Ярусы (см. docs/canvas.md):
  *   0, примитивы: ничего не импортируют из taoux;
- *   1, составные: импортируют только примитивы, но не друг друга.
+ *   1, составные: импортируют только примитивы, но не друг друга;
+ *   2, поля: импортируют примитивы и составные, но не друг друга; только им можно импортировать TaoUI.
  * Составные модули перечислены здесь; всё остальное в src считается примитивом.
  */
 const COMPOSITES = new Set(['session', 'canvas', 'links', 'palette', 'pins', 'curveeditor', 'gradienteditor', 'playback']);
+/** Ярус 2, поля: собирают составные модули в готовое поле на компонентах TaoUI (единственный ярус, которому TaoUI можно). */
+const FIELDS = new Set(['curvefield']);
 
 const srcDir = fileURLToPath(new URL('../src', import.meta.url));
 
@@ -48,7 +51,7 @@ describe('ярусы модулей', () => {
     const mods = modules();
 
     it('примитивы ничего не импортируют из taoux', () => {
-        for (const m of mods.filter((x) => !COMPOSITES.has(x.name))) {
+        for (const m of mods.filter((x) => !COMPOSITES.has(x.name) && !FIELDS.has(x.name))) {
             for (const f of m.files) expect(relativeImports(f), `${m.name}: ${f}`).toEqual([]);
         }
     });
@@ -59,8 +62,29 @@ describe('ярусы модулей', () => {
                 for (const spec of relativeImports(f)) {
                     const target = targetModule(f, spec, m.name);
                     if (target === null) continue;
-                    expect(COMPOSITES.has(target), `${m.name} импортирует составной модуль ${target}`).toBe(false);
+                    expect(COMPOSITES.has(target) || FIELDS.has(target), `${m.name} импортирует составной модуль или поле ${target}`).toBe(false);
                 }
+            }
+        }
+    });
+
+    it('поля импортируют примитивы и составные, но не друг друга', () => {
+        for (const m of mods.filter((x) => FIELDS.has(x.name))) {
+            for (const f of m.files) {
+                for (const spec of relativeImports(f)) {
+                    const target = targetModule(f, spec, m.name);
+                    if (target === null) continue;
+                    expect(FIELDS.has(target), `${m.name} импортирует поле ${target}`).toBe(false);
+                }
+            }
+        }
+    });
+
+    it('TaoUI импортируют только поля', () => {
+        for (const m of mods.filter((x) => !FIELDS.has(x.name))) {
+            for (const f of m.files) {
+                if (!/\.(ts|vue)$/.test(f)) continue;
+                expect(readFileSync(f, 'utf8'), `${m.name}: ${f}`).not.toMatch(/from\s+['"]@1337exp\/taoui/);
             }
         }
     });
