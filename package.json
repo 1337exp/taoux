@@ -17,8 +17,13 @@
   "type": "module",
   "license": "MIT",
   "homepage": "https://github.com/1337exp/taoux#readme",
-  "repository": { "type": "git", "url": "git+https://github.com/1337exp/taoux.git" },
-  "bugs": { "url": "https://github.com/1337exp/taoux/issues" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/1337exp/taoux.git"
+  },
+  "bugs": {
+    "url": "https://github.com/1337exp/taoux/issues"
+  },
   "sideEffects": false,
   "files": [
     "dist"
@@ -135,6 +140,7 @@
     "@1337exp/taoui": "^3.0.0",
     "@types/node": "^26.6.4",
     "@vitejs/plugin-vue": "^6.0.10",
+    "@vue/test-utils": "^2.5.1",
     "happy-dom": "^20.14.5",
     "typescript": "~6.0.3",
     "vite": "^8.3.2",

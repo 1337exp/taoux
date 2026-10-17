@@ -31,8 +31,8 @@ import { History } from '@1337exp/taoux/history';
 | `palette` | search and groups of nodes for a palette | nothing |
 | `links` (Vue) | links layer: SVG from ready geometry, `--tx-link-*` | vue (peer) |
 | `canvas` (Vue) | canvas: mouse and touch gestures, wheel, auto-scroll, keys; the `CanvasHost` contract | vue (peer) |
-| `curveeditor` (Vue) | curve editor plot: grid, snapping, bounds, decimals, auto-scroll at the edge; point operations | vue (peer) |
-| `gradienteditor` (Vue) | gradient bar with stop handles; stop operations, `gradientCss` | vue (peer) |
+| `curveeditor` (Vue) | curve editor plot: grid, snapping, bounds, decimals, auto-scroll at the edge; point operations; keyboard (Tab, arrows, Shift, Insert, Delete) | vue (peer) |
+| `gradienteditor` (Vue) | gradient bar with stop handles; stop operations, `gradientCss`; keyboard (Tab, arrows, Home/End, Insert, Delete) | vue (peer) |
 | `playback` | playback model: time, pause, loop, speed, seeking; `createPlayback` without Vue and `usePlayback` for a component | vue (peer, for `usePlayback`) |
 | `pins` | row pin positions measured from the DOM: `usePinMeasure`, `createPinRegistry` | vue (peer) |
 | `i18n` | typed i18n: `createI18n({ locales, fallback, storageKey })` | vue (peer, optional) |

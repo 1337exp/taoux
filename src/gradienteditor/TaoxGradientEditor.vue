@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { nextTick, ref } from 'vue';
 import { addStop, DEFAULT_PRECISION, gradientCss, moveStop, pickFromStack, removeStop, stackAround, toSrgb, type GradientStop } from './ops';
 
 const props = withDefaults(
@@ -12,8 +12,12 @@ const props = withDefaults(
         hint?: string;
         /** Знаков после запятой у t и непрозрачности в том, что компонент отдаёт; `null` не обрезает. По умолчанию три; компоненты цвета получают на два знака больше. */
         precision?: number | null;
+        /** Шаг стрелки с клавиатуры по t (Shift: в 10 раз крупнее). */
+        keyStep?: number;
+        /** Подпись остановки для скринридеров; по умолчанию «Stop 1». */
+        stopLabel?: (index: number, stop: GradientStop) => string;
     }>(),
-    { selected: 0, precision: DEFAULT_PRECISION },
+    { selected: 0, precision: DEFAULT_PRECISION, keyStep: 0.01 },
 );
 const emit = defineEmits<{
     'update:modelValue': [value: GradientStop[]];
@@ -46,7 +50,11 @@ function onStopDown(e: PointerEvent, i: number) {
         return;
     }
     emit('update:selected', i);
-    (e.currentTarget as Element).setPointerCapture(e.pointerId);
+    try {
+        (e.currentTarget as Element).setPointerCapture(e.pointerId);
+    } catch {
+        // указатель уже ушёл или захват недоступен: тянуть можно и без него
+    }
 
     const width = bar.value!.getBoundingClientRect().width;
     const cluster = stackAround(props.modelValue, i, width, STACK_PX);
@@ -77,6 +85,49 @@ function onUp() {
 
 const stopColor = (s: GradientStop) => `rgb(${s.color.map((c) => Math.round(255 * toSrgb(Math.min(1, Math.max(0, c))))).join(' ')})`;
 
+/** Клавиши остановки (фокус на ней): стрелки двигают по t, Home/End в начало и конец, Insert добавляет, Delete убирает. */
+function onStopKey(e: KeyboardEvent, i: number) {
+    const stop = props.modelValue[i];
+    if (!stop) return;
+    const fine = props.keyStep * (e.shiftKey ? 10 : 1);
+
+    let to: number | null = null;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') to = stop.t - fine;
+    else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') to = stop.t + fine;
+    else if (e.key === 'Home') to = 0;
+    else if (e.key === 'End') to = 1;
+
+    if (to !== null) {
+        e.preventDefault();
+        emit('update:modelValue', moveStop(props.modelValue, i, to, props.precision));
+        emit('commit');
+    } else if (e.key === 'Insert') {
+        // между этой остановкой и следующей (у последней: между ней и предыдущей), с цветом градиента в этой точке
+        e.preventDefault();
+        const other = props.modelValue[i + 1] ?? props.modelValue[i - 1];
+        if (!other) return;
+        const r = addStop(props.modelValue, (stop.t + other.t) / 2, props.precision);
+        emit('update:modelValue', r.stops);
+        emit('update:selected', r.index);
+        emit('commit');
+        focusStop(r.index);
+    } else if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault();
+        const next = Math.max(0, i - 1);
+        emit('update:modelValue', removeStop(props.modelValue, i));
+        emit('update:selected', next);
+        emit('commit');
+        focusStop(next);
+    }
+}
+
+/** Фокус на ручку `i` после перерисовки: клавиши идут к той, что выбрана, и фокус не должен оставаться на старой. */
+function focusStop(i: number) {
+    void nextTick(() => bar.value?.querySelectorAll<HTMLElement>('.tx-gradient-stop')[i]?.focus());
+}
+
+const labelOf = (i: number, s: GradientStop) => (props.stopLabel ? props.stopLabel(i, s) : `Stop ${i + 1}`);
+
 function onBarClick(e: MouseEvent) {
     if (e.target !== bar.value) return;
     const r = addStop(props.modelValue, tAt(e), props.precision);
@@ -94,6 +145,16 @@ function onBarClick(e: MouseEvent) {
             class="tx-gradient-stop"
             :class="{ on: i === selected }"
             :style="{ left: `${s.t * 100}%`, color: stopColor(s) }"
+            :tabindex="i === Math.min(selected, modelValue.length - 1) ? 0 : -1"
+            role="slider"
+            aria-orientation="horizontal"
+            aria-valuemin="0"
+            aria-valuemax="1"
+            :aria-valuenow="s.t"
+            :aria-valuetext="`${Math.round(s.t * 100)}%`"
+            :aria-label="labelOf(i, s)"
+            @focus="emit('update:selected', i)"
+            @keydown="onStopKey($event, i)"
             @pointerdown.stop="onStopDown($event, i)"
             @pointermove="onMove"
             @pointerup="onUp"
@@ -132,6 +193,15 @@ function onBarClick(e: MouseEvent) {
     height: 14px;
     margin-left: -7px;
     cursor: grab;
+}
+
+.tx-gradient-stop:focus {
+    outline: none;
+}
+
+/* фокус с клавиатуры: свечение акцентного цвета вокруг треугольника */
+.tx-gradient-stop:focus-visible svg {
+    filter: drop-shadow(0 0 3px var(--tx-gradient-accent, #4fc3f7));
 }
 
 .tx-gradient-stop svg {

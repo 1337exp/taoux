@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, onBeforeUnmount, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, ref } from 'vue';
 import { createEdgeScroller } from '../edgescroll';
 import { clampTo, niceStep, roundTo, snapTo, ticks } from '../num';
 import { addPoint, movePoint, removePoint, valueBounds, type CurvePoint } from './ops';
@@ -22,6 +22,8 @@ const props = withDefaults(
         majorT?: number;
         /** Подсказка при наведении на поле. */
         hint?: string;
+        /** Подпись точки для скринридеров; по умолчанию «Point 1: t, v». */
+        pointLabel?: (index: number, point: CurvePoint) => string;
     }>(),
     { selected: 0, snap: true, stepT: 0.05, majorT: 0.25 },
 );
@@ -130,7 +132,11 @@ function onDown(e: PointerEvent, i: number) {
     lastPointer = e;
     shift.value = 0;
     frozen.value = valueBounds(points.value, props.min, props.max);
-    (e.currentTarget as Element).setPointerCapture(e.pointerId);
+    try {
+        (e.currentTarget as Element).setPointerCapture(e.pointerId);
+    } catch {
+        // указатель уже ушёл или захват недоступен: тянуть можно и без него
+    }
 }
 
 function onMove(e: PointerEvent) {
@@ -157,17 +163,70 @@ function onDouble(e: MouseEvent) {
     emit('commit');
 }
 
-function onKey(e: KeyboardEvent) {
-    if (e.key !== 'Delete' && e.key !== 'Backspace') return;
-    e.preventDefault();
-    emit('update:modelValue', removePoint(points.value, props.selected));
-    emit('update:selected', 0);
+/** Шаг стрелки с Shift: во столько раз крупнее. */
+const COARSE = 5;
+
+/** Сдвигает точку `i` на `dx` шагов по времени и `dy` шагов по значению (шаги сетки), с прижатием, округлением и границами. */
+function nudge(i: number, dx: number, dy: number, coarse: boolean) {
+    const p = points.value[i];
+    if (!p) return;
+    const k = coarse ? COARSE : 1;
+    const tt = roundTo(snapTo(p.t + dx * k * props.stepT, props.stepT), props.precision);
+    const v = clampTo(roundTo(snapTo(p.v + dy * k * stepV.value, stepV.value), props.precision), props.min, props.max);
+    emit('update:modelValue', movePoint(points.value, i, tt, v));
     emit('commit');
 }
+
+/** Insert добавляет точку между выбранной и следующей (у последней: между ней и предыдущей) на самой кривой. */
+/** Фокус на точку `i` после перерисовки: клавиши идут к той точке, что выбрана, и фокус не должен оставаться на старой. */
+function focusDot(i: number) {
+    void nextTick(() => svg.value?.querySelectorAll<SVGElement>('.tx-curve-dot')[i]?.focus());
+}
+
+function insertAfter(i: number) {
+    const a = points.value[i];
+    const b = points.value[i + 1] ?? points.value[i - 1];
+    if (!a || !b) return;
+    const r = addPoint(points.value, roundTo((a.t + b.t) / 2, props.precision));
+    emit('update:selected', r.index);
+    emit('update:modelValue', r.points);
+    emit('commit');
+    focusDot(r.index);
+}
+
+function removeAt(i: number) {
+    const next = Math.max(0, i - 1);
+    emit('update:modelValue', removePoint(points.value, i));
+    emit('update:selected', next);
+    emit('commit');
+    focusDot(next);
+}
+
+/** Клавиши точки (фокус на ней): стрелки двигают на шаг сетки, Shift крупнее; Insert добавляет, Delete убирает. */
+function onKey(e: KeyboardEvent) {
+    // точка, на которой фокус; если клавиша пришла с самого поля (после клика по нему), то выбранная
+    const target = (e.target as Element | null)?.closest('.tx-curve-dot');
+    const index = target ? Number(target.getAttribute('data-index')) : NaN;
+    const i = Number.isInteger(index) ? index : Math.min(props.selected, points.value.length - 1);
+    const arrows: Record<string, [number, number]> = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] };
+    const move = arrows[e.key];
+    if (move) {
+        e.preventDefault();
+        nudge(i, move[0], move[1], e.shiftKey);
+    } else if (e.key === 'Insert') {
+        e.preventDefault();
+        insertAfter(i);
+    } else if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault();
+        removeAt(i);
+    }
+}
+
+const labelOf = (i: number, p: CurvePoint) => (props.pointLabel ? props.pointLabel(i, p) : `Point ${i + 1}: ${fmt(p.t)}, ${fmt(p.v)}`);
 </script>
 
 <template>
-    <svg ref="svg" class="tx-curve" :viewBox="`0 0 ${W} ${H}`" :title="hint" tabindex="0" @dblclick.self="onDouble" @keydown="onKey">
+    <svg ref="svg" class="tx-curve" :viewBox="`0 0 ${W} ${H}`" :title="hint" tabindex="-1" role="group" @dblclick.self="onDouble" @keydown="onKey">
         <!-- мелкая сетка: те же шаги, что у прилипания -->
         <line v-for="x in gridT" :key="`gt${x}`" class="tx-curve-grid" :class="{ major: isMajorT(x) }" :x1="px(x)" :x2="px(x)" :y1="PAD_T" :y2="H - PAD_B" />
         <line v-for="v in gridV" :key="`gv${v}`" class="tx-curve-grid" :class="{ major: isMajorV(v) }" :x1="PAD_L" :x2="W - PAD_R" :y1="py(v)" :y2="py(v)" />
@@ -184,6 +243,11 @@ function onKey(e: KeyboardEvent) {
             :cx="px(p.t)"
             :cy="py(p.v)"
             r="5"
+            :data-index="i"
+            :tabindex="i === Math.min(selected, points.length - 1) ? 0 : -1"
+            role="button"
+            :aria-label="labelOf(i, p)"
+            @focus="emit('update:selected', i)"
             @pointerdown.stop="onDown($event, i)"
             @pointermove="onMove"
             @pointerup="onUp"
@@ -207,10 +271,6 @@ function onKey(e: KeyboardEvent) {
     background: var(--tx-curve-bg, #15171b);
     touch-action: none;
     outline: none;
-}
-
-.tx-curve:focus-visible {
-    border-color: var(--tx-curve-accent, #4fc3f7);
 }
 
 .tx-curve-grid {
@@ -245,6 +305,17 @@ function onKey(e: KeyboardEvent) {
     stroke-width: 2;
     opacity: var(--tx-curve-dot-opacity, 0.3);
     cursor: grab;
+}
+
+.tx-curve-dot:focus {
+    outline: none;
+}
+
+/* фокус с клавиатуры: утолщённая обводка и свечение (контур у SVG-форм браузеры рисуют по-разному) */
+.tx-curve-dot:focus-visible {
+    stroke-width: 3;
+    filter: drop-shadow(0 0 3px var(--tx-curve-accent, #4fc3f7));
+    opacity: 1;
 }
 
 .tx-curve-dot.on,

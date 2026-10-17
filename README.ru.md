@@ -31,8 +31,8 @@ import { History } from '@1337exp/taoux/history';
 | `palette` | поиск и группы нод для палитры | нет |
 | `links` (Vue) | слой связей: SVG из готовой геометрии, `--tx-link-*` | vue (peer) |
 | `canvas` (Vue) | холст: жесты мыши и сенсора, колесо, автопрокрутка, клавиши; контракт `CanvasHost` | vue (peer) |
-| `curveeditor` (Vue) | поле редактора кривой: сетка, шаг, границы, знаки, автопрокрутка у края; операции над точками | vue (peer) |
-| `gradienteditor` (Vue) | полоса градиента с ручками остановок; операции над остановками, `gradientCss` | vue (peer) |
+| `curveeditor` (Vue) | поле редактора кривой: сетка, шаг, границы, знаки, автопрокрутка у края; операции над точками; клавиатура (Tab, стрелки, Shift, Insert, Delete) | vue (peer) |
+| `gradienteditor` (Vue) | полоса градиента с ручками остановок; операции над остановками, `gradientCss`; клавиатура (Tab, стрелки, Home/End, Insert, Delete) | vue (peer) |
 | `playback` | модель воспроизведения: время, пауза, цикл, скорость, перемотка; `createPlayback` без Vue и `usePlayback` для компонента | vue (peer, для `usePlayback`) |
 | `pins` | позиции пинов-строк, измеренные по DOM: `usePinMeasure`, `createPinRegistry` | vue (peer) |
 | `i18n` | типизированный i18n: `createI18n({ locales, fallback, storageKey })` | vue (peer, опционально) |
