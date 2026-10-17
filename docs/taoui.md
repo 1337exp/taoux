@@ -2,16 +2,18 @@
 
 **English** · [Русский](taoui.ru.md)
 
-**The main thing to know up front:** TaoUX and TaoUI are two separate packages, and there is no ready-made module that joins them. TaoUX has no TaoUI buttons, fields or sliders, and TaoUI knows nothing about TaoUX. Connecting them is up to you, and the connection is only two things:
+**The short version.** TaoUX and TaoUI are two separate packages: TaoUX has no buttons, fields or sliders of its own, and TaoUI knows nothing about TaoUX. Joining them is two things, and the first is one line:
 
-1. **Colors and sizes.** TaoUX components are styled by their own `--tx-*` CSS variables. You map them to the TaoUI `--tao-*` tokens once.
+1. **Look.** `import '@1337exp/taoux/taoui.css'`: the editors follow the TaoUI theme (dark, light, yours).
 2. **Values.** State from TaoUX (time, curve points, gradient stops) goes to TaoUI components through `v-model`.
 
 That is all. TaoUX works without TaoUI (every variable has a dark default), and TaoUI works without TaoUX even more so.
 
+**Without the bridge** the editors keep their dark defaults, so on a light page `TaoxCurveEditor` and `TaoxGradientEditor` look like dark islands with a blue accent. `TaoxCurveField` (it is built from TaoUI components) follows the theme by itself.
+
 ## Who may depend on whom
 
-TaoUI is tier 0: self-contained, it depends on nothing from this family. TaoUX is tier 1: its modules may use TaoUI, but never the other way round. That is why `@1337exp/taoui` is only in TaoUX's `devDependencies` (for the sandbox), and your project needs both packages side by side:
+TaoUI is tier 0: self-contained, it depends on nothing from this family. TaoUX is tier 1: its modules may use TaoUI, but never the other way round. That is why `@1337exp/taoui` is in TaoUX's `devDependencies` (for the sandbox) and an optional peer dependency, and your project needs both packages side by side:
 
 ```bash
 npm install @1337exp/taoux @1337exp/taoui
@@ -21,50 +23,28 @@ npm install @1337exp/taoux @1337exp/taoui
 
 ```ts
 import '@1337exp/taoui/styles.css';          // TaoUI tokens and components
-import '@1337exp/taoux/canvas.css';          // styles of TaoUX Vue modules are imported explicitly
-import '@1337exp/taoux/links.css';
-import '@1337exp/taoux/curveeditor.css';
+import '@1337exp/taoux/taoui.css';           // the bridge: TaoUX variables → TaoUI tokens (see Step 2)
+import '@1337exp/taoux/curveeditor.css';     // styles of TaoUX Vue modules are imported explicitly
 import '@1337exp/taoux/gradienteditor.css';
 ```
 
-Import the CSS only of the modules you use. Modules without components (`camera`, `history`, `playback` and others) have no styles.
+Import the CSS only of the modules you use (`canvas`, `links`, `curveeditor`, `gradienteditor`; `curvefield` needs `curveeditor.css` and `curvefield.css`). Modules without components (`camera`, `history`, `playback` and others) have no styles.
 
-## Step 2. Theme: map `--tx-*` to `--tao-*`
+Installing from npm needs no bundler tweaks: a normal `npm install @1337exp/taoux @1337exp/taoui`. Only when you link a neighbouring folder with `file:` do you need `resolve.dedupe: ['vue']` (see the README).
 
-Put this into the project's global CSS. The variables are set on `:root`, so a TaoUI theme (for example `data-tao-theme="light"`) switches the TaoUX components too:
+## Step 2. Theme: the bridge
+
+`@1337exp/taoux/taoui.css` sets every colour variable of the TaoUX modules to a TaoUI token (canvas, links, curve and gradient editors). It is plain CSS with zero specificity (`:where(:root)`) and no dependency on the TaoUI package, so a TaoUI theme switch (`data-tao-theme="light"`) re-colours the editors too, and any rule of yours wins.
+
+Change one variable on `:root` or on any ancestor of the component:
 
 ```css
 :root {
-    /* Canvas */
-    --tx-canvas-bg: var(--tao-color-bg);
-    --tx-canvas-grid-minor: color-mix(in srgb, var(--tao-color-text) 4%, transparent);
-    --tx-canvas-grid-major: color-mix(in srgb, var(--tao-color-text) 8%, transparent);
-    --tx-canvas-accent: var(--tao-color-accent);
-    --tx-canvas-accent-subtle: var(--tao-color-accent-subtle);
-
-    /* Links */
-    --tx-link-color: var(--tao-color-text-muted);
-    --tx-link-hover-color: var(--tao-color-text);
-    --tx-link-selected-color: var(--tao-color-accent);
-    --tx-link-preview-color: var(--tao-color-accent);
-    --tx-link-invalid-color: var(--tao-color-danger);
-
-    /* Curve editor */
-    --tx-curve-bg: var(--tao-color-surface-sunken);
-    --tx-curve-border: var(--tao-color-border);
-    --tx-curve-grid: var(--tao-color-border);
-    --tx-curve-label: var(--tao-color-text-muted);
-    --tx-curve-text: var(--tao-color-text);
-    --tx-curve-accent: var(--tao-color-accent);
-
-    /* Gradient editor */
-    --tx-gradient-border: var(--tao-color-border);
-    --tx-gradient-stop-border: var(--tao-color-border-strong);
-    --tx-gradient-accent: var(--tao-color-accent);
+    --tx-curve-accent: var(--tao-color-info);   /* blue curve in an otherwise pink app */
 }
 ```
 
-The full list of variables of each module is in the comment at the top of its styles (`src/<module>/*.vue`). Whatever you do not map keeps its default value.
+The full list of variables of each module is in the comment at the top of its styles (`src/<module>/*.vue`). What you do not map keeps its default. The bridge itself is [theme/taoui.css](../theme/taoui.css); a test checks that it covers every colour variable the components read and only points at tokens TaoUI defines.
 
 ## Step 3. Values: connection examples
 
@@ -151,4 +131,4 @@ The TaoUX repository has a sandbox where all these connections are assembled on 
 npm run sandbox     # http://localhost:5300
 ```
 
-The pages are in `sandbox/` (`curveeditor`, `gradienteditor`, `slider`, `playback`); the shared token mapping is in `sandbox/SandboxShell.vue`. You can copy it as is.
+The pages are in `sandbox/` (`curveeditor`, `curvefield`, `gradienteditor`, `slider`, `color`, `playback`); they use the bridge from Step 2 as is.

@@ -2,7 +2,7 @@ name: CI
 
 on:
     push:
-        branches: [main]
+        branches: [main, master]
     pull_request:
 
 jobs:
@@ -18,3 +18,6 @@ jobs:
             - run: npm run typecheck
             - run: npm test
             - run: npm run build
+            - run: npm run sandbox:build
+            # install the packed tarball into a throwaway app next to TaoUI and build it
+            - run: npm run smoke

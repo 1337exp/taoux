@@ -1,0 +1,43 @@
+/**
+ * TaoUX → TaoUI bridge: points the TaoUX `--tx-*` variables at the TaoUI `--tao-*` tokens,
+ * so the editors follow the TaoUI theme (dark, light, your own) with one import:
+ *
+ *     import '@1337exp/taoux/taoui.css'
+ *
+ * Plain CSS, no dependency on the TaoUI package. Specificity is zero (`:where`), so any rule of yours
+ * wins: override a single variable on `:root` or on any ancestor of the component.
+ * The `--tx-*` variables of a module are listed in the comment at the top of its styles.
+ *
+ * Мост TaoUX → TaoUI: наводит переменные `--tx-*` на токены `--tao-*`, и редакторы следуют теме TaoUI
+ * (тёмной, светлой, своей) одним импортом. Чистый CSS, без зависимости от пакета TaoUI. Специфичность
+ * нулевая (`:where`): любое ваше правило главнее.
+ */
+:where(:root) {
+    /* canvas */
+    --tx-canvas-bg: var(--tao-color-bg);
+    --tx-canvas-grid-minor: color-mix(in srgb, var(--tao-color-text) 4%, transparent);
+    --tx-canvas-grid-major: color-mix(in srgb, var(--tao-color-text) 8%, transparent);
+    --tx-canvas-accent: var(--tao-color-accent);
+    --tx-canvas-accent-subtle: var(--tao-color-accent-subtle);
+
+    /* links */
+    --tx-link-color: var(--tao-color-text-muted);
+    --tx-link-hover-color: var(--tao-color-text);
+    --tx-link-selected-color: var(--tao-color-accent);
+    --tx-link-preview-color: var(--tao-color-accent);
+    --tx-link-invalid-color: var(--tao-color-danger);
+
+    /* curve editor */
+    --tx-curve-bg: var(--tao-color-surface-sunken);
+    --tx-curve-border: var(--tao-color-border);
+    --tx-curve-grid: var(--tao-color-border);
+    --tx-curve-label: var(--tao-color-text-muted);
+    --tx-curve-text: var(--tao-color-text);
+    --tx-curve-accent: var(--tao-color-accent);
+
+    /* gradient editor */
+    --tx-gradient-border: var(--tao-color-border);
+    --tx-gradient-stop-border: var(--tao-color-border-strong);
+    --tx-gradient-stop-outline: color-mix(in srgb, var(--tao-color-text-strong) 55%, transparent);
+    --tx-gradient-accent: var(--tao-color-accent);
+}

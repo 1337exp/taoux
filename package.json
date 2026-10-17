@@ -1,7 +1,7 @@
 {
   "name": "@1337exp/taoux",
   "version": "0.1.0",
-  "description": "Interaction and behavior building blocks for Vue apps: import only what you need, bring your own design",
+  "description": "Interaction and behavior building blocks for Vue apps: curve and gradient editors, canvas, undo/redo, playback. Import only what you need, bring your own design.",
   "keywords": [
     "vue",
     "ux",
@@ -12,7 +12,11 @@
     "i18n",
     "playback",
     "curve-editor",
-    "gradient-editor"
+    "gradient-editor",
+    "vue3",
+    "nuxt",
+    "design-tokens",
+    "taoui"
   ],
   "type": "module",
   "license": "MIT",
@@ -24,15 +28,24 @@
   "bugs": {
     "url": "https://github.com/1337exp/taoux/issues"
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "**/*.css"
+  ],
   "files": [
-    "dist"
+    "dist",
+    "theme",
+    "CHANGELOG.md"
   ],
   "exports": {
     "./camera": {
       "types": "./dist/camera.d.ts",
       "import": "./dist/camera.js"
     },
+    "./canvas": {
+      "types": "./dist/canvas/index.d.ts",
+      "import": "./dist/canvas.js"
+    },
+    "./canvas.css": "./dist/canvas.css",
     "./curve": {
       "types": "./dist/curve.d.ts",
       "import": "./dist/curve.js"
@@ -47,11 +60,6 @@
       "import": "./dist/curvefield.js"
     },
     "./curvefield.css": "./dist/curvefield.css",
-    "./gradienteditor": {
-      "types": "./dist/gradienteditor/index.d.ts",
-      "import": "./dist/gradienteditor.js"
-    },
-    "./gradienteditor.css": "./dist/gradienteditor.css",
     "./ease": {
       "types": "./dist/ease.d.ts",
       "import": "./dist/ease.js"
@@ -60,11 +68,6 @@
       "types": "./dist/edgescroll.d.ts",
       "import": "./dist/edgescroll.js"
     },
-    "./canvas": {
-      "types": "./dist/canvas/index.d.ts",
-      "import": "./dist/canvas.js"
-    },
-    "./canvas.css": "./dist/canvas.css",
     "./file": {
       "types": "./dist/file.d.ts",
       "import": "./dist/file.js"
@@ -73,6 +76,11 @@
       "types": "./dist/gestures.d.ts",
       "import": "./dist/gestures.js"
     },
+    "./gradienteditor": {
+      "types": "./dist/gradienteditor/index.d.ts",
+      "import": "./dist/gradienteditor.js"
+    },
+    "./gradienteditor.css": "./dist/gradienteditor.css",
     "./history": {
       "types": "./dist/history.d.ts",
       "import": "./dist/history.js"
@@ -90,21 +98,21 @@
       "import": "./dist/links.js"
     },
     "./links.css": "./dist/links.css",
-    "./playback": {
-      "types": "./dist/playback/index.d.ts",
-      "import": "./dist/playback.js"
+    "./num": {
+      "types": "./dist/num.d.ts",
+      "import": "./dist/num.js"
     },
     "./palette": {
       "types": "./dist/palette.d.ts",
       "import": "./dist/palette.js"
     },
-    "./num": {
-      "types": "./dist/num.d.ts",
-      "import": "./dist/num.js"
-    },
     "./pins": {
       "types": "./dist/pins.d.ts",
       "import": "./dist/pins.js"
+    },
+    "./playback": {
+      "types": "./dist/playback/index.d.ts",
+      "import": "./dist/playback.js"
     },
     "./session": {
       "types": "./dist/session.d.ts",
@@ -126,16 +134,21 @@
       "types": "./dist/wheel.d.ts",
       "import": "./dist/wheel.js"
     },
+    "./taoui.css": "./theme/taoui.css",
     "./package.json": "./package.json"
   },
   "scripts": {
     "build": "vite build && vue-tsc -p tsconfig.build.json",
     "dev": "node scripts/dev.mjs",
     "sandbox": "vite --config vite.sandbox.config.ts",
+    "sandbox:build": "vite build --config vite.sandbox.config.ts",
+    "sandbox:preview": "vite preview --config vite.sandbox.config.ts",
     "typecheck": "vue-tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepublishOnly": "npm run typecheck && npm test && npm run build"
+    "smoke": "node scripts/consumer-smoke.mjs",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build",
+    "media": "node scripts/media.mjs"
   },
   "peerDependencies": {
     "@1337exp/taoui": "^3.2.1",
@@ -150,15 +163,23 @@
     }
   },
   "devDependencies": {
-    "@1337exp/taoui": "^3.2.1",
+    "@1337exp/taoui": "^3.3.1",
     "@types/node": "^26.6.4",
     "@vitejs/plugin-vue": "^6.0.10",
     "@vue/test-utils": "^2.5.1",
     "happy-dom": "^20.14.5",
+    "playwright-core": "^1.64.1",
     "typescript": "~6.0.3",
     "vite": "^8.3.2",
     "vitest": "^5.0.3",
     "vue": "^3.5.43",
     "vue-tsc": "^3.3.13"
+  },
+  "author": "1337exp",
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

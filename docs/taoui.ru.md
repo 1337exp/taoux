@@ -2,16 +2,18 @@
 
 [English](taoui.md) · **Русский**
 
-**Главное, что нужно знать сразу:** TaoUX и TaoUI это два отдельных пакета, и между ними нет готового модуля-связки. В TaoUX нет кнопок, полей и слайдеров TaoUI, а TaoUI ничего не знает про TaoUX. Связывать их вам, и связка состоит всего из двух вещей:
+**Коротко.** TaoUX и TaoUI это два отдельных пакета: у TaoUX нет своих кнопок, полей и слайдеров, а TaoUI ничего не знает про TaoUX. Связать их это две вещи, и первая делается одной строкой:
 
-1. **Цвета и размеры.** Компоненты TaoUX настраиваются своими CSS-переменными `--tx-*`. Вы один раз привязываете их к токенам TaoUI `--tao-*`.
-2. **Значения.** Состояние из TaoUX (время, точки кривой, остановки градиента) отдаёте компонентам TaoUI через `v-model`.
+1. **Вид.** `import '@1337exp/taoux/taoui.css'`: редакторы следуют теме TaoUI (тёмной, светлой, вашей).
+2. **Значения.** Состояние TaoUX (время, точки кривой, остановки градиента) уходит в компоненты TaoUI через `v-model`.
 
-Ничего больше. TaoUX работает и без TaoUI (у каждой переменной есть тёмная тема по умолчанию), TaoUI без TaoUX тем более.
+Это всё. TaoUX работает без TaoUI (у каждой переменной есть тёмное значение по умолчанию), а TaoUI без TaoUX тем более.
+
+**Без моста** редакторы остаются с тёмными значениями по умолчанию: на светлой странице `TaoxCurveEditor` и `TaoxGradientEditor` выглядят тёмными островками с синим акцентом. `TaoxCurveField` (он собран из компонентов TaoUI) подстраивается под тему сам.
 
 ## Кто от кого может зависеть
 
-TaoUI это ярус 0: он самодостаточный и не зависит ни от чего из этой семьи. TaoUX это ярус 1: его модули могут использовать TaoUI, но никогда наоборот. Поэтому `@1337exp/taoui` в TaoUX стоит только в `devDependencies` (для песочницы), а в вашем проекте нужны оба пакета рядом:
+TaoUI это ярус 0: он самодостаточный и не зависит ни от чего из этой семьи. TaoUX это ярус 1: его модули могут использовать TaoUI, но никогда наоборот. Поэтому `@1337exp/taoui` в TaoUX стоит в `devDependencies` (для песочницы) и как необязательная peer-зависимость, а в вашем проекте нужны оба пакета рядом:
 
 ```bash
 npm install @1337exp/taoux @1337exp/taoui
@@ -21,50 +23,28 @@ npm install @1337exp/taoux @1337exp/taoui
 
 ```ts
 import '@1337exp/taoui/styles.css';          // токены и компоненты TaoUI
-import '@1337exp/taoux/canvas.css';          // стили Vue-модулей TaoUX подключаются явно
-import '@1337exp/taoux/links.css';
-import '@1337exp/taoux/curveeditor.css';
+import '@1337exp/taoux/taoui.css';           // мост: переменные TaoUX → токены TaoUI (см. шаг 2)
+import '@1337exp/taoux/curveeditor.css';     // стили Vue-модулей TaoUX подключаются явно
 import '@1337exp/taoux/gradienteditor.css';
 ```
 
-Подключайте CSS только тех модулей, которыми пользуетесь. Модули без компонентов (`camera`, `history`, `playback` и другие) стилей не имеют.
+Подключайте CSS только тех модулей, что используете (`canvas`, `links`, `curveeditor`, `gradienteditor`; для `curvefield` нужны `curveeditor.css` и `curvefield.css`). У модулей без компонентов (`camera`, `history`, `playback` и других) стилей нет.
 
-## Шаг 2. Тема: привязка `--tx-*` к `--tao-*`
+Из npm ставится без настроек сборщика: обычный `npm install @1337exp/taoux @1337exp/taoui`. `resolve.dedupe: ['vue']` нужен только когда соседняя папка подключена через `file:` (см. README).
 
-Положите это в глобальный CSS проекта. Переменные задаются на `:root`, поэтому тема TaoUI (например, `data-tao-theme="light"`) переключает и компоненты TaoUX:
+## Шаг 2. Тема: мост
+
+`@1337exp/taoux/taoui.css` ставит каждой цветовой переменной модулей TaoUX токен TaoUI (холст, связи, редакторы кривой и градиента). Это обычный CSS с нулевой специфичностью (`:where(:root)`) и без зависимости от пакета TaoUI: переключение темы TaoUI (`data-tao-theme="light"`) перекрашивает и редакторы, а любое ваше правило главнее.
+
+Поменять одну переменную можно на `:root` или на любом предке компонента:
 
 ```css
 :root {
-    /* Холст */
-    --tx-canvas-bg: var(--tao-color-bg);
-    --tx-canvas-grid-minor: color-mix(in srgb, var(--tao-color-text) 4%, transparent);
-    --tx-canvas-grid-major: color-mix(in srgb, var(--tao-color-text) 8%, transparent);
-    --tx-canvas-accent: var(--tao-color-accent);
-    --tx-canvas-accent-subtle: var(--tao-color-accent-subtle);
-
-    /* Связи */
-    --tx-link-color: var(--tao-color-text-muted);
-    --tx-link-hover-color: var(--tao-color-text);
-    --tx-link-selected-color: var(--tao-color-accent);
-    --tx-link-preview-color: var(--tao-color-accent);
-    --tx-link-invalid-color: var(--tao-color-danger);
-
-    /* Редактор кривой */
-    --tx-curve-bg: var(--tao-color-surface-sunken);
-    --tx-curve-border: var(--tao-color-border);
-    --tx-curve-grid: var(--tao-color-border);
-    --tx-curve-label: var(--tao-color-text-muted);
-    --tx-curve-text: var(--tao-color-text);
-    --tx-curve-accent: var(--tao-color-accent);
-
-    /* Редактор градиента */
-    --tx-gradient-border: var(--tao-color-border);
-    --tx-gradient-stop-border: var(--tao-color-border-strong);
-    --tx-gradient-accent: var(--tao-color-accent);
+    --tx-curve-accent: var(--tao-color-info);   /* синяя кривая в остальном розовом приложении */
 }
 ```
 
-Полные списки переменных каждого модуля написаны в комментарии в начале его стилей (`src/<модуль>/*.vue`). Что не привязали, остаётся со значением по умолчанию.
+Полный список переменных каждого модуля написан в комментарии в начале его стилей (`src/<модуль>/*.vue`). Что не привязали, остаётся со значением по умолчанию. Сам мост: [theme/taoui.css](../theme/taoui.css); тест проверяет, что он покрывает каждую цветовую переменную компонентов и ссылается только на токены, которые есть в TaoUI.
 
 ## Шаг 3. Значения: примеры склейки
 
@@ -151,4 +131,4 @@ const selected = ref(0);
 npm run sandbox     # http://localhost:5300
 ```
 
-Страницы лежат в `sandbox/` (`curveeditor`, `gradienteditor`, `slider`, `playback`); общая привязка токенов находится в `sandbox/SandboxShell.vue`. Её можно скопировать как есть.
+Страницы лежат в `sandbox/` (`curveeditor`, `curvefield`, `gradienteditor`, `slider`, `color`, `playback`); они используют мост из шага 2 как есть.
