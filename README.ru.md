@@ -33,12 +33,13 @@ import { History } from '@1337exp/taoux/history';
 | `links` (Vue) | слой связей: SVG из готовой геометрии, `--tx-link-*` | vue (peer) |
 | `canvas` (Vue) | холст: жесты мыши и сенсора, колесо, автопрокрутка, клавиши; контракт `CanvasHost` | vue (peer) |
 | `curveeditor` (Vue) | поле редактора кривой: сетка, шаг, границы, знаки, автопрокрутка у края; операции над точками; переходы между точками с ручками Безье; клавиатура (Tab, стрелки, Shift, Insert, Delete) | vue (peer) |
+| `curvefield` (Vue, ярус 2) | `TaoxCurveField`: кривая с полями на компонентах TaoUI: время и значение точки, переход к следующей точке (`ease`), шаг, удаление и сброс; надписи задаёт приложение | vue, **@1337exp/taoui** (peer) |
 | `gradienteditor` (Vue) | полоса градиента с ручками остановок; операции над остановками, `gradientCss`; клавиатура (Tab, стрелки, Home/End, Insert, Delete) | vue (peer) |
 | `playback` | модель воспроизведения: время, пауза, цикл, скорость, перемотка; `createPlayback` без Vue и `usePlayback` для компонента | vue (peer, для `usePlayback`) |
 | `pins` | позиции пинов-строк, измеренные по DOM: `usePinMeasure`, `createPinRegistry` | vue (peer) |
 | `i18n` | типизированный i18n: `createI18n({ locales, fallback, storageKey })` | vue (peer, опционально) |
 
-Vue-модули (`links`, `canvas`, `curveeditor`, `gradienteditor`) требуют явного импорта стилей: `import '@1337exp/taoux/canvas.css'`. Составные модули (session, palette, links, canvas, pins, curveeditor, gradienteditor, playback) импортируют только примитивы, и тест `tiers.test.ts` это охраняет; контракт холста описан в [docs/canvas.md](docs/canvas.md), переходы между точками кривой в [docs/ease.md](docs/ease.md).
+Vue-модули (`links`, `canvas`, `curveeditor`, `curvefield`, `gradienteditor`) требуют явного импорта стилей: `import '@1337exp/taoux/canvas.css'`. Составные модули (session, palette, links, canvas, pins, curveeditor, gradienteditor, playback) импортируют только примитивы. Ярус 2, поля (`curvefield`), собирает составные модули в готовое поле на компонентах TaoUI: только ему можно импортировать TaoUI, поэтому `@1337exp/taoui` это необязательная peer-зависимость. Для `curvefield` нужны оба файла стилей, `curveeditor.css` и `curvefield.css`. Всё это охраняет тест `tiers.test.ts`; контракт холста описан в [docs/canvas.md](docs/canvas.md), переходы между точками кривой в [docs/ease.md](docs/ease.md).
 
 Правило: модуль попадает сюда, когда он понадобился во втором проекте. Ядро модулей не знает про Vue и DOM, если это не их задача.
 
