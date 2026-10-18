@@ -438,7 +438,7 @@ const labelOf = (i: number, p: CurvePoint) => (props.pointLabel ? props.pointLab
         <line v-for="x in gridT" :key="`gt${x}`" class="tx-curve-grid" :class="{ major: isMajorT(x) }" :x1="px(x)" :x2="px(x)" :y1="PAD_T" :y2="H - PAD_B" />
         <line v-for="v in gridV" :key="`gv${v}`" class="tx-curve-grid" :class="{ major: isMajorV(v) }" :x1="PAD_L" :x2="W - PAD_R" :y1="py(v)" :y2="py(v)" />
 
-        <text v-for="(v, i) in labelsV" :key="`lv${v}`" class="tx-curve-label" :class="{ edge: i === 0 || i === labelsV.length - 1 }" :x="PAD_L - 4" :y="py(v)" text-anchor="end" dominant-baseline="middle">{{ fmt(v) }}</text>
+        <text v-for="(v, i) in labelsV" :key="`lv${v}`" class="tx-curve-label" :class="{ edge: v === 0 || i === 0 || i === labelsV.length - 1 }" :x="PAD_L - 4" :y="py(v)" text-anchor="end" dominant-baseline="middle">{{ fmt(v) }}</text>
         <text v-for="x in labelsT" :key="`lt${x}`" class="tx-curve-label" :class="{ edge: x === 0 || x === 1 }" :x="px(x)" :y="H - 4" :text-anchor="x === 0 ? 'start' : x === 1 ? 'end' : 'middle'">{{ fmt(x) }}</text>
 
         <g v-if="tags && guides !== 'off'" class="tx-curve-tags" aria-hidden="true">
