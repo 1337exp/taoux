@@ -81,6 +81,7 @@ import { History } from '@1337exp/taoux/history';
 |---|---|---|
 | `camera` | canvas camera: pan, zoom around the cursor, screen ↔ world | nothing |
 | `history` | undo/redo on string snapshots, rapid edits merged into one step | nothing |
+| `hotkeys` | shortcuts: `parseHotkey('Mod+Shift+Z')`, `matchHotkey` (Mod = ⌘ / Ctrl, non-Latin layouts by the physical key), `formatHotkey` (`Ctrl+Shift+Z` / `⇧⌘Z`), `isReservedHotkey` (⌘W, ⌘T, ⌘Q…), `bindHotkeys` on an element | DOM (for `bindHotkeys`) |
 | `storage` | autosave to localStorage without exceptions | nothing |
 | `file` | download text as a file, size limit | DOM |
 | `snap` | soft snapping to a grid with a threshold that follows the camera zoom | nothing |
@@ -93,6 +94,7 @@ import { History } from '@1337exp/taoux/history';
 | `ease` | easing functions between curve points: 8 families × in / out / in-out, `linear`, `step`, cubic Bezier; `easeValue`, `isEase` (the editor draws with it, a runtime evaluates with it) | nothing |
 | `num` | small numeric helpers: `clamp`, `roundTo`, `snapTo`, `niceStep`, `ticks` (shared by the curve, gradient and playback modules) | nothing |
 | `session` | document lifecycle: history, autosave, files, restore, notices | vue (peer) |
+| `commands` | a registry of commands (label, shortcut, `enabled`, `checked`, `run`): `toMenu(layout)` builds a `TaoMenuItem[]` tree for `TaoMenubar` / `TaoContextMenu`, `bind` listens to the same shortcuts, `historyCommands` gives Undo / Redo that disable themselves, `check` finds reserved and duplicate shortcuts | DOM (for `bind`) |
 | `palette` | search and groups of nodes for a palette | nothing |
 | `links` (Vue) | links layer: SVG from ready geometry, `--tx-link-*` | vue (peer) |
 | `canvas` (Vue) | canvas: mouse and touch gestures, wheel, auto-scroll, keys; the `CanvasHost` contract | vue (peer) |
@@ -103,7 +105,7 @@ import { History } from '@1337exp/taoux/history';
 | `pins` | row pin positions measured from the DOM: `usePinMeasure`, `createPinRegistry` | vue (peer) |
 | `i18n` | typed i18n: `createI18n({ locales, fallback, storageKey })` | vue (peer, optional) |
 
-Vue modules (`links`, `canvas`, `curveeditor`, `curvefield`, `gradienteditor`) need their styles imported explicitly: `import '@1337exp/taoux/canvas.css'`. Composite modules (session, palette, links, canvas, pins, curveeditor, gradienteditor, playback) import only primitives. Tier 2, fields (`curvefield`), assemble composites into a ready field on TaoUI components: it is the only tier allowed to import TaoUI, which is why `@1337exp/taoui` is an optional peer dependency. `curvefield` needs both `curveeditor.css` and `curvefield.css`. The `tiers.test.ts` test guards all of that. The canvas contract is described in [docs/canvas.md](docs/canvas.md) ([Русский](docs/canvas.ru.md)); transitions between curve points are in [docs/ease.md](docs/ease.md) ([Русский](docs/ease.ru.md)).
+Vue modules (`links`, `canvas`, `curveeditor`, `curvefield`, `gradienteditor`) need their styles imported explicitly: `import '@1337exp/taoux/canvas.css'`. Composite modules (session, commands, palette, links, canvas, pins, curveeditor, gradienteditor, playback) import only primitives. Tier 2, fields (`curvefield`), assemble composites into a ready field on TaoUI components: it is the only tier allowed to import TaoUI, which is why `@1337exp/taoui` is an optional peer dependency. `curvefield` needs both `curveeditor.css` and `curvefield.css`. The `tiers.test.ts` test guards all of that. The canvas contract is described in [docs/canvas.md](docs/canvas.md) ([Русский](docs/canvas.ru.md)); transitions between curve points are in [docs/ease.md](docs/ease.md) ([Русский](docs/ease.ru.md)).
 
 The rule: a module lands here when a second project needs it. A module's core knows nothing about Vue or the DOM unless that is its job.
 

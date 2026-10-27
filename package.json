@@ -46,6 +46,10 @@
       "import": "./dist/canvas.js"
     },
     "./canvas.css": "./dist/canvas.css",
+    "./commands": {
+      "types": "./dist/commands.d.ts",
+      "import": "./dist/commands.js"
+    },
     "./curve": {
       "types": "./dist/curve.d.ts",
       "import": "./dist/curve.js"
@@ -84,6 +88,10 @@
     "./history": {
       "types": "./dist/history.d.ts",
       "import": "./dist/history.js"
+    },
+    "./hotkeys": {
+      "types": "./dist/hotkeys.d.ts",
+      "import": "./dist/hotkeys.js"
     },
     "./i18n": {
       "types": "./dist/i18n.d.ts",

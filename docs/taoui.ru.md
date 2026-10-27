@@ -123,6 +123,41 @@ const selected = ref(0);
 </template>
 ```
 
+### Меню: `commands` и `TaoMenubar`
+
+Полоса меню ничего не знает о командах, команды ничего не знают о меню: `toMenu` строит простое дерево `TaoMenuItem[]` с подписями этой платформы (`Ctrl+S` или `⌘S`), `run` принимает выбранный id, `bind` слушает те же сочетания.
+
+```vue
+<script setup lang="ts">
+import { computed, onBeforeUnmount, onMounted } from 'vue';
+import { TaoMenubar } from '@1337exp/taoui';
+import { createCommands, historyCommands } from '@1337exp/taoux/commands';
+
+const commands = createCommands([
+    { id: 'save', label: () => t('save'), shortcut: 'Mod+S', enabled: () => dirty.value, run: save },
+    { id: 'grid', label: () => t('grid'), shortcut: "Mod+'", checked: () => grid.value, run: () => (grid.value = !grid.value) },
+    ...historyCommands(session, { labels: { undo: () => t('undo'), redo: () => t('redo') } }),
+]);
+
+// читается в computed: подписи, enabled и checked следуют за ref-ами, которые они читают
+const menu = computed(() => commands.toMenu([
+    { id: 'file', label: t('file'), items: ['save'] },
+    { id: 'edit', label: t('edit'), items: ['undo', 'redo'] },
+    { id: 'view', label: t('view'), items: ['grid'] },
+]));
+
+let unbind = () => {};
+onMounted(() => (unbind = commands.bind(document)));
+onBeforeUnmount(() => unbind());
+</script>
+
+<template>
+    <TaoMenubar :items="menu" @select="commands.run" />
+</template>
+```
+
+`commands.check()` в тесте приложения перечислит сочетания, которые держит браузер (⌘W, ⌘T, ⌘Q, ⌘R в Safari), и сочетания, данные двум командам.
+
 ## Живые примеры
 
 В репозитории TaoUX есть песочница, где все эти связки собраны на одной странице с переключателем тёмной и светлой темы:

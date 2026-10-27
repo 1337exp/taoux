@@ -81,6 +81,7 @@ import { History } from '@1337exp/taoux/history';
 |---|---|---|
 | `camera` | камера холста: pan, zoom вокруг курсора, экран ↔ мир | нет |
 | `history` | undo/redo на снимках-строках со склейкой частых правок | нет |
+| `hotkeys` | сочетания клавиш: `parseHotkey('Mod+Shift+Z')`, `matchHotkey` (Mod = ⌘ / Ctrl, нелатинские раскладки по физической клавише), `formatHotkey` (`Ctrl+Shift+Z` / `⇧⌘Z`), `isReservedHotkey` (⌘W, ⌘T, ⌘Q…), `bindHotkeys` на элементе | DOM (для `bindHotkeys`) |
 | `storage` | автосохранение в localStorage без исключений | нет |
 | `file` | скачивание текста как файла, лимит размера | DOM |
 | `snap` | мягкая привязка к сетке с порогом по масштабу камеры | нет |
@@ -93,6 +94,7 @@ import { History } from '@1337exp/taoux/history';
 | `ease` | функции движения между точками кривой: 8 семейств × in / out / in-out, `linear`, `step`, кубический Безье; `easeValue`, `isEase` (редактор рисует ими, рантайм считает ими же) | нет |
 | `num` | мелкая числовая математика: `clamp`, `roundTo`, `snapTo`, `niceStep`, `ticks` (общая для кривой, градиента и воспроизведения) | нет |
 | `session` | жизненный цикл документа: история, автосохранение, файлы, восстановление, уведомления | vue (peer) |
+| `commands` | реестр команд (подпись, сочетание, `enabled`, `checked`, `run`): `toMenu(layout)` строит дерево `TaoMenuItem[]` для `TaoMenubar` / `TaoContextMenu`, `bind` слушает те же сочетания, `historyCommands` даёт Undo / Redo, которые сами становятся недоступными, `check` находит занятые браузером и повторённые сочетания | DOM (для `bind`) |
 | `palette` | поиск и группы нод для палитры | нет |
 | `links` (Vue) | слой связей: SVG из готовой геометрии, `--tx-link-*` | vue (peer) |
 | `canvas` (Vue) | холст: жесты мыши и сенсора, колесо, автопрокрутка, клавиши; контракт `CanvasHost` | vue (peer) |
@@ -103,7 +105,7 @@ import { History } from '@1337exp/taoux/history';
 | `pins` | позиции пинов-строк, измеренные по DOM: `usePinMeasure`, `createPinRegistry` | vue (peer) |
 | `i18n` | типизированный i18n: `createI18n({ locales, fallback, storageKey })` | vue (peer, опционально) |
 
-Vue-модули (`links`, `canvas`, `curveeditor`, `curvefield`, `gradienteditor`) требуют явного импорта стилей: `import '@1337exp/taoux/canvas.css'`. Составные модули (session, palette, links, canvas, pins, curveeditor, gradienteditor, playback) импортируют только примитивы. Ярус 2, поля (`curvefield`), собирает составные модули в готовое поле на компонентах TaoUI: только ему можно импортировать TaoUI, поэтому `@1337exp/taoui` это необязательная peer-зависимость. Для `curvefield` нужны оба файла стилей, `curveeditor.css` и `curvefield.css`. Всё это охраняет тест `tiers.test.ts`; контракт холста описан в [docs/canvas.ru.md](docs/canvas.ru.md), переходы между точками кривой в [docs/ease.ru.md](docs/ease.ru.md).
+Vue-модули (`links`, `canvas`, `curveeditor`, `curvefield`, `gradienteditor`) требуют явного импорта стилей: `import '@1337exp/taoux/canvas.css'`. Составные модули (session, commands, palette, links, canvas, pins, curveeditor, gradienteditor, playback) импортируют только примитивы. Ярус 2, поля (`curvefield`), собирает составные модули в готовое поле на компонентах TaoUI: только ему можно импортировать TaoUI, поэтому `@1337exp/taoui` это необязательная peer-зависимость. Для `curvefield` нужны оба файла стилей, `curveeditor.css` и `curvefield.css`. Всё это охраняет тест `tiers.test.ts`; контракт холста описан в [docs/canvas.ru.md](docs/canvas.ru.md), переходы между точками кривой в [docs/ease.ru.md](docs/ease.ru.md).
 
 Правило: модуль попадает сюда, когда он понадобился во втором проекте. Ядро модулей не знает про Vue и DOM, если это не их задача.
 

@@ -123,6 +123,41 @@ const selected = ref(0);
 </template>
 ```
 
+### Menus: `commands` and `TaoMenubar`
+
+The menu bar knows nothing about commands, the commands know nothing about the menu: `toMenu` builds the plain `TaoMenuItem[]` tree with the labels of this platform (`Ctrl+S` or `⌘S`), `run` takes the picked id, `bind` listens to the same shortcuts.
+
+```vue
+<script setup lang="ts">
+import { computed, onBeforeUnmount, onMounted } from 'vue';
+import { TaoMenubar } from '@1337exp/taoui';
+import { createCommands, historyCommands } from '@1337exp/taoux/commands';
+
+const commands = createCommands([
+    { id: 'save', label: () => t('save'), shortcut: 'Mod+S', enabled: () => dirty.value, run: save },
+    { id: 'grid', label: () => t('grid'), shortcut: "Mod+'", checked: () => grid.value, run: () => (grid.value = !grid.value) },
+    ...historyCommands(session, { labels: { undo: () => t('undo'), redo: () => t('redo') } }),
+]);
+
+// read in computed: the labels, enabled and checked follow the refs they read
+const menu = computed(() => commands.toMenu([
+    { id: 'file', label: t('file'), items: ['save'] },
+    { id: 'edit', label: t('edit'), items: ['undo', 'redo'] },
+    { id: 'view', label: t('view'), items: ['grid'] },
+]));
+
+let unbind = () => {};
+onMounted(() => (unbind = commands.bind(document)));
+onBeforeUnmount(() => unbind());
+</script>
+
+<template>
+    <TaoMenubar :items="menu" @select="commands.run" />
+</template>
+```
+
+`commands.check()` in a test of your app lists shortcuts the browser keeps (⌘W, ⌘T, ⌘Q, ⌘R in Safari) and shortcuts given to two commands.
+
 ## Live examples
 
 The TaoUX repository has a sandbox where all these connections are assembled on one page with a dark/light theme switch:
