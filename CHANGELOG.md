@@ -2,7 +2,12 @@
 
 ## 0.2.0
 
-TaoUI 5.0 is out, and TaoUX follows it. Nothing in the TaoUX API changed; what changed is what it sits on.
+TaoUI 5.0 is out, and TaoUX follows it, with two new modules for the TaoUI menu bar.
+
+### Modules
+
+- **New `hotkeys`** (tier 0): `parseHotkey` (`Mod+Shift+Z`, aliases, the plus key; a typo throws), `matchHotkey` (`Mod` is ⌘ on Apple and Ctrl elsewhere; a non-Latin layout and Option on a Mac match by the physical key, the digit row too), `formatHotkey` (`Ctrl+Shift+Z` / `⇧⌘Z` in Apple's ⌃⌥⇧⌘ order), `normalizeHotkey`, `isReservedHotkey` (⌘W, ⌘T, ⌘N, Ctrl+Tab; ⌘Q on a Mac, Alt+F4 elsewhere, ⌘R in Safari), `bindHotkeys` (on any element; text fields keep plain keys and text editing by default).
+- **New `commands`** (tier 1): `createCommands` — a registry of commands with `label`, `shortcut`, `icon`, `enabled`, `checked`, `group`, `run`; `toMenu(layout)` builds the menu tree for `TaoMenubar`, `TaoDropdownMenu` and `TaoContextMenu` (the same shape as TaoUI's `TaoMenuItem`, held by a type test, with no dependency on TaoUI); `bind` listens to the shortcuts (a disabled command swallows its key); `check` lists reserved and duplicate shortcuts; `historyCommands` gives Undo / Redo that disable themselves (a document session fits as is).
 
 ### TaoUI
 
