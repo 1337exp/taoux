@@ -1,6 +1,6 @@
 {
   "name": "@1337exp/taoux",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Interaction and behavior building blocks for Vue apps: curve and gradient editors, canvas, undo/redo, playback. Import only what you need, bring your own design.",
   "keywords": [
     "vue",
@@ -151,7 +151,7 @@
     "media": "node scripts/media.mjs"
   },
   "peerDependencies": {
-    "@1337exp/taoui": "^3.2.1",
+    "@1337exp/taoui": "^5.0.0",
     "vue": "^3.4.0"
   },
   "peerDependenciesMeta": {
@@ -163,7 +163,7 @@
     }
   },
   "devDependencies": {
-    "@1337exp/taoui": "^3.3.1",
+    "@1337exp/taoui": "^5.0.0",
     "@types/node": "^26.6.4",
     "@vitejs/plugin-vue": "^6.0.10",
     "@vue/test-utils": "^2.5.1",

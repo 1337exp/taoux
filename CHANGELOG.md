@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.0
+
+TaoUI 5.0 is out, and TaoUX follows it. Nothing in the TaoUX API changed; what changed is what it sits on.
+
+### TaoUI
+
+- **Built and tested against TaoUI 5.0.0** (peer range `^5.0.0`, optional). TaoUI 5 is ESM-only; its styles moved into `tokens/`, `themes/` and `contexts/`, and `TaoTimeline` is now `TaoScrubber`.
+- **The bridge is unchanged for you:** the 13 `--tao-color-*` tokens it points at are the same. Its test no longer depends on one TaoUI file name: it reads every stylesheet of the installed TaoUI, so a future reshuffle cannot break it for the wrong reason.
+- The sandbox, the docs and the consumer smoke test use `TaoScrubber`.
+- `npm run smoke` accepts `TAOUI_TARBALL=<file.tgz>` to test against a TaoUI that is not published yet.
+
 ## 0.1.0
 
 The first public release.

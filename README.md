@@ -39,7 +39,7 @@
     <td width="50%"><img src="https://raw.githubusercontent.com/1337exp/taoux/main/docs/media/clips/gradienteditor.webp" alt="Gradient editor: adding and moving stops"><br><sub><b>gradienteditor</b> — stops, handles, <code>gradientCss</code></sub></td>
   </tr>
   <tr>
-    <td><img src="https://raw.githubusercontent.com/1337exp/taoux/main/docs/media/clips/playback.webp" alt="Playback: TaoTimeline driven by usePlayback"><br><sub><b>playback</b> — time, loop, speed, seeking; <code>usePlayback</code> + TaoUI <code>TaoTimeline</code></sub></td>
+    <td><img src="https://raw.githubusercontent.com/1337exp/taoux/main/docs/media/clips/playback.webp" alt="Playback: TaoScrubber driven by usePlayback"><br><sub><b>playback</b> — time, loop, speed, seeking; <code>usePlayback</code> + TaoUI <code>TaoScrubber</code></sub></td>
     <td><img src="https://raw.githubusercontent.com/1337exp/taoux/main/docs/media/clips/curvefield.webp" alt="TaoxCurveField: a curve with TaoUI fields"><br><sub><b>curvefield</b> — a curve with TaoUI fields in one component</sub></td>
   </tr>
 </table>
@@ -51,7 +51,7 @@ npm install @1337exp/taoux
 npm install @1337exp/taoui   # optional: only for curvefield and the TaoUI bridge
 ```
 
-Peers: `vue ^3.4` (for the Vue modules) and, optionally, `@1337exp/taoui ^3.2.1`. Modules without Vue need nothing.
+Peers: `vue ^3.4` (for the Vue modules) and, optionally, `@1337exp/taoui ^5.0.0`. Modules without Vue need nothing.
 ESM only. Import by subpath; there is no root entry on purpose, so nothing you do not import can end up in your bundle.
 
 ## With TaoUI
@@ -64,7 +64,7 @@ import '@1337exp/taoux/taoui.css';          // the bridge: --tx-* → --tao-*, t
 import '@1337exp/taoux/curveeditor.css';    // styles of a Vue module are imported explicitly
 ```
 
-`taoui.css` is plain CSS with zero specificity and no dependency on TaoUI, so any rule of yours wins. Values then travel through `v-model`: `usePlayback` drives `TaoTimeline`, a TaoUI field edits a curve point, a TaoUI slider sets the opacity of a gradient stop. With code: [docs/taoui.md](docs/taoui.md). Without the bridge the editors keep their dark defaults; `TaoxCurveField` (built from TaoUI components) follows the theme by itself.
+`taoui.css` is plain CSS with zero specificity and no dependency on TaoUI, so any rule of yours wins. Values then travel through `v-model`: `usePlayback` drives `TaoScrubber`, a TaoUI field edits a curve point, a TaoUI slider sets the opacity of a gradient stop. With code: [docs/taoui.md](docs/taoui.md). Without the bridge the editors keep their dark defaults; `TaoxCurveField` (built from TaoUI components) follows the theme by itself.
 
 <a id="modules"></a>
 

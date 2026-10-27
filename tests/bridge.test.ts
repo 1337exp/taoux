@@ -37,8 +37,13 @@ describe('theme/taoui.css (the TaoUI bridge)', () => {
     });
 
     it('points only at TaoUI tokens that the installed TaoUI defines', () => {
-        const semantic = read('node_modules/@1337exp/taoui/src/styles/semantic.css');
-        const defined = new Set([...semantic.matchAll(/(--tao-[a-z0-9-]+)\s*:/g)].map((m) => m[1]!));
+        // TaoUI keeps its tokens in src/styles/{tokens,themes,contexts}/*.css: read them all, not one file name
+        const styles = walk(join(root, 'node_modules/@1337exp/taoui/src/styles'))
+            .filter((f) => f.endsWith('.css'))
+            .map((f) => readFileSync(f, 'utf8'))
+            .join('\n');
+        const defined = new Set([...styles.matchAll(/(--tao-[a-z0-9-]+)\s*:/g)].map((m) => m[1]!));
+        expect(defined.size).toBeGreaterThan(50);
         const referenced = [...bridge.matchAll(/var\((--tao-[a-z0-9-]+)/g)].map((m) => m[1]!);
         expect(referenced.filter((name) => !defined.has(name))).toEqual([]);
     });

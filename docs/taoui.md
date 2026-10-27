@@ -48,20 +48,20 @@ The full list of variables of each module is in the comment at the top of its st
 
 ## Step 3. Values: connection examples
 
-### Playback: `usePlayback` and `TaoTimeline`
+### Playback: `usePlayback` and `TaoScrubber`
 
 TaoUX drives the time, TaoUI shows it. The connection is two `v-model`s:
 
 ```vue
 <script setup lang="ts">
-import { TaoTimeline } from '@1337exp/taoui';
+import { TaoScrubber } from '@1337exp/taoui';
 import { usePlayback } from '@1337exp/taoux/playback';
 
 const clip = usePlayback({ length: 8, loop: true });
 </script>
 
 <template>
-    <TaoTimeline v-model="clip.time.value" v-model:playing="clip.playing.value" :length="8" :marks="[0, 2, 4, 6]" />
+    <TaoScrubber v-model="clip.time.value" v-model:playing="clip.playing.value" :length="8" :marks="[0, 2, 4, 6]" />
 </template>
 ```
 
