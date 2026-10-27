@@ -81,10 +81,10 @@ export const clips = [
     prepare: (page, h) => h.scrollTo(page, '.grid .case'),
     steps: async (page, h) => {
       const first = page.locator('.grid .case').first()
-      await first.locator('.tao-timeline__controls button').first().click()
+      await first.locator('.tao-scrubber__controls button').first().click()
       await page.waitForTimeout(2200)
       const thumb = await h.box(first.locator('[role="slider"]').first())
-      const track = await h.box(first.locator('.tao-timeline__track'))
+      const track = await h.box(first.locator('.tao-scrubber__track'))
       await h.drag(page, [thumb.x + thumb.width / 2, thumb.y + thumb.height / 2], [track.x + track.width * 0.2, thumb.y + thumb.height / 2])
       await page.waitForTimeout(1200)
     },

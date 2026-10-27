@@ -48,20 +48,20 @@ import '@1337exp/taoux/gradienteditor.css';
 
 ## Шаг 3. Значения: примеры склейки
 
-### Воспроизведение: `usePlayback` и `TaoTimeline`
+### Воспроизведение: `usePlayback` и `TaoScrubber`
 
 TaoUX ведёт время, TaoUI его показывает. Связь это два `v-model`:
 
 ```vue
 <script setup lang="ts">
-import { TaoTimeline } from '@1337exp/taoui';
+import { TaoScrubber } from '@1337exp/taoui';
 import { usePlayback } from '@1337exp/taoux/playback';
 
 const clip = usePlayback({ length: 8, loop: true });
 </script>
 
 <template>
-    <TaoTimeline v-model="clip.time.value" v-model:playing="clip.playing.value" :length="8" :marks="[0, 2, 4, 6]" />
+    <TaoScrubber v-model="clip.time.value" v-model:playing="clip.playing.value" :length="8" :marks="[0, 2, 4, 6]" />
 </template>
 ```
 

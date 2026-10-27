@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-import { TaoSegmented, TaoSegmentedOption, TaoSwitch, TaoTimeline } from '@1337exp/taoui';
+import { TaoSegmented, TaoSegmentedOption, TaoSwitch, TaoScrubber } from '@1337exp/taoui';
 import { computed, ref, watch } from 'vue';
 import { usePlayback } from '../src/playback';
 import { tr } from './lang';
 import SandboxShell from './SandboxShell.vue';
 
-// TaoUX drives the time (usePlayback), TaoUI draws it (TaoTimeline): they do not know each other, the glue is two v-models. / TaoUX ведёт время (usePlayback), TaoUI рисует (TaoTimeline): друг про друга они не знают, склейка это два v-model.
+// TaoUX drives the time (usePlayback), TaoUI draws it (TaoScrubber): they do not know each other, the glue is two v-models. / TaoUX ведёт время (usePlayback), TaoUI рисует (TaoScrubber): друг про друга они не знают, склейка это два v-model.
 const LENGTH = 8;
 const clip = usePlayback({ length: LENGTH, time: 1.25 });
 const events = computed(() => [0, 2, 4, 6].map((value) => ({ value, label: `${value} ${tr('s', 'с')}` })));
@@ -19,11 +19,11 @@ const state = computed(() => JSON.stringify({ time: Number(clip.time.value.toFix
 </script>
 
 <template>
-    <SandboxShell title="playback" :note="tr('usePlayback from taoux drives the time, TaoTimeline from TaoUI shows it and takes the actions. The two sides are joined by two v-models only. Time advances by browser frames; at the end without a loop playback stops, and “play” from there starts over.', 'usePlayback из taoux ведёт время, TaoTimeline из TaoUI показывает и принимает действия. Обе стороны связаны только двумя v-model. Время ведётся по кадрам браузера; на конце без цикла воспроизведение останавливается, а «играть» оттуда начинает сначала.')">
+    <SandboxShell title="playback" :note="tr('usePlayback from taoux drives the time, TaoScrubber from TaoUI shows it and takes the actions. The two sides are joined by two v-models only. Time advances by browser frames; at the end without a loop playback stops, and “play” from there starts over.', 'usePlayback из taoux ведёт время, TaoScrubber из TaoUI показывает и принимает действия. Обе стороны связаны только двумя v-model. Время ведётся по кадрам браузера; на конце без цикла воспроизведение останавливается, а «играть» оттуда начинает сначала.')">
         <div class="grid" style="grid-template-columns: 1fr">
             <section class="case">
-                <h2>TaoTimeline <small>{{ tr('v-model=time, v-model:playing, event marks', 'v-model=time, v-model:playing, метки событий') }}</small></h2>
-                <TaoTimeline v-model="clip.time.value" v-model:playing="clip.playing.value" :length="LENGTH" :marks="events" :format="seconds" />
+                <h2>TaoScrubber <small>{{ tr('v-model=time, v-model:playing, event marks', 'v-model=time, v-model:playing, метки событий') }}</small></h2>
+                <TaoScrubber v-model="clip.time.value" v-model:playing="clip.playing.value" :length="LENGTH" :marks="events" :format="seconds" />
                 <div class="row">
                     <TaoSwitch v-model="clip.loop.value" :label="tr('Loop', 'Цикл')" />
                     <TaoSegmented v-model="speed" size="small">
@@ -37,12 +37,12 @@ const state = computed(() => JSON.stringify({ time: Number(clip.time.value.toFix
 
             <section class="case">
                 <h2>{{ tr('The same data, another look', 'Те же данные, другой вид') }} <small>{{ tr('scale on top, thick track, no "to start"', 'шкала сверху, толстый трек, без «в начало»') }}</small></h2>
-                <TaoTimeline v-model="clip.time.value" v-model:playing="clip.playing.value" :length="LENGTH" :marks="events" marks-side="start" variant="bar" size="small" :show-restart="false" :format="seconds" />
+                <TaoScrubber v-model="clip.time.value" v-model:playing="clip.playing.value" :length="LENGTH" :marks="events" marks-side="start" variant="bar" size="small" :show-restart="false" :format="seconds" />
             </section>
 
             <section class="case">
                 <h2>{{ tr('Do not follow while scrubbing', 'Не вести при перемотке') }} <small>{{ tr('pause-on-scrub is off: you drag, time keeps running', 'pause-on-scrub выключен: тянешь, а время идёт') }}</small></h2>
-                <TaoTimeline v-model="clip.time.value" v-model:playing="clip.playing.value" :length="LENGTH" :pause-on-scrub="false" :show-time="false" />
+                <TaoScrubber v-model="clip.time.value" v-model:playing="clip.playing.value" :length="LENGTH" :pause-on-scrub="false" :show-time="false" />
             </section>
         </div>
         <pre class="muted" style="margin-top: 16px; font-size: 11px">{{ state }}</pre>

@@ -39,7 +39,7 @@
     <td width="50%"><img src="https://raw.githubusercontent.com/1337exp/taoux/main/docs/media/clips/gradienteditor.webp" alt="Редактор градиента: добавление и перемещение остановок"><br><sub><b>gradienteditor</b> — остановки, ручки, <code>gradientCss</code></sub></td>
   </tr>
   <tr>
-    <td><img src="https://raw.githubusercontent.com/1337exp/taoux/main/docs/media/clips/playback.webp" alt="Воспроизведение: TaoTimeline ведёт usePlayback"><br><sub><b>playback</b> — время, цикл, скорость, перемотка; <code>usePlayback</code> + <code>TaoTimeline</code> из TaoUI</sub></td>
+    <td><img src="https://raw.githubusercontent.com/1337exp/taoux/main/docs/media/clips/playback.webp" alt="Воспроизведение: TaoScrubber ведёт usePlayback"><br><sub><b>playback</b> — время, цикл, скорость, перемотка; <code>usePlayback</code> + <code>TaoScrubber</code> из TaoUI</sub></td>
     <td><img src="https://raw.githubusercontent.com/1337exp/taoux/main/docs/media/clips/curvefield.webp" alt="TaoxCurveField: кривая с полями TaoUI"><br><sub><b>curvefield</b> — кривая с полями TaoUI в одном компоненте</sub></td>
   </tr>
 </table>
@@ -51,7 +51,7 @@ npm install @1337exp/taoux
 npm install @1337exp/taoui   # по желанию: только для curvefield и моста к TaoUI
 ```
 
-Peer-зависимости: `vue ^3.4` (для Vue-модулей) и, по желанию, `@1337exp/taoui ^3.2.1`. Модулям без Vue ничего не нужно.
+Peer-зависимости: `vue ^3.4` (для Vue-модулей) и, по желанию, `@1337exp/taoui ^5.0.0`. Модулям без Vue ничего не нужно.
 Только ESM. Импорт по subpath; корневой точки входа нет намеренно, чтобы в сборку не попало ничего неимпортированного.
 
 ## С TaoUI
@@ -64,7 +64,7 @@ import '@1337exp/taoux/taoui.css';          // мост: --tx-* → --tao-*, р�
 import '@1337exp/taoux/curveeditor.css';    // стили Vue-модуля подключаются явно
 ```
 
-`taoui.css` это обычный CSS с нулевой специфичностью и без зависимости от TaoUI, поэтому любое ваше правило главнее. Дальше значения ходят через `v-model`: `usePlayback` ведёт `TaoTimeline`, поле TaoUI правит точку кривой, слайдер TaoUI задаёт прозрачность остановки градиента. С кодом: [docs/taoui.ru.md](docs/taoui.ru.md). Без моста редакторы остаются с тёмными значениями по умолчанию; `TaoxCurveField` (собран из компонентов TaoUI) подстраивается под тему сам.
+`taoui.css` это обычный CSS с нулевой специфичностью и без зависимости от TaoUI, поэтому любое ваше правило главнее. Дальше значения ходят через `v-model`: `usePlayback` ведёт `TaoScrubber`, поле TaoUI правит точку кривой, слайдер TaoUI задаёт прозрачность остановки градиента. С кодом: [docs/taoui.ru.md](docs/taoui.ru.md). Без моста редакторы остаются с тёмными значениями по умолчанию; `TaoxCurveField` (собран из компонентов TaoUI) подстраивается под тему сам.
 
 <a id="модули"></a>
 

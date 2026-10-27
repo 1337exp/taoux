@@ -31,7 +31,9 @@ try {
 
     // 2. a plain consumer project
     writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'smoke', private: true, type: 'module' }));
-    run(`npm install vue vite @vitejs/plugin-vue @1337exp/taoui@${taouiVersion} ./${tgz}`);
+    // TAOUI_TARBALL=/path/to/1337exp-taoui-x.y.z.tgz tests against a TaoUI that is not published yet
+    const taouiSpec = process.env.TAOUI_TARBALL ? resolve(process.env.TAOUI_TARBALL) : `@1337exp/taoui@${taouiVersion}`;
+    run(`npm install vue vite @vitejs/plugin-vue "${taouiSpec}" ./${tgz}`);
 
     mkdirSync(join(dir, 'src'));
     writeFileSync(join(dir, 'vite.config.js'), "import vue from '@vitejs/plugin-vue';\nexport default { plugins: [vue()] };\n");
@@ -59,7 +61,7 @@ createApp(App).mount('#app');
         join(dir, 'src/App.vue'),
         `<script setup>
 import { ref } from 'vue';
-import { TaoTimeline } from '@1337exp/taoui';
+import { TaoScrubber } from '@1337exp/taoui';
 ${imports}
 const mods = [${uses}];
 const clip = m${subpaths.indexOf('./playback')}.usePlayback({ length: 8 });
@@ -68,7 +70,7 @@ const stops = ref([{ t: 0, color: [1, 1, 1], alpha: 1 }, { t: 1, color: [0, 0, 0
 </script>
 <template>
   <p>{{ mods.length }}</p>
-  <TaoTimeline v-model="clip.time.value" v-model:playing="clip.playing.value" :length="8" />
+  <TaoScrubber v-model="clip.time.value" v-model:playing="clip.playing.value" :length="8" />
   <m${subpaths.indexOf('./curvefield')}.TaoxCurveField v-model="points" />
   <m${subpaths.indexOf('./gradienteditor')}.TaoxGradientEditor v-model="stops" />
 </template>

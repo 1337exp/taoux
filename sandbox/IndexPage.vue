@@ -11,7 +11,7 @@ const own = [
 ];
 const withTaoui = [
     { name: 'curvefield', note: ['a curve with TaoUI fields: point, transition (ease), step, reset', 'кривая с полями на TaoUI: точка, переход (ease), шаг, сброс'] as const },
-    { name: 'playback', note: ['usePlayback (TaoUX) drives the time, TaoTimeline (TaoUI) shows it: loop, speed, seeking', 'usePlayback (TaoUX) ведёт время, TaoTimeline (TaoUI) показывает: цикл, скорость, перемотка'] as const },
+    { name: 'playback', note: ['usePlayback (TaoUX) drives the time, TaoScrubber (TaoUI) shows it: loop, speed, seeking', 'usePlayback (TaoUX) ведёт время, TaoScrubber (TaoUI) показывает: цикл, скорость, перемотка'] as const },
     { name: 'color', note: ['TaoColorPicker and TaoColorInput from TaoUI: palette, opacity, swatches, colorModel for your own storage', 'TaoColorPicker и TaoColorInput из TaoUI 3.1: палитра, прозрачность, образцы, colorModel для своего хранилища'] as const },
     { name: 'slider', note: ['TaoSlider and TaoRangeSlider from TaoUI: range, marks, steps, vertical, timeline', 'TaoSlider и TaoRangeSlider из TaoUI 3: диапазон, метки, ступени, вертикальный, таймлайн'] as const },
 ];
