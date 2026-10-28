@@ -83,7 +83,7 @@ import { History } from '@1337exp/taoux/history';
 | `history` | undo/redo на снимках-строках со склейкой частых правок | нет |
 | `hotkeys` | сочетания клавиш: `parseHotkey('Mod+Shift+Z')`, `matchHotkey` (Mod = ⌘ / Ctrl, нелатинские раскладки по физической клавише), `formatHotkey` (`Ctrl+Shift+Z` / `⇧⌘Z`), `isReservedHotkey` (⌘W, ⌘T, ⌘Q…), `bindHotkeys` на элементе | DOM (для `bindHotkeys`) |
 | `storage` | автосохранение в localStorage без исключений | нет |
-| `file` | скачивание текста как файла, лимит размера | DOM |
+| `file` | скачивание текста как файла (любой `mime`), чтение выбранного файла как текста с лимитом размера | DOM |
 | `snap` | мягкая привязка к сетке с порогом по масштабу камеры | нет |
 | `wheel` | колесо/тачпад → pan или zoom (как в Figma) | нет |
 | `edgescroll` | скорость автопрокрутки у края и готовый цикл `createEdgeScroller` (холст, редакторы кривых и любое перетаскивание) | нет |

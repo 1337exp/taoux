@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.2
+
+- **`file`:** `downloadText(filename, text, mime?)` takes the type of the file (it was always `application/json`), and the new `readTextFile(file, limit?)` is its pair: it reads a picked file as text, refuses a file above `MAX_FILE_BYTES` before reading it, and returns `{ ok: false, error: 'tooLarge' | 'unreadable' }` instead of throwing. Nothing to migrate.
+
 ## 0.2.0
 
 TaoUI 5.0 is out, and TaoUX follows it, with two new modules for the TaoUI menu bar.

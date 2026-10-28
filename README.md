@@ -83,7 +83,7 @@ import { History } from '@1337exp/taoux/history';
 | `history` | undo/redo on string snapshots, rapid edits merged into one step | nothing |
 | `hotkeys` | shortcuts: `parseHotkey('Mod+Shift+Z')`, `matchHotkey` (Mod = ⌘ / Ctrl, non-Latin layouts by the physical key), `formatHotkey` (`Ctrl+Shift+Z` / `⇧⌘Z`), `isReservedHotkey` (⌘W, ⌘T, ⌘Q…), `bindHotkeys` on an element | DOM (for `bindHotkeys`) |
 | `storage` | autosave to localStorage without exceptions | nothing |
-| `file` | download text as a file, size limit | DOM |
+| `file` | download text as a file (any `mime`), read a picked file as text with a size limit | DOM |
 | `snap` | soft snapping to a grid with a threshold that follows the camera zoom | nothing |
 | `wheel` | wheel/trackpad → pan or zoom (like Figma) | nothing |
 | `edgescroll` | auto-scroll speed near an edge and a ready loop, `createEdgeScroller` (canvas, curve editors, any drag) | nothing |
