@@ -109,6 +109,8 @@ Vue modules (`links`, `canvas`, `curveeditor`, `curvefield`, `gradienteditor`) n
 
 The rule: a module lands here when a second project needs it. A module's core knows nothing about Vue or the DOM unless that is its job.
 
+**For AI assistants:** the package ships a skill, `skills/taoux/SKILL.md`: how the modules fit together and the mistakes to avoid. Point your assistant at it (Claude Code: copy the folder into `.claude/skills/`).
+
 ## Development
 
 ```bash
