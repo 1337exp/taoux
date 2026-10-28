@@ -33,8 +33,8 @@ export type LoadResult<D> =
  * Ключи сообщений, которые сессия показывает сама. Словарь приложения обязан их содержать.
  */
 export interface SessionKeys<K extends string> {
-    loaded: K; // {0} is the number of nodes / {0} — число нод
-    loadedWithDropped: K; // {0} is the number of nodes, {1} how many links were dropped / {0} — число нод, {1} — сколько связей отброшено
+    loaded: K; // {0} is the number of items (`countItems`) / {0} — число элементов (`countItems`)
+    loadedWithDropped: K; // {0} is the number of items, {1} how many entries the codec dropped / {0} — число элементов, {1} — сколько записей отбросил кодек
     newDocument: K;
     saveFailed: K;
     restoreFailed: K;
@@ -51,7 +51,13 @@ export interface SessionOptions<D, K extends string> {
      * Документ в сторе приложения.
      */
     document: { get(): D; set(doc: D): void };
-    camera: { get(): Camera; set(camera: Camera): void };
+    /**
+     * The view of a canvas editor: saved with the document and brought back on open. Leave it out for a document
+     * without one (a list of notes): `serialize` then gets `undefined`, and a `view` from `parse` is ignored.
+     * Вид редактора-холста: сохраняется с документом и возвращается при открытии. Не задавайте для документа без него
+     * (список заметок): тогда `serialize` получает `undefined`, а `view` из `parse` пропускается.
+     */
+    camera?: { get(): Camera; set(camera: Camera): void };
     storage: SavedStorage;
     codec: {
         serialize(doc: D, view: Camera | undefined, pretty: boolean): string;
@@ -59,10 +65,15 @@ export interface SessionOptions<D, K extends string> {
     };
     empty(): D;
     /**
-     * How many nodes are in the document: substituted into the message about opening a file.
-     * Сколько нод в документе: подставляется в сообщение об открытии файла.
+     * How many items are in the document (nodes, notes): substituted into the message about opening a file.
+     * Сколько элементов в документе (узлов, заметок): подставляется в сообщение об открытии файла.
      */
-    countNodes(doc: D): number;
+    countItems?(doc: D): number;
+    /**
+     * @deprecated The old name of `countItems`; still read when `countItems` is not given.
+     * Старое имя `countItems`; читается, если `countItems` не задан.
+     */
+    countNodes?(doc: D): number;
     keys: SessionKeys<K>;
     /**
      * The document was replaced as a whole (open, new, restore): reset the selection, the drag, the palette.
@@ -100,6 +111,7 @@ const DEFAULT_AUTOSAVE_MS = 400;
 export function createDocumentSession<D, K extends string>(options: SessionOptions<D, K>) {
     const { document: doc, camera, storage, codec, keys } = options;
     const noticeMs = options.noticeMs ?? DEFAULT_NOTICE_MS;
+    const count = (d: D) => (options.countItems ?? options.countNodes)?.(d) ?? 0;
     const autosaveDelay = options.autosaveDelay ?? DEFAULT_AUTOSAVE_MS;
 
     //---]>
@@ -132,7 +144,7 @@ export function createDocumentSession<D, K extends string>(options: SessionOptio
         saveTimer = undefined;
         if (!autosaveOn) return;
 
-        if (storage.write(codec.serialize(doc.get(), camera.get(), false))) {
+        if (storage.write(codec.serialize(doc.get(), camera?.get(), false))) {
             saveFailedShown = false;
         } else if (!saveFailedShown) {
             saveFailedShown = true; // tell once, not on every edit / сообщаем один раз, а не при каждой правке
@@ -229,7 +241,7 @@ export function createDocumentSession<D, K extends string>(options: SessionOptio
     function load(next: D, view?: Camera, resetHistory = false) {
         doc.set(next);
         options.onReset?.();
-        if (view) camera.set({ x: view.x, y: view.y, z: Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, view.z)) });
+        if (view && camera) camera.set({ x: view.x, y: view.y, z: Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, view.z)) });
 
         if (resetHistory) {
             history.reset(snapshot());
@@ -243,7 +255,7 @@ export function createDocumentSession<D, K extends string>(options: SessionOptio
      * The file text for download.
      * Текст файла для скачивания.
      */
-    const exportText = () => codec.serialize(doc.get(), camera.get(), true);
+    const exportText = () => codec.serialize(doc.get(), camera?.get(), true);
 
     /**
      * Opens a document from file text. On an error the document is unchanged. The result is shown as a notice.
@@ -258,9 +270,9 @@ export function createDocumentSession<D, K extends string>(options: SessionOptio
         }
 
         load(result.doc, result.view);
-        const nodes = options.countNodes(result.doc);
-        if (result.dropped > 0) showNotice('error', keys.loadedWithDropped, [nodes, result.dropped]);
-        else showNotice('info', keys.loaded, [nodes]);
+        const items = count(result.doc);
+        if (result.dropped > 0) showNotice('error', keys.loadedWithDropped, [items, result.dropped]);
+        else showNotice('info', keys.loaded, [items]);
         return null;
     }
 
