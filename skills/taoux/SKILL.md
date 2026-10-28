@@ -25,7 +25,7 @@ shells, and TaoUX has **no buttons or fields of its own**. Pair it with TaoUI fo
 |---|---|
 | `camera` | pan, zoom around the cursor, screen ↔ world (`zoomAt`) |
 | `history` | `new History(snapshot)`: undo / redo on string snapshots, rapid edits with one `key` merged into one step |
-| `undo` | `new UndoStack({ id, revive, vanish? })`: undo / redo of a list of records by steps that keep only the touched ones (`diffRecords(prev, next, id)` makes a step); right for a list that is edited and synced, where `History` would store the whole list per step and an undo would roll back a sync |
+| `undo` | `new UndoStack({ id, revive, vanish? })`: undo / redo of a list of records by steps that keep only the touched ones (`diffRecords(prev, next, id)` makes a step; a returned record takes its old place); right for a list that is edited and synced, where `History` would store the whole list per step and an undo would roll back a sync. `coalesceMaxMs` caps a merged step of typing |
 | `session` | `createDocumentSession(...)`: history + autosave + files + restore + notices for one document; `canUndo` / `canRedo` refs. `camera` is optional (a list, not a canvas); count with `countItems` (`countNodes` is its old name) |
 | `commands` | `createCommands([...])`: one registry for menus, shortcuts and palettes (see below) |
 | `hotkeys` | `parseHotkey('Mod+Shift+Z')`, `matchHotkey`, `formatHotkey` (`Ctrl+Shift+Z` / `⇧⌘Z`), `isReservedHotkey`, `bindHotkeys(element, map)` |

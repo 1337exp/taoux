@@ -187,3 +187,82 @@ describe('UndoStack: merging quick edits', () => {
         expect(stack.canUndo).toBe(true);
     });
 });
+
+describe('UndoStack: a record comes back to its place', () => {
+    const plain = () => new UndoStack<Rec>({ id, revive: (image) => image });
+    const ids = (list: readonly Rec[] | null) => list!.map(id).join('');
+
+    it('a removed record from the middle comes back to the middle, not to the end', () => {
+        const [a, b, c] = [rec('a'), rec('b'), rec('c')];
+        const stack = plain();
+        stack.record(diffRecords([a, b, c], [a, c], id)!);
+        expect(ids(stack.undo([a, c], 1))).toBe('abc');
+    });
+
+    it('«delete all» undone is the same list in the same order', () => {
+        const all = ['a', 'b', 'c', 'd'].map((k) => rec(k));
+        const stack = plain();
+        stack.record(diffRecords(all, [], id)!);
+        expect(ids(stack.undo([], 1))).toBe('abcd');
+    });
+
+    it('redo puts an added record where it was added', () => {
+        const [a, b, x] = [rec('a'), rec('b'), rec('x')];
+        const stack = plain();
+        stack.record(diffRecords([a, b], [a, x, b], id)!);
+        const undone = stack.undo([a, x, b], 1)!;
+        expect(ids(undone)).toBe('ab');
+        expect(ids(stack.redo(undone, 2))).toBe('axb');
+    });
+
+    it('the list changed meanwhile: the nearest place, never past the end', () => {
+        const [a, b, c] = [rec('a'), rec('b'), rec('c')];
+        const stack = plain();
+        stack.record(diffRecords([a, b, c], [a, b], id)!);
+        // another tab removed a and b in the meantime / другая вкладка тем временем убрала a и b
+        expect(ids(stack.undo([], 1))).toBe('c');
+    });
+
+    it('a hand-made step without places still works: the record goes to the end', () => {
+        const [a, b] = [rec('a'), rec('b')];
+        const stack = plain();
+        stack.record({ before: new Map([['a', a]]), after: new Map([['a', null]]) });
+        expect(ids(stack.undo([b], 1))).toBe('ba');
+    });
+});
+
+describe('UndoStack: a merged step has a limit', () => {
+    const typing = (options: { coalesceMaxMs?: number }) => {
+        const stack = new UndoStack<Rec>({ id, revive: (image) => image, ...options });
+        let current = [rec('a', '0')];
+        for (let i = 1; i <= 30; i++) {
+            const next = [{ ...current[0]!, text: String(i) }];
+            stack.record(diffRecords(current, next, id)!, 'type', i * 2000); // an edit every 2 s for a minute
+            current = next;
+        }
+        let steps = 0;
+        while (stack.canUndo) {
+            current = stack.undo(current, 0)!;
+            steps++;
+        }
+        return steps;
+    };
+
+    it('without it typing with no pause stays one step (as before)', () => {
+        expect(typing({})).toBe(1);
+    });
+
+    it('coalesceMaxMs starts a new step when the merged one grew that long', () => {
+        // a step takes the edits of its first 10 s (6 of them, 2 s apart): 30 edits are 5 steps
+        expect(typing({ coalesceMaxMs: 10_000 })).toBe(5);
+    });
+
+    it('a merged step keeps the first place of a record and the last one', () => {
+        const [a, b] = [rec('a'), rec('b')];
+        const stack = new UndoStack<Rec>({ id, revive: (image) => image });
+        stack.record(diffRecords([a, b], [b], id)!, 'k', 1000);
+        const b2 = { ...b, text: 'x' };
+        stack.record(diffRecords([b], [b2], id)!, 'k', 1100);
+        expect(stack.undo([b2], 1)!.map((r) => `${r.id}${r.text}`).join(' ')).toBe('aa bb');
+    });
+});
