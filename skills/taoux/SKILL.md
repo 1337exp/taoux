@@ -25,6 +25,7 @@ shells, and TaoUX has **no buttons or fields of its own**. Pair it with TaoUI fo
 |---|---|
 | `camera` | pan, zoom around the cursor, screen ↔ world (`zoomAt`) |
 | `history` | `new History(snapshot)`: undo / redo on string snapshots, rapid edits with one `key` merged into one step |
+| `undo` | `new UndoStack({ id, revive, vanish? })`: undo / redo of a list of records by steps that keep only the touched ones (`diffRecords(prev, next, id)` makes a step; a returned record takes its old place); right for a list that is edited and synced, where `History` would store the whole list per step and an undo would roll back a sync. `coalesceMaxMs` caps a merged step of typing |
 | `session` | `createDocumentSession(...)`: history + autosave + files + restore + notices for one document; `canUndo` / `canRedo` refs. `camera` is optional (a list, not a canvas); count with `countItems` (`countNodes` is its old name) |
 | `commands` | `createCommands([...])`: one registry for menus, shortcuts and palettes (see below) |
 | `hotkeys` | `parseHotkey('Mod+Shift+Z')`, `matchHotkey`, `formatHotkey` (`Ctrl+Shift+Z` / `⇧⌘Z`), `isReservedHotkey`, `bindHotkeys(element, map)` |
@@ -88,6 +89,7 @@ onBeforeUnmount(() => unbind());
 - Importing from `@1337exp/taoux` (no root entry) or from `dist/` paths.
 - Forgetting the module CSS (`curveeditor.css`…) or the bridge `taoui.css`: the editor renders unstyled or dark.
 - Calling `toMenu` outside `computed`: the menu does not follow the state.
+- Using `History` for a list of records that is synced: its snapshots are the whole list, and an undo after a sync rolls back the other device's edits. Use `undo` (`UndoStack`), and stamp a returned record as new in `revive`.
 - Keeping editor state outside `history` / `session` and then wondering why Undo skips it: commit a snapshot after
   every edit (`session.commit(key)` or `recorded(fn)`).
 - Offering a reserved shortcut (⌘W, ⌘T, ⌘N, Ctrl+Tab): the browser takes it before the page.

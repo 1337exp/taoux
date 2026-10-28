@@ -20,7 +20,7 @@ The conclusion: what becomes shared is the **behaviour**, while the model, the n
 
 | Tier | What | May import |
 |---|---|---|
-| 0, primitives | `camera`, `history`, `snap`, `wheel`, `edgescroll`, `gestures`, `curve`, `ids`, `storage`, `file`, `i18n`, `touch` | nothing from taoux |
+| 0, primitives | `camera`, `history`, `undo`, `snap`, `wheel`, `edgescroll`, `gestures`, `curve`, `ids`, `storage`, `file`, `i18n`, `touch` | nothing from taoux |
 | 1, composite | `session`, `commands`, `canvas`, `links`, `palette`, `pins`, `curveeditor`, `gradienteditor`, `playback` | tier 0 only, and not each other |
 
 This keeps the answer about isolation honest: primitives are still self-contained, and composites assemble them explicitly. A test enforces the rule: it reads the imports and fails if tier 0 imports anything or tier 1 pulls in a neighbour of its own tier. (Tier 2, `curvefield`, is the only one allowed to import TaoUI.)
