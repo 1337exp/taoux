@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **New module `undo` (tier 0): undo and redo by records.** `UndoStack` keeps steps made of only the records they touched (`before` and `after` images), not snapshots of the whole document as `History` does, so a step costs what it changed, and an undo after a sync does not roll back what another device has just changed. `diffRecords(prev, next, id)` makes a step from two lists (records are immutable, found by identity); `record(entry, key?)` merges quick edits with one key within `coalesceMs` (3 s) into one step; `undo(current)` / `redo(current)` take the current list and return the next one. Two hooks carry what only the app knows: `revive(image, now)` stamps a returned record as new (`updatedAt: now`), and `vanish(record, now)` marks a record the step created as gone instead of erasing it (a tombstone; without it the record is dropped). It came out of Next Up's `core/undo.ts`.
+
 ## 0.3.0
 
 Additions for apps that are not canvas editors (a list of notes); everything that was there works as before, nothing to migrate.

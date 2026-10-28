@@ -81,6 +81,7 @@ import { History } from '@1337exp/taoux/history';
 |---|---|---|
 | `camera` | canvas camera: pan, zoom around the cursor, screen ↔ world | nothing |
 | `history` | undo/redo on string snapshots, rapid edits merged into one step | nothing |
+| `undo` | undo/redo by records, not snapshots: a step keeps only the records it touched, so it is small and an undo after a sync does not roll back another device's edits; quick edits merge (`UndoStack`, `diffRecords`) | nothing |
 | `hotkeys` | shortcuts: `parseHotkey('Mod+Shift+Z')`, `matchHotkey` (Mod = ⌘ / Ctrl, non-Latin layouts by the physical key), `formatHotkey` (`Ctrl+Shift+Z` / `⇧⌘Z`), `isReservedHotkey` (⌘W, ⌘T, ⌘Q…), `bindHotkeys` on an element | DOM (for `bindHotkeys`) |
 | `storage` | autosave to localStorage without exceptions; `tryWrite` (why it failed: quota / denied), `remove`, `subscribe` (another tab changed the key) | nothing |
 | `file` | download text as a file (any `mime`), read a picked file as text with a size limit | DOM |

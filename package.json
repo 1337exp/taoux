@@ -139,6 +139,10 @@
       "types": "./dist/touch.d.ts",
       "import": "./dist/touch.js"
     },
+    "./undo": {
+      "types": "./dist/undo.d.ts",
+      "import": "./dist/undo.js"
+    },
     "./wheel": {
       "types": "./dist/wheel.d.ts",
       "import": "./dist/wheel.js"
