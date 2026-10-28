@@ -286,3 +286,157 @@ export class PinchTracker {
         return step;
     }
 }
+
+//--------------------------------------------------
+// Swipe: a row that slides open to show its actions, a sheet pulled down
+// Свайп: строка, которая отъезжает и показывает действия, лист, который тянут вниз
+
+/**
+ * How far the finger moves before the intent is decided: a swipe along the axis, or a scroll across it.
+ * Сколько палец проходит, прежде чем решается намерение: свайп вдоль оси или прокрутка поперёк.
+ */
+export const SWIPE_SLOP_PX = 10;
+/**
+ * A release faster than this (px/ms) is a fling: it goes on in its direction whatever the offset.
+ * Отпускание быстрее этого (px/мс) — бросок: он продолжается в своём направлении при любом сдвиге.
+ */
+export const SWIPE_FLING_PX_PER_MS = 0.4;
+/**
+ * The release speed is measured over this last stretch of the gesture, ms.
+ * Скорость отпускания меряется на этом последнем отрезке жеста, мс.
+ */
+export const SWIPE_VELOCITY_WINDOW_MS = 100;
+
+/**
+ * `pending` — not decided yet (inside the slop); `swipe` — along the axis, the app moves the row; `scroll` — across,
+ * the gesture belongs to the page and the tracker ignores it until the next `down`.
+ * `pending` — ещё не решено (в пределах допуска); `swipe` — вдоль оси, приложение двигает строку; `scroll` — поперёк,
+ * жест принадлежит странице, и трекер его игнорирует до следующего `down`.
+ */
+export type SwipeIntent = 'pending' | 'swipe' | 'scroll';
+
+export interface SwipeStep {
+    intent: SwipeIntent;
+    /**
+     * Where the row stands now: the offset it had at `down` plus the travel since the swipe engaged (so it does not
+     * jump by the slop).
+     * Где строка сейчас: сдвиг на момент `down` плюс путь с момента, как свайп включился (поэтому без скачка на допуск).
+     */
+    offset: number;
+}
+
+export interface SwipeRelease {
+    offset: number;
+    /** px/ms along the axis, + to the right / down. / px/мс вдоль оси, + вправо / вниз. */
+    velocity: number;
+}
+
+/**
+ * Tells a swipe from a scroll and follows it. Pure logic, as the other recognizers: the app feeds it pointer samples,
+ * moves the element by `offset` and, on release, asks `settleOpen` where the element should come to rest.
+ * Отличает свайп от прокрутки и ведёт его. Чистая логика, как остальные распознаватели: приложение подаёт отсчёты
+ * указателя, двигает элемент на `offset`, а при отпускании спрашивает `settleOpen`, где элементу остановиться.
+ */
+export class SwipeTracker {
+    private start: Sample | null = null;
+    private from = 0;
+    private engage: Sample | null = null;
+    private intent: SwipeIntent = 'pending';
+    private trail: Sample[] = [];
+
+    constructor(
+        private readonly axis: 'x' | 'y' = 'x',
+        private readonly slop: number = SWIPE_SLOP_PX,
+    ) {}
+
+    private along(s: Sample): number {
+        return this.axis === 'x' ? s.x : s.y;
+    }
+
+    private across(s: Sample): number {
+        return this.axis === 'x' ? s.y : s.x;
+    }
+
+    /**
+     * The finger landed. `from` is where the row already stands (0 closed, or its open offset).
+     * Палец лёг. `from` — где строка уже стоит (0 — закрыта, или её открытый сдвиг).
+     */
+    down(s: Sample, from = 0): void {
+        this.start = s;
+        this.from = from;
+        this.engage = null;
+        this.intent = 'pending';
+        this.trail = [s];
+    }
+
+    move(s: Sample): SwipeStep {
+        const start = this.start;
+        if (!start || this.intent === 'scroll') return { intent: this.intent, offset: this.from };
+
+        if (this.intent === 'pending') {
+            const da = Math.abs(this.along(s) - this.along(start));
+            const dc = Math.abs(this.across(s) - this.across(start));
+            if (Math.max(da, dc) <= this.slop) return { intent: 'pending', offset: this.from };
+            // the axis wins only when it leads: a diagonal goes to the page / ось побеждает, только если ведёт: диагональ — странице
+            this.intent = da > dc ? 'swipe' : 'scroll';
+            if (this.intent === 'scroll') return { intent: 'scroll', offset: this.from };
+            this.engage = s;
+        }
+
+        this.trail.push(s);
+        while (this.trail.length > 2 && s.t - this.trail[0]!.t > SWIPE_VELOCITY_WINDOW_MS) this.trail.shift();
+        return { intent: 'swipe', offset: this.from + this.along(s) - this.along(this.engage!) };
+    }
+
+    /**
+     * The finger was lifted. Null unless it was a swipe.
+     * Палец поднят. Null, если это был не свайп.
+     */
+    up(s: Sample): SwipeRelease | null {
+        const step = this.move(s);
+        const swiped = this.intent === 'swipe';
+        const first = this.trail[0];
+        this.start = null;
+        if (!swiped || !first) return null;
+        const dt = s.t - first.t;
+        const velocity = dt > 0 ? (this.along(s) - this.along(first)) / dt : 0;
+        return { offset: step.offset, velocity };
+    }
+
+    cancel(): void {
+        this.start = null;
+        this.intent = 'pending';
+        this.trail = [];
+    }
+
+    get current(): SwipeIntent {
+        return this.intent;
+    }
+}
+
+/**
+ * Where a released row comes to rest: closed (0), open at the start (`start`, > 0, actions on the left) or open at
+ * the end (`-end`, actions on the right). A fling goes on in its direction, one stop at a time (an open row flung
+ * back closes, it does not fly to the other side); otherwise the nearest stop wins.
+ * Где отпущенная строка останавливается: закрыта (0), открыта в начале (`start`, > 0, действия слева) или в конце
+ * (`-end`, действия справа). Бросок продолжается в своём направлении на одну остановку (открытая строка, брошенная
+ * обратно, закрывается, а не улетает на другую сторону); иначе побеждает ближайшая остановка.
+ */
+export function settleOpen(
+    release: SwipeRelease,
+    open: { start?: number; end?: number },
+    fling: number = SWIPE_FLING_PX_PER_MS,
+): number {
+    const stops = [0];
+    if (open.start) stops.push(open.start);
+    if (open.end) stops.push(-open.end);
+    stops.sort((a, b) => a - b);
+
+    const { offset, velocity } = release;
+    if (Math.abs(velocity) >= fling) {
+        // the stop beyond the offset in the direction of the fling, or the last one / остановка за сдвигом по ходу броска
+        const ahead = velocity > 0 ? stops.filter((p) => p > offset) : stops.filter((p) => p < offset).reverse();
+        return ahead[0] ?? (velocity > 0 ? stops[stops.length - 1]! : stops[0]!);
+    }
+    return stops.reduce((best, p) => (Math.abs(p - offset) < Math.abs(best - offset) ? p : best), 0);
+}

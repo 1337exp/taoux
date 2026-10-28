@@ -242,3 +242,43 @@ describe('файлы и восстановление', () => {
         expect(session.notice.value).toBeNull();
     });
 });
+
+describe('a document without a camera (a list of notes)', () => {
+    function listSession() {
+        const doc = ref<Doc>({ items: [] });
+        const views: unknown[] = [];
+        const session = createDocumentSession<Doc, Key>({
+            document: { get: () => doc.value, set: (d) => (doc.value = d) },
+            storage: createSavedStorage('test.list'),
+            codec: {
+                serialize: (d, view) => {
+                    views.push(view);
+                    return JSON.stringify(d);
+                },
+                parse: (text): LoadResult<Doc> => ({ ok: true, doc: JSON.parse(text) as Doc, view: { x: 5, y: 5, z: 2 }, dropped: 0 }),
+            },
+            empty: () => ({ items: [] }),
+            countItems: (d) => d.items.length,
+            keys,
+        });
+        return { doc, session, views };
+    }
+
+    it('saves and exports without a view, and ignores a view from the file', () => {
+        const { doc, session, views } = listSession();
+        session.startAutosave();
+        doc.value.items.push('note');
+        session.commit();
+        vi.runAllTimers();
+        session.exportText();
+        expect(views).toEqual([undefined, undefined]);
+        expect(session.importText('{"items":["a","b"]}')).toBeNull();
+        expect(doc.value.items).toEqual(['a', 'b']);
+    });
+
+    it('countItems fills the message; the old countNodes still works (the tests above use it)', () => {
+        const { session } = listSession();
+        session.importText('{"items":["a","b","c"]}');
+        expect(session.notice.value).toEqual({ kind: 'info', key: 'loaded', args: [3] });
+    });
+});

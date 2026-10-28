@@ -25,18 +25,18 @@ shells, and TaoUX has **no buttons or fields of its own**. Pair it with TaoUI fo
 |---|---|
 | `camera` | pan, zoom around the cursor, screen ↔ world (`zoomAt`) |
 | `history` | `new History(snapshot)`: undo / redo on string snapshots, rapid edits with one `key` merged into one step |
-| `session` | `createDocumentSession(...)`: history + autosave + files + restore + notices for one document; `canUndo` / `canRedo` refs |
+| `session` | `createDocumentSession(...)`: history + autosave + files + restore + notices for one document; `canUndo` / `canRedo` refs. `camera` is optional (a list, not a canvas); count with `countItems` (`countNodes` is its old name) |
 | `commands` | `createCommands([...])`: one registry for menus, shortcuts and palettes (see below) |
 | `hotkeys` | `parseHotkey('Mod+Shift+Z')`, `matchHotkey`, `formatHotkey` (`Ctrl+Shift+Z` / `⇧⌘Z`), `isReservedHotkey`, `bindHotkeys(element, map)` |
-| `storage` | autosave to localStorage that never throws |
+| `storage` | autosave to localStorage that never throws; `tryWrite` gives the reason (`quota` / `denied`), `remove`, `subscribe` for changes from other tabs |
 | `file` | `downloadText(name, text, mime?)`; `readTextFile(file, limit?)` reads a picked file, refusing a big one |
 | `snap` | soft snapping to a grid, threshold follows the zoom |
 | `wheel` | wheel / trackpad → pan or zoom, like Figma (zoom only with Ctrl / ⌘ or a pinch) |
 | `edgescroll` | auto-scroll near an edge while dragging (`createEdgeScroller`) |
-| `gestures` | tap, double tap, long press, pinch |
+| `gestures` | tap, double tap, long press, pinch; `SwipeTracker` (swipe vs scroll) + `settleOpen` (where a released row rests) |
 | `touch` | `coarse`: is the pointer a finger |
 | `curve` | link paths: Bezier between pins, arrowheads of constant screen size |
-| `ids` | `uid(prefix, taken)` |
+| `ids` | `uuid()` for stored / synced records; `uid(prefix, taken)` restarts from zero on every load, only for ids inside one document |
 | `ease` | easing between curve points (8 families × in / out / in-out, `linear`, `step`, cubic Bezier), `easeValue` |
 | `num` | `clamp`, `roundTo`, `snapTo`, `niceStep`, `ticks` |
 | `palette` | search and groups for a palette of nodes |

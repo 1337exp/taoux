@@ -10,6 +10,10 @@ import {
     PINCH_DEADBAND_PX,
     PINCH_ENGAGE_PX,
     PinchTracker,
+    settleOpen,
+    SWIPE_FLING_PX_PER_MS,
+    SWIPE_SLOP_PX,
+    SwipeTracker,
 } from '../src/gestures';
 
 const at = (x: number, y: number, t: number) => ({ x, y, t });
@@ -245,5 +249,64 @@ describe('pinch', () => {
         }
         expect(f.b.x - f.a.x - 100).toBeGreaterThan(PINCH_ENGAGE_PX);
         expect(t.isZooming).toBe(false);
+    });
+});
+
+describe('SwipeTracker', () => {
+    it('inside the slop nothing is decided; along the axis it is a swipe, without a jump by the slop', () => {
+        const s = new SwipeTracker();
+        s.down(at(100, 100, 0));
+        expect(s.move(at(100 - SWIPE_SLOP_PX, 102, 10)).intent).toBe('pending');
+        expect(s.move(at(100 - SWIPE_SLOP_PX - 2, 102, 20))).toEqual({ intent: 'swipe', offset: 0 });
+        expect(s.move(at(40, 104, 60)).offset).toBe(-(100 - SWIPE_SLOP_PX - 2 - 40));
+    });
+
+    it('across the axis it is a scroll, and stays one: the page owns the gesture', () => {
+        const s = new SwipeTracker();
+        s.down(at(0, 0, 0));
+        expect(s.move(at(4, 30, 20)).intent).toBe('scroll');
+        expect(s.move(at(80, 30, 40)).intent).toBe('scroll');
+        expect(s.up(at(80, 30, 60))).toBeNull();
+    });
+
+    it('a diagonal goes to the page; a vertical tracker swipes along y', () => {
+        const d = new SwipeTracker();
+        d.down(at(0, 0, 0));
+        expect(d.move(at(20, 20, 20)).intent).toBe('scroll');
+        const v = new SwipeTracker('y');
+        v.down(at(0, 0, 0));
+        expect(v.move(at(2, 30, 20)).intent).toBe('swipe');
+    });
+
+    it('starts from where the row stands and measures the release speed over the last stretch', () => {
+        const s = new SwipeTracker();
+        s.down(at(200, 0, 0), -80);
+        s.move(at(215, 0, 10));
+        s.move(at(260, 0, 200));
+        const r = s.up(at(300, 0, 250))!;
+        expect(r.offset).toBe(-80 + (300 - 215));
+        expect(r.velocity).toBeCloseTo((300 - 260) / 50, 5);
+    });
+});
+
+describe('settleOpen', () => {
+    const open = { end: 80 };
+    it('without a fling the nearest stop wins', () => {
+        expect(settleOpen({ offset: -30, velocity: 0 }, open)).toBe(0);
+        expect(settleOpen({ offset: -50, velocity: 0 }, open)).toBe(-80);
+    });
+
+    it('a fling goes on in its direction, one stop at a time', () => {
+        const f = SWIPE_FLING_PX_PER_MS;
+        expect(settleOpen({ offset: -10, velocity: -f }, open)).toBe(-80);
+        expect(settleOpen({ offset: -70, velocity: f }, open)).toBe(0);
+        // both sides: an open end row flung right closes, it does not fly to the start / закрывается, а не улетает
+        expect(settleOpen({ offset: -80, velocity: 2 * f }, { start: 60, end: 80 })).toBe(0);
+        expect(settleOpen({ offset: 10, velocity: f }, { start: 60, end: 80 })).toBe(60);
+    });
+
+    it('a fling past the last stop stays at it', () => {
+        expect(settleOpen({ offset: -120, velocity: -1 }, open)).toBe(-80);
+        expect(settleOpen({ offset: 30, velocity: 1 }, open)).toBe(0);
     });
 });

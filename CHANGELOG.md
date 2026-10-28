@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0
+
+Additions for apps that are not canvas editors (a list of notes); everything that was there works as before, nothing to migrate.
+
+- **`ids`: `uuid()`** — a random UUID v4 for records that are stored or synced. `crypto.randomUUID` where there is one; outside a secure context (plain http on a LAN address) the same v4 from `crypto.getRandomValues`. `uid()` stays for ids inside one document: its counter restarts on every load, which its comment now says.
+- **`storage`:** `createSavedStorage` returns a `KeyStorage`, still a `SavedStorage` (it fits `createDocumentSession` as before), with `tryWrite(text)` → `{ ok: false, reason: 'quota' | 'denied' | 'unknown' }` (`write` stays a boolean), `remove()`, and `subscribe(listener)`: another tab of the site changed, removed or cleared the key. `storageFailure(error)` is exported too.
+- **`session`:** `camera` is optional — a document without a canvas view (a list) gets `undefined` in `serialize`, and a `view` from `parse` is ignored. `countItems` is the new name of `countNodes`; the old name is still read.
+- **`gestures`: `SwipeTracker` and `settleOpen`.** The tracker tells a swipe along its axis from a scroll across it (inside `SWIPE_SLOP_PX` nothing is decided, a diagonal goes to the page), follows the offset from where the row already stands without a jump by the slop, and measures the release speed over the last 100 ms. `settleOpen(release, { start?, end? })` says where a released row rests: a fling goes on one stop in its direction (an open row flung back closes rather than flying to the other side), otherwise the nearest stop.
+
 ## 0.2.2
 
 - **`file`:** `downloadText(filename, text, mime?)` takes the type of the file (it was always `application/json`), and the new `readTextFile(file, limit?)` is its pair: it reads a picked file as text, refuses a file above `MAX_FILE_BYTES` before reading it, and returns `{ ok: false, error: 'tooLarge' | 'unreadable' }` instead of throwing. Nothing to migrate.

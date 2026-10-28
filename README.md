@@ -82,18 +82,18 @@ import { History } from '@1337exp/taoux/history';
 | `camera` | canvas camera: pan, zoom around the cursor, screen ↔ world | nothing |
 | `history` | undo/redo on string snapshots, rapid edits merged into one step | nothing |
 | `hotkeys` | shortcuts: `parseHotkey('Mod+Shift+Z')`, `matchHotkey` (Mod = ⌘ / Ctrl, non-Latin layouts by the physical key), `formatHotkey` (`Ctrl+Shift+Z` / `⇧⌘Z`), `isReservedHotkey` (⌘W, ⌘T, ⌘Q…), `bindHotkeys` on an element | DOM (for `bindHotkeys`) |
-| `storage` | autosave to localStorage without exceptions | nothing |
+| `storage` | autosave to localStorage without exceptions; `tryWrite` (why it failed: quota / denied), `remove`, `subscribe` (another tab changed the key) | nothing |
 | `file` | download text as a file (any `mime`), read a picked file as text with a size limit | DOM |
 | `snap` | soft snapping to a grid with a threshold that follows the camera zoom | nothing |
 | `wheel` | wheel/trackpad → pan or zoom (like Figma) | nothing |
 | `edgescroll` | auto-scroll speed near an edge and a ready loop, `createEdgeScroller` (canvas, curve editors, any drag) | nothing |
-| `gestures` | touch gestures: tap, double tap, long press, pinch | nothing |
+| `gestures` | touch gestures: tap, double tap, long press, pinch, swipe (`SwipeTracker` + `settleOpen` for a row that slides open) | nothing |
 | `touch` | `coarse`: is there a coarse pointer (a finger) | vue (peer) |
 | `curve` | link paths: bezier between pins, arrowheads of constant screen size | nothing |
-| `ids` | `uid(prefix, taken)` | nothing |
+| `ids` | `uuid()` for records that are stored or synced; `uid(prefix, taken)` for ids inside one document | nothing |
 | `ease` | easing functions between curve points: 8 families × in / out / in-out, `linear`, `step`, cubic Bezier; `easeValue`, `isEase` (the editor draws with it, a runtime evaluates with it) | nothing |
 | `num` | small numeric helpers: `clamp`, `roundTo`, `snapTo`, `niceStep`, `ticks` (shared by the curve, gradient and playback modules) | nothing |
-| `session` | document lifecycle: history, autosave, files, restore, notices | vue (peer) |
+| `session` | document lifecycle: history, autosave, files, restore, notices; a canvas camera is optional (`countItems`) | vue (peer) |
 | `commands` | a registry of commands (label, shortcut, `enabled`, `checked`, `run`): `toMenu(layout)` builds a `TaoMenuItem[]` tree for `TaoMenubar` / `TaoContextMenu`, `bind` listens to the same shortcuts, `historyCommands` gives Undo / Redo that disable themselves, `check` finds reserved and duplicate shortcuts | DOM (for `bind`) |
 | `palette` | search and groups of nodes for a palette | nothing |
 | `links` (Vue) | links layer: SVG from ready geometry, `--tx-link-*` | vue (peer) |
