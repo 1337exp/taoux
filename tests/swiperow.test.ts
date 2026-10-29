@@ -172,6 +172,23 @@ describe('TaoxSwipeRow', () => {
         expect(w.emitted('update:open')?.[0]).toEqual([true]);
     });
 
+    it('the keyboard: Tab from the start action to an end one shows the end, not the start', async () => {
+        const w = mountRow();
+        const front = w.find('.tx-swipe__front').element as HTMLElement;
+        (w.find('.tx-swipe__action--start').element as HTMLElement).dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+        await nextTick();
+        expect(front.style.transform).not.toBe('translate3d(0px, 0, 0)');
+        expect(front.style.transform).not.toMatch(/translate3d\(-/);
+        const endAction = w.findAll('.tx-swipe__end .tx-swipe__action')[0]!.element as HTMLElement;
+        endAction.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+        await nextTick();
+        expect(front.style.transform).toMatch(/translate3d\(-\d/);
+        // and the focus on the row's own content shows neither side
+        w.find('.item').element.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+        await nextTick();
+        expect(front.style.transform).toBe('translate3d(0px, 0, 0)');
+    });
+
     it('a click at the end of a swipe does not reach the row content', async () => {
         const onClick = vi.fn();
         const w = mountRow();

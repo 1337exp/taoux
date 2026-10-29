@@ -169,13 +169,17 @@ function run(action: SwipeRowAction) {
 }
 
 //---]>
-// the keyboard: an action button that gets the focus shows its side
-// клавиатура: кнопка действия, получившая фокус, показывает свою сторону
+// the keyboard: an action button that gets the focus shows its side and only its side (Tab from the start action to an
+// end one used to keep the start shown, which wins, and the focused button stayed hidden under the row); the focus on
+// the row's own content shows neither
+// клавиатура: кнопка действия, получившая фокус, показывает свою сторону и только её (Tab с левого действия на правое
+// оставлял показанной левую сторону, а она главнее, и кнопка с фокусом пряталась под строкой); фокус на содержимом
+// строки не показывает ни одну
 
 function onFocusIn(e: FocusEvent) {
     const side = (e.target as HTMLElement).closest<HTMLElement>('[data-side]')?.dataset.side;
-    if (side === 'end') open.value = true;
-    if (side === 'start') startShown.value = true;
+    startShown.value = side === 'start';
+    open.value = side === 'end';
 }
 
 function onFocusOut(e: FocusEvent) {
