@@ -35,6 +35,23 @@ function onAction(mail: (typeof mails.value)[number], id: string) {
     if (id === 'delete') mails.value = mails.value.filter((m) => m !== mail);
 }
 
+// a second list with no start action: those rows go only to the left (a task list: nothing to mark read)
+// второй список без действия слева: такие строки едут только влево (задачи: отмечать прочитанным нечего)
+const tasks = ref([
+    { id: 1, title: ['Pay the rent', 'Оплатить аренду'], due: ['Today', 'Сегодня'] },
+    { id: 2, title: ['Renew the domain', 'Продлить домен'], due: ['Friday', 'Пятница'] },
+    { id: 3, title: ['Call the bank', 'Позвонить в банк'], due: ['Next week', 'На следующей неделе'] },
+]);
+const taskEnd = computed(() => [
+    { id: 'later', label: tr('Later', 'Позже'), icon: 'tao-calendar' },
+    { id: 'delete', label: tr('Delete', 'Удалить'), icon: 'tao-trash', tone: 'danger' as const },
+]);
+
+function onTask(task: (typeof tasks.value)[number], id: string) {
+    log.value = [`${tr(task.title[0]!, task.title[1]!)}: ${id}`, ...log.value].slice(0, 5);
+    if (id === 'delete') tasks.value = tasks.value.filter((t) => t !== task);
+}
+
 function reset() {
     location.reload();
 }
@@ -65,6 +82,21 @@ function reset() {
                 </div>
             </TaoxSwipeRow>
         </div>
+        <h3 class="subtitle">{{ tr('Only to the left: no start action', 'Только влево: без действия слева') }}</h3>
+        <p class="muted">{{ tr('A row without `start` does not move to the right at all.', 'Строка без `start` вправо не сдвигается вовсе.') }}</p>
+        <div class="mails">
+            <TaoxSwipeRow v-for="task in tasks" :key="task.id" mouse :end="taskEnd" @action="onTask(task, $event)">
+                <div class="mail">
+                    <div class="mail__body">
+                        <div class="mail__top">
+                            <span class="mail__from">{{ tr(task.title[0]!, task.title[1]!) }}</span>
+                            <span class="mail__time">{{ tr(task.due[0]!, task.due[1]!) }}</span>
+                        </div>
+                    </div>
+                </div>
+            </TaoxSwipeRow>
+        </div>
+
         <p class="muted">{{ tr('Actions:', 'Действия:') }} {{ log.join(' · ') || '—' }} · <a href="#" @click.prevent="reset">{{ tr('reset', 'сначала') }}</a></p>
     </SandboxShell>
 </template>
@@ -125,6 +157,12 @@ function reset() {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.subtitle {
+    margin: 24px 0 4px;
+    color: var(--tao-color-text-strong);
+    font-size: 15px;
 }
 
 .muted {

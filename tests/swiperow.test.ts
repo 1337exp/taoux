@@ -175,3 +175,34 @@ describe('TaoxSwipeRow: the actions show without a jump', () => {
         pointer(front, 'pointercancel', 170, 700);
     });
 });
+
+describe('TaoxSwipeRow: nothing shows behind, nothing trails', () => {
+    it('the start panel is clipped and keeps no padding, so at width 0 nothing of it is left', async () => {
+        // @ts-expect-error Vite `?raw` import: the component source as text
+        const sfc = ((await import('../src/swiperow/TaoxSwipeRow.vue?raw')).default as string).replace(/\r\n/g, '\n');
+        const start = /\n\.tx-swipe__start \{([^}]*)\}/.exec(sfc)?.[1] ?? '';
+        expect(start).toContain('overflow: hidden');
+        expect(start).not.toContain('padding');
+    });
+
+    it('under the finger the widths and the fades follow at once; only the arm switch eases the widths', async () => {
+        // @ts-expect-error Vite `?raw` import: the component source as text
+        const sfc = ((await import('../src/swiperow/TaoxSwipeRow.vue?raw')).default as string).replace(/\r\n/g, '\n');
+        expect(sfc).toMatch(/\.tx-swipe--dragging \.tx-swipe__end \.tx-swipe__action \{\s*transition: background-color/);
+        expect(sfc).toMatch(/\.tx-swipe--dragging\.tx-swipe--morph \.tx-swipe__end \.tx-swipe__action \{\s*transition:\s*width/);
+        expect(sfc).toMatch(/\.tx-swipe--dragging \.tx-swipe__label,\s*\.tx-swipe--dragging \.tx-swipe__action \.tao-icon \{\s*transition: none/);
+        expect(sfc).not.toMatch(/\.tx-swipe--armed-full \.tx-swipe__end \.tx-swipe__action \{\s*transition/);
+    });
+
+    it('a row without a start action does not move to the start', async () => {
+        const w = mountRow({ start: undefined });
+        const front = w.find('.tx-swipe__front').element as HTMLElement;
+        pointer(front, 'pointerdown', 10, 0);
+        pointer(front, 'pointermove', 30, 200);
+        pointer(front, 'pointermove', 200, 400);
+        await nextTick();
+        expect(front.style.transform).toBe('translate3d(0px, 0, 0)');
+        expect(w.find('.tx-swipe__start').exists()).toBe(false);
+        pointer(front, 'pointercancel', 200, 500);
+    });
+});
