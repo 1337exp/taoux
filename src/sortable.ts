@@ -1,5 +1,6 @@
 import { onBeforeUnmount, onMounted, ref, toValue, type MaybeRefOrGetter, type Ref } from 'vue';
 import { createEdgeScroller } from './edgescroll';
+import { listenFocusLoss } from './gestures';
 
 /**
  * Reordering a list by dragging a handle, and by the keyboard. The list belongs to the app: the composable only says
@@ -150,6 +151,8 @@ export function useSortable(container: Ref<HTMLElement | null>, options: Sortabl
         scroller: HTMLElement | null;
     } | null = null;
 
+    let stopFocusLoss: (() => void) | undefined;
+
     const scrollPos = (s: HTMLElement | null) => (s ? (axis === 'y' ? s.scrollTop : s.scrollLeft) : axis === 'y' ? window.scrollY : window.scrollX);
 
     const edge = createEdgeScroller({
@@ -245,6 +248,9 @@ export function useSortable(container: Ref<HTMLElement | null>, options: Sortabl
         document.addEventListener('pointermove', onPointerMove);
         document.addEventListener('pointerup', onPointerUp);
         document.addEventListener('pointercancel', onPointerCancel);
+        // the window lost the focus mid-drag (Alt-Tab, a screenshot): the pointerup may never come; put the item back
+        // окно потеряло фокус посреди перетаскивания: pointerup может не прийти; возвращаем элемент на место
+        stopFocusLoss = listenFocusLoss(() => finish(false));
         document.addEventListener('keydown', onDragKey, true);
     }
 
@@ -268,6 +274,8 @@ export function useSortable(container: Ref<HTMLElement | null>, options: Sortabl
         document.removeEventListener('pointermove', onPointerMove);
         document.removeEventListener('pointerup', onPointerUp);
         document.removeEventListener('pointercancel', onPointerCancel);
+        stopFocusLoss?.();
+        stopFocusLoss = undefined;
         document.removeEventListener('keydown', onDragKey, true);
         for (const el of els) {
             el.style.transform = '';

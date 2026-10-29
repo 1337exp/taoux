@@ -10,6 +10,7 @@ import {
     PINCH_DEADBAND_PX,
     PINCH_ENGAGE_PX,
     PinchTracker,
+    listenFocusLoss,
     settleOpen,
     SWIPE_FLING_PX_PER_MS,
     SWIPE_SLOP_PX,
@@ -308,5 +309,21 @@ describe('settleOpen', () => {
     it('a fling past the last stop stays at it', () => {
         expect(settleOpen({ offset: -120, velocity: -1 }, open)).toBe(-80);
         expect(settleOpen({ offset: 30, velocity: 1 }, open)).toBe(0);
+    });
+});
+
+describe('listenFocusLoss', () => {
+    it('fires on blur, on a hidden page and on pagehide; stops when asked', () => {
+        let n = 0;
+        const stop = listenFocusLoss(() => n++);
+        window.dispatchEvent(new Event('blur'));
+        window.dispatchEvent(new Event('pagehide'));
+        Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
+        document.dispatchEvent(new Event('visibilitychange'));
+        Object.defineProperty(document, 'hidden', { configurable: true, get: () => false });
+        document.dispatchEvent(new Event('visibilitychange'));
+        stop();
+        window.dispatchEvent(new Event('blur'));
+        expect(n).toBe(3);
     });
 });

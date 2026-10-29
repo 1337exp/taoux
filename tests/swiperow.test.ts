@@ -204,3 +204,23 @@ describe('TaoxSwipeRow: nothing shows behind, nothing trails', () => {
         pointer(front, 'pointercancel', 200, 500);
     });
 });
+
+describe('TaoxSwipeRow: the window loses the focus mid-pull', () => {
+    it('the row lets go and goes back to rest; a late move does nothing', async () => {
+        const w = mountRow();
+        const front = w.find('.tx-swipe__front').element as HTMLElement;
+        pointer(front, 'pointerdown', 300, 0);
+        pointer(front, 'pointermove', 280, 200);
+        pointer(front, 'pointermove', 150, 400);
+        await nextTick();
+        expect(front.style.transform).not.toBe('translate3d(0px, 0, 0)');
+        window.dispatchEvent(new Event('blur'));
+        await nextTick();
+        expect(front.style.transform).toBe('translate3d(0px, 0, 0)');
+        expect(w.find('.tx-swipe').classes()).not.toContain('tx-swipe--dragging');
+        pointer(front, 'pointermove', 60, 600);
+        pointer(front, 'pointerup', 60, 700);
+        await nextTick();
+        expect(w.emitted('action')).toBeUndefined();
+    });
+});

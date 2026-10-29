@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { TaoIcon, toneClass } from '@1337exp/taoui';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { SwipeTracker, type Sample } from '../gestures';
+import { listenFocusLoss, SwipeTracker, type Sample } from '../gestures';
 import { armedAt, clampOffset, endOpenWidth, endWidths, startThreshold, swipeRowRelease, type SwipeRowAction, type SwipeRowGeometry } from './model';
 
 // A row of a list that a finger slides sideways, as in a mail app. To the start (right): one action behind it, run on
@@ -90,12 +90,28 @@ let pointerId: number | null = null;
 let swiped = false;
 const sample = (e: PointerEvent): Sample => ({ x: e.clientX, y: e.clientY, t: e.timeStamp });
 
+// the window lost the focus while the press was held (Alt-Tab, a screenshot): its pointerup may never come, so the row
+// lets go and settles where it rested, instead of staying stuck to a finger that is gone
+// окно потеряло фокус во время нажатия: pointerup может не прийти, поэтому строка отпускается и встаёт на место
+let stopFocusLoss: (() => void) | undefined;
+
+function release() {
+    stopFocusLoss?.();
+    stopFocusLoss = undefined;
+    pointerId = null;
+    dragging.value = false;
+}
+
 function onDown(e: PointerEvent) {
     if (props.disabled || pointerId !== null || (e.pointerType === 'mouse' && (!props.mouse || e.button !== 0))) return;
     pointerId = e.pointerId;
     swiped = false;
     startShown.value = false;
     tracker.down(sample(e), rest.value);
+    stopFocusLoss = listenFocusLoss(() => {
+        tracker.cancel();
+        release();
+    });
 }
 
 function onMove(e: PointerEvent) {
@@ -116,14 +132,10 @@ function onMove(e: PointerEvent) {
 
 function onUp(e: PointerEvent) {
     if (e.pointerId !== pointerId) return;
-    const release = tracker.up(sample(e));
-    pointerId = null;
-    if (!release) {
-        dragging.value = false;
-        return;
-    }
-    const outcome = swipeRowRelease(release, geometry.value);
-    dragging.value = false;
+    const result = tracker.up(sample(e));
+    release();
+    if (!result) return;
+    const outcome = swipeRowRelease(result, geometry.value);
     if (outcome.kind === 'start' && props.start) {
         open.value = false;
         emit('action', props.start.id);
@@ -144,8 +156,7 @@ function onUp(e: PointerEvent) {
 function onCancel(e: PointerEvent) {
     if (e.pointerId !== pointerId) return;
     tracker.cancel();
-    pointerId = null;
-    dragging.value = false;
+    release();
 }
 
 // the end of a swipe also fires a click on the row: it must not open the item
@@ -199,6 +210,7 @@ onMounted(() => {
     }
 });
 onBeforeUnmount(() => {
+    stopFocusLoss?.();
     clearTimeout(morphTimer);
     resize?.disconnect();
     document.removeEventListener('pointerdown', onOutside, true);
@@ -237,7 +249,7 @@ const startLabel = (w: number) => fade(w, 84, 28);
                 @click="run(start)"
             >
                 <slot name="action" :action="start" :armed="armed === 'start'" side="start" :width="startWidth">
-                    <TaoIcon v-if="start.icon" :name="start.icon" :size="22" :style="{ opacity: startIcon(startWidth) }" />
+                    <TaoIcon v-if="start.icon" :name="start.icon" :size="20" :style="{ opacity: startIcon(startWidth) }" />
                     <span class="tx-swipe__label" :style="{ opacity: startLabel(startWidth) }">{{ start.label }}</span>
                 </slot>
             </button>
@@ -255,7 +267,7 @@ const startLabel = (w: number) => fade(w, 84, 28);
                 @click="run(action)"
             >
                 <slot name="action" :action="action" :armed="i === end.length - 1 && armed === 'full'" side="end" :width="widths[i] ?? 0">
-                    <TaoIcon v-if="action.icon" :name="action.icon" :size="22" :style="{ opacity: endIcon(widths[i] ?? 0) }" />
+                    <TaoIcon v-if="action.icon" :name="action.icon" :size="20" :style="{ opacity: endIcon(widths[i] ?? 0) }" />
                     <span class="tx-swipe__label" :style="{ opacity: endLabel(widths[i] ?? 0) }">{{ action.label }}</span>
                 </slot>
             </button>
@@ -331,7 +343,9 @@ const startLabel = (w: number) => fade(w, 84, 28);
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 4px;
+    /* the icon and the label read as one: a small gap, not pressed to the edges of a short row
+       иконка и подпись читаются вместе: небольшой зазор, а не прижаты к краям невысокой строки */
+    gap: 2px;
     min-width: 0;
     height: 100%;
     padding: 0;

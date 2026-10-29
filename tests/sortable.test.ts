@@ -184,3 +184,19 @@ describe('useSortable: the keyboard', () => {
         expect(w.findAll('li').map((li) => li.text())).toEqual(['Alpha', 'Beta', 'Gamma', 'Delta']);
     });
 });
+
+describe('useSortable: the window loses the focus mid-drag', () => {
+    it('the item goes back and nothing moves', async () => {
+        const { w, moves } = mountList();
+        const items = w.findAll('li').map((li) => li.element as HTMLElement);
+        pointer('pointerdown', items[0]!.querySelector('button')!, 20);
+        pointer('pointermove', document, 140);
+        expect(items[0]!.style.transform).not.toBe('');
+        window.dispatchEvent(new Event('blur'));
+        expect(items[0]!.style.transform).toBe('');
+        expect(items[0]!.hasAttribute('data-sortable-dragging')).toBe(false);
+        pointer('pointerup', document, 140);
+        await nextTick();
+        expect(moves).toEqual([]);
+    });
+});

@@ -37,7 +37,7 @@ controls, or with your own design.
 | `snap` | soft snapping to a grid, threshold follows the zoom |
 | `wheel` | wheel / trackpad → pan or zoom, like Figma (zoom only with Ctrl / ⌘ or a pinch) |
 | `edgescroll` | auto-scroll near an edge while dragging (`createEdgeScroller`) |
-| `gestures` | tap, double tap, long press, pinch; `SwipeTracker` (swipe vs scroll) + `settleOpen` (where a released row rests) |
+| `gestures` | tap, double tap, long press, pinch; `SwipeTracker` (swipe vs scroll) + `settleOpen` (where a released row rests); `listenFocusLoss(cancel)` while a press is held, as Alt-Tab swallows the pointerup |
 | `touch` | `coarse`: is the pointer a finger |
 | `curve` | link paths: Bezier between pins, arrowheads of constant screen size |
 | `ids` | `uuid()` for stored / synced records; `uid(prefix, taken)` restarts from zero on every load, only for ids inside one document |

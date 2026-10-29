@@ -440,3 +440,29 @@ export function settleOpen(
     }
     return stops.reduce((best, p) => (Math.abs(p - offset) < Math.abs(best - offset) ? p : best), 0);
 }
+
+//--------------------------------------------------
+// Focus loss / Потеря фокуса окна
+
+/**
+ * Calls `onLoss` when the window really loses the focus: Alt-Tab, a screenshot tool, the tab hidden or left. Those often
+ * swallow the `pointerup` of a press that was held, and a drag would stay «pressed» after the user came back; end the
+ * gesture there. Returns the function that stops listening. The same rule as TaoUI's carousel and slider.
+ * Вызывает `onLoss`, когда окно действительно теряет фокус: Alt-Tab, программа скриншотов, вкладка скрыта или закрыта.
+ * Они часто глотают `pointerup` удерживаемого нажатия, и перетаскивание осталось бы «нажатым», когда пользователь
+ * вернётся; там жест и заканчивают. Возвращает функцию, которая прекращает слушать.
+ */
+export function listenFocusLoss(onLoss: () => void): () => void {
+    if (typeof window === 'undefined') return () => {};
+    const onVisibility = () => {
+        if (document.hidden) onLoss();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('blur', onLoss);
+    window.addEventListener('pagehide', onLoss);
+    return () => {
+        document.removeEventListener('visibilitychange', onVisibility);
+        window.removeEventListener('blur', onLoss);
+        window.removeEventListener('pagehide', onLoss);
+    };
+}

@@ -90,7 +90,7 @@ import { History } from '@1337exp/taoux/history';
 | `snap` | soft snapping to a grid with a threshold that follows the camera zoom | nothing |
 | `wheel` | wheel/trackpad → pan or zoom (like Figma) | nothing |
 | `edgescroll` | auto-scroll speed near an edge and a ready loop, `createEdgeScroller` (canvas, curve editors, any drag) | nothing |
-| `gestures` | touch gestures: tap, double tap, long press, pinch, swipe (`SwipeTracker` + `settleOpen` for a row that slides open) | nothing |
+| `gestures` | touch gestures: tap, double tap, long press, pinch, swipe (`SwipeTracker` + `settleOpen` for a row that slides open); `listenFocusLoss` ends a held gesture when the window loses the focus | nothing |
 | `touch` | `coarse`: is there a coarse pointer (a finger) | vue (peer) |
 | `curve` | link paths: bezier between pins, arrowheads of constant screen size | nothing |
 | `ids` | `uuid()` for records that are stored or synced; `uid(prefix, taken)` for ids inside one document | nothing |
