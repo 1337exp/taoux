@@ -2,7 +2,7 @@ import { mount } from '@vue/test-utils';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { nextTick } from 'vue';
 import TaoxSwipeRow from '../src/swiperow/TaoxSwipeRow.vue';
-import { armedAt, clampOffset, endWidths, fullThreshold, startThreshold, swipeRowRelease, type SwipeRowGeometry } from '../src/swiperow/model';
+import { armedAt, clampOffset, endWidths, fullThreshold, startThreshold, SWIPE_SLIVER_PX, swipeRowRelease, type SwipeRowGeometry } from '../src/swiperow/model';
 
 const g: SwipeRowGeometry = { width: 360, actionWidth: 76, endCount: 3, hasStart: true, fullSwipe: true };
 
@@ -38,12 +38,32 @@ describe('swipe row model', () => {
         expect(clampOffset(-999, g)).toBe(-360);
     });
 
-    it('the end actions share the pull evenly; armed, the last takes nearly all of it', () => {
-        expect(endWidths(0, g, false)).toEqual([0, 0, 0]);
-        expect(endWidths(246, g, false)).toEqual([76, 76, 76]);
-        const armed = endWidths(300, g, true);
-        expect(armed.slice(0, 2)).toEqual([28, 28]);
-        expect(armed[2]).toBe(300 - 18 - 56);
+    it('up to the open width the end actions share the pull evenly', () => {
+        expect(endWidths(0, g)).toEqual([0, 0, 0]);
+        expect(endWidths(114, g)).toEqual([32, 32, 32]);
+        expect(endWidths(228, g)).toEqual([70, 70, 70]);
+    });
+
+    it('past it the middle ones shrink back to slivers (a fifth of the row past the full threshold) and the last takes their room', () => {
+        expect(endWidths(240, g)).toEqual([65.25, 65.25, 91.5]);
+        expect(endWidths(276, g)).toEqual([51, 51, 156]);
+        expect(endWidths(324, g)).toEqual([SWIPE_SLIVER_PX, SWIPE_SLIVER_PX, 306 - 64]);
+        expect(endWidths(340, g)).toEqual([32, 32, 322 - 64]);
+    });
+
+    it('one continuous function: no jump anywhere, the widths always fill the pull, the last never shrinks', () => {
+        let prev = endWidths(1, g);
+        for (let d = 2; d <= 360; d++) {
+            const w = endWidths(d, g);
+            expect(w.reduce((a, b) => a + b, 0)).toBeCloseTo(Math.max(0, d - 18), 6);
+            w.forEach((x, i) => expect(Math.abs(x - prev[i]!)).toBeLessThan(2));
+            expect(w[2]!).toBeGreaterThanOrEqual(prev[2]! - 1e-9);
+            prev = w;
+        }
+    });
+
+    it('a single end action takes the whole pull', () => {
+        expect(endWidths(100, { ...g, endCount: 1 })).toEqual([94]);
     });
 });
 
@@ -184,10 +204,11 @@ describe('TaoxSwipeRow: nothing shows behind, nothing trails', () => {
         expect(start).not.toContain('padding');
     });
 
-    it('under the finger the widths and the fades follow at once; only the arm switch eases the widths', async () => {
+    it('under the finger the widths and the fades follow at once', async () => {
         const sfc = ((await import('../src/swiperow/TaoxSwipeRow.vue?raw')).default as string).replace(/\r\n/g, '\n');
         expect(sfc).toMatch(/\.tx-swipe--dragging \.tx-swipe__end \.tx-swipe__action \{\s*transition: background-color/);
-        expect(sfc).toMatch(/\.tx-swipe--dragging\.tx-swipe--morph \.tx-swipe__end \.tx-swipe__action \{\s*transition:\s*width/);
+        // the widths are continuous, so no moment needs easing / ширины непрерывны, сглаживать нечего
+        expect(sfc).not.toContain('tx-swipe--morph');
         expect(sfc).toMatch(/\.tx-swipe--dragging \.tx-swipe__label,\s*\.tx-swipe--dragging \.tx-swipe__action \.tao-icon \{\s*transition: none/);
         expect(sfc).not.toMatch(/\.tx-swipe--armed-full \.tx-swipe__end \.tx-swipe__action \{\s*transition/);
     });

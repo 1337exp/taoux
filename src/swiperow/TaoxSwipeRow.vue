@@ -66,20 +66,13 @@ const rest = computed(() => {
 });
 const offset = computed(() => (dragging.value ? drag.value : rest.value));
 const armed = computed(() => (dragging.value ? armedAt(drag.value, geometry.value) : null));
-const widths = computed(() => endWidths(Math.max(0, -offset.value), geometry.value, armed.value === 'full' || gone.value));
+// gone (the full swipe ran): the last action holds the whole row while the app removes it / последнее держит всю строку
+const widths = computed(() => endWidths(gone.value ? width.value : Math.max(0, -offset.value), geometry.value));
 const lastEnd = computed(() => props.end[props.end.length - 1]);
 
-// a short buzz where the phone can, when an action becomes armed; and a moment of eased widths for the switch
-// короткая вибрация там, где телефон умеет, когда действие взведено; и миг сглаженных ширин для переключения
-const morph = ref(false);
-let morphTimer: ReturnType<typeof setTimeout> | undefined;
-watch(armed, (next, prev) => {
+// a short buzz where the phone can, when an action becomes armed / короткая вибрация там, где телефон умеет
+watch(armed, (next) => {
     if (next && typeof navigator !== 'undefined') navigator.vibrate?.(8);
-    if (next === 'full' || prev === 'full') {
-        morph.value = true;
-        clearTimeout(morphTimer);
-        morphTimer = setTimeout(() => (morph.value = false), 160);
-    }
 });
 
 //---]>
@@ -211,7 +204,6 @@ onMounted(() => {
 });
 onBeforeUnmount(() => {
     stopFocusLoss?.();
-    clearTimeout(morphTimer);
     resize?.disconnect();
     document.removeEventListener('pointerdown', onOutside, true);
 });
@@ -236,7 +228,7 @@ const startLabel = (w: number) => fade(w, 84, 28);
     <div
         ref="root"
         class="tx-swipe"
-        :class="{ 'tx-swipe--dragging': dragging, 'tx-swipe--armed-full': armed === 'full' || gone, 'tx-swipe--morph': morph }"
+        :class="{ 'tx-swipe--dragging': dragging, 'tx-swipe--armed-full': armed === 'full' || gone }"
         @focusin="onFocusIn"
         @focusout="onFocusOut"
     >
@@ -366,14 +358,6 @@ const startLabel = (w: number) => fade(w, 84, 28);
    под пальцем действия идут за строкой в том же кадре: без сглаживания ширины, иначе они отстают */
 .tx-swipe--dragging .tx-swipe__end .tx-swipe__action {
     transition: background-color 0.15s ease;
-}
-
-/* only the moment the full swipe arms or disarms eases the widths: the last action takes the row, or gives it back
-   сглаживается только миг взвода и сброса длинного свайпа: последнее действие занимает строку или отдаёт её */
-.tx-swipe--dragging.tx-swipe--morph .tx-swipe__end .tx-swipe__action {
-    transition:
-        width 0.15s ease,
-        background-color 0.15s ease;
 }
 
 /* the start action is one line, from the start edge: the icon at a fixed place, the label after it

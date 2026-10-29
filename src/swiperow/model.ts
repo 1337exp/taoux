@@ -79,18 +79,35 @@ export function swipeRowRelease(release: SwipeRelease, g: SwipeRowGeometry): Swi
     return { kind: 'rest', open: rest < 0 };
 }
 
+/** The narrowest an action between the row and the last one gets: still a visible link. / Самое узкое промежуточное действие. */
+export const SWIPE_SLIVER_PX = 32;
+
 /**
- * The widths of the end actions at a pull of `drag` px (≥ 0): they share the space evenly, so they grow from slivers
- * to their full width and on; once the full swipe is armed the last one takes nearly all of it and the others shrink
- * to slivers.
- * Ширины действий справа при протяжке на `drag` px: делят место поровну, поэтому растут от полосок до полной ширины и
- * дальше; когда длинный свайп взведён, последнее занимает почти всё, остальные сжимаются в полоски.
+ * The widths of the end actions at a pull of `drag` px (≥ 0), one continuous function, so nothing jumps. Up to the
+ * open width they share the space evenly and grow to their width. Past it the actions between the row and the last one
+ * stop growing and shrink back, smoothly, to slivers (`SWIPE_SLIVER_PX`) a little past the full-swipe threshold, and the last one
+ * takes what they give up; further on they stay slivers, so a pull back opens them out again the same way.
+ * `armed` is no longer used (the widths depend on the pull alone); it stays for the 0.5.0 signature.
+ * Ширины действий справа при протяжке на `drag` px — одна непрерывная функция, поэтому ничего не прыгает. До открытой
+ * ширины они делят место поровну и растут до своей ширины. Дальше промежуточные перестают расти и плавно сжимаются до
+ * полосок к порогу длинного свайпа, а последнее забирает отданное место; за порогом они остаются полосками, поэтому
+ * при обратном движении так же плавно раскрываются. `armed` больше не нужен; оставлен ради подписи 0.5.0.
  */
-export function endWidths(drag: number, g: SwipeRowGeometry, armed: boolean, gap = 6): number[] {
+export function endWidths(drag: number, g: SwipeRowGeometry, _armed?: boolean, gap = 6): number[] {
     const n = g.endCount;
     if (n === 0 || drag <= 0) return Array.from({ length: n }, () => 0);
     const room = Math.max(0, drag - gap * n);
-    if (!armed) return Array.from({ length: n }, () => room / n);
-    const sliver = Math.min(28, room / n);
-    return Array.from({ length: n }, (_, i) => (i === n - 1 ? room - sliver * (n - 1) : sliver));
+    const open = endOpenWidth(g);
+    if (n === 1) return [room];
+    if (drag <= open) return Array.from({ length: n }, () => room / n);
+
+    // the squeeze runs a little past the full threshold (a fifth of the row more), so on a phone it takes a long stretch
+    // of the pull and reads as a slide, not a snap
+    // сжатие идёт чуть дальше порога длинного свайпа (ещё пятая часть строки), поэтому на телефоне занимает длинный
+    // отрезок протяжки и читается как плавный переход, а не рывок
+    const end = Math.max(open + 1, Math.min(g.width * 0.9, fullThreshold(g) + g.width * 0.2));
+    const t = Math.min(1, (drag - open) / (end - open));
+    const widest = g.actionWidth - gap;
+    const middle = Math.min(widest, Math.max(0, widest + (Math.min(SWIPE_SLIVER_PX, widest) - widest) * t));
+    return Array.from({ length: n }, (_, i) => (i === n - 1 ? room - middle * (n - 1) : middle));
 }
