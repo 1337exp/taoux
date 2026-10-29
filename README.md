@@ -94,6 +94,7 @@ import { History } from '@1337exp/taoux/history';
 | `ids` | `uuid()` for records that are stored or synced; `uid(prefix, taken)` for ids inside one document | nothing |
 | `ease` | easing functions between curve points: 8 families × in / out / in-out, `linear`, `step`, cubic Bezier; `easeValue`, `isEase` (the editor draws with it, a runtime evaluates with it) | nothing |
 | `num` | small numeric helpers: `clamp`, `roundTo`, `snapTo`, `niceStep`, `ticks` (shared by the curve, gradient and playback modules) | nothing |
+| `sortable` (Vue) | reorder a list by a grip and by the keyboard: `useSortable(listRef, { onMove })`, `data-sortable-item` / `data-sortable-handle`; the others make room, the list scrolls at its edge, Esc puts it back, a live region tells a screen reader; `moveItem` | vue (peer) |
 | `session` | document lifecycle: history, autosave, files, restore, notices; a canvas camera is optional (`countItems`) | vue (peer) |
 | `commands` | a registry of commands (label, shortcut, `enabled`, `checked`, `run`): `toMenu(layout)` builds a `TaoMenuItem[]` tree for `TaoMenubar` / `TaoContextMenu`, `bind` listens to the same shortcuts, `historyCommands` gives Undo / Redo that disable themselves, `check` finds reserved and duplicate shortcuts | DOM (for `bind`) |
 | `palette` | search and groups of nodes for a palette | nothing |

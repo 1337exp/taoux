@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest';
  *   2, поля: импортируют примитивы и составные, но не друг друга; только им можно импортировать TaoUI.
  * Составные модули перечислены здесь; всё остальное в src считается примитивом.
  */
-const COMPOSITES = new Set(['session', 'commands', 'canvas', 'links', 'palette', 'pins', 'curveeditor', 'gradienteditor', 'playback']);
+const COMPOSITES = new Set(['session', 'commands', 'canvas', 'links', 'palette', 'pins', 'curveeditor', 'gradienteditor', 'playback', 'sortable']);
 /** Ярус 2, поля: собирают составные модули в готовое поле на компонентах TaoUI (единственный ярус, которому TaoUI можно). */
 const FIELDS = new Set(['curvefield']);
 
