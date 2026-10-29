@@ -9,10 +9,10 @@ import SandboxShell from './SandboxShell.vue';
 // to the left deletes. The list is the page's: the row only says which action was chosen.
 // Список писем: вправо — прочитано / не прочитано, влево — Ещё, Отписаться, Удалить, длинный свайп влево удаляет.
 const mails = ref([
-    { id: 1, from: 'Finam', subject: ['Investors take profit', 'Инвесторы фиксируют прибыль'], text: ['Your AI picks for today', 'Ваши рекомендации на сегодня'], read: false, time: '12:14' },
-    { id: 2, from: 'RZD Bonus', subject: ['Points added', 'Начисление баллов'], text: ['500 points went to your account', 'На ваш счёт начислено 500 баллов'], read: true, time: '10:25' },
-    { id: 3, from: 'GitHub', subject: ['A new release', 'Новый релиз'], text: ['taoux 0.5.0 is out', 'Вышла taoux 0.5.0'], read: false, time: '09:02' },
-    { id: 4, from: 'Mom', subject: ['Dinner on Sunday?', 'Ужин в воскресенье?'], text: ['Bring the cake', 'Захвати торт'], read: true, time: 'Yesterday' },
+    { id: 1, from: 'Finam', subject: ['Investors take profit', 'Инвесторы фиксируют прибыль'], text: ['Your AI picks for today', 'Ваши рекомендации на сегодня'], read: false, time: '12:14', full: true },
+    { id: 2, from: 'RZD Bonus', subject: ['Points added', 'Начисление баллов'], text: ['500 points went to your account', 'На ваш счёт начислено 500 баллов'], read: true, time: '10:25', full: false },
+    { id: 3, from: 'GitHub', subject: ['A new release', 'Новый релиз'], text: ['taoux 0.5.0 is out', 'Вышла taoux 0.5.0'], read: false, time: '09:02', full: true },
+    { id: 4, from: 'Mom', subject: ['Dinner on Sunday?', 'Ужин в воскресенье?'], text: ['Bring the cake', 'Захвати торт'], read: true, time: 'Yesterday', full: false },
 ]);
 const log = ref<string[]>([]);
 
@@ -21,11 +21,13 @@ const startFor = (read: boolean) =>
         ? { id: 'toggle', label: tr('Unread', 'Не прочитано'), icon: 'tao-bell', tone: 'info' as const }
         : { id: 'toggle', label: tr('Read', 'Прочитано'), icon: 'tao-check', tone: 'info' as const };
 
-const end = computed(() => [
-    { id: 'more', label: tr('More', 'Ещё'), icon: 'tao-more-horizontal' },
-    { id: 'mute', label: tr('Unsubscribe', 'Отписаться'), icon: 'tao-x-circle' },
-    { id: 'delete', label: tr('Delete', 'Удалить'), icon: 'tao-trash', tone: 'danger' as const },
-]);
+
+// the actions are the app's, per row: a newsletter can be unsubscribed from, a letter from a person cannot
+// действия задаёт приложение, для каждой строки свои: от рассылки можно отписаться, от письма человека — нет
+const more = computed(() => ({ id: 'more', label: tr('More', 'Ещё'), icon: 'tao-more-horizontal' }));
+const mute = computed(() => ({ id: 'mute', label: tr('Unsubscribe', 'Отписаться'), icon: 'tao-x-circle' }));
+const del = computed(() => ({ id: 'delete', label: tr('Delete', 'Удалить'), icon: 'tao-trash', tone: 'danger' as const }));
+const endFor = (full: boolean) => (full ? [more.value, mute.value, del.value] : [more.value, del.value]);
 
 function onAction(mail: (typeof mails.value)[number], id: string) {
     log.value = [`${mail.from}: ${id}`, ...log.value].slice(0, 5);
@@ -49,7 +51,7 @@ function reset() {
         "
     >
         <div class="mails">
-            <TaoxSwipeRow v-for="mail in mails" :key="mail.id" mouse :start="startFor(mail.read)" :end="end" @action="onAction(mail, $event)">
+            <TaoxSwipeRow v-for="mail in mails" :key="mail.id" mouse :start="startFor(mail.read)" :end="endFor(mail.full)" @action="onAction(mail, $event)">
                 <div class="mail" :class="{ 'mail--unread': !mail.read }">
                     <TaoAvatar :name="mail.from" size="large" />
                     <div class="mail__body">

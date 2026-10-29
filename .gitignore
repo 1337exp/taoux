@@ -12,6 +12,7 @@ dist
 # Media pipeline: raw recordings stay local, only the encoded results are committed
 docs/media/.raw/
 
-# IDE и локальные настройки
+# IDE и локальные настройки; the skills for working on the repo are shared / skills для работы с репозиторием общие
 .idea
-.claude
+.claude/*
+!.claude/skills/

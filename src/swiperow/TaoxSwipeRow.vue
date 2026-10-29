@@ -39,7 +39,7 @@ const open = defineModel<boolean>('open', { default: false });
 defineSlots<{
     default?(): unknown;
     /** Your own face of an action. / Свой вид действия. */
-    action?(props: { action: SwipeRowAction; armed: boolean; side: 'start' | 'end' }): unknown;
+    action?(props: { action: SwipeRowAction; armed: boolean; side: 'start' | 'end'; width: number }): unknown;
 }>();
 
 const root = ref<HTMLElement | null>(null);
@@ -196,7 +196,19 @@ onBeforeUnmount(() => {
 });
 
 const startWidth = computed(() => Math.max(0, offset.value));
-const showLabel = (w: number) => w >= 56;
+
+/*
+ * The icon and the label always stand where they end up, so nothing pops in and the heights never jump; only their
+ * opacity follows the width of their block. The icon comes first, the label later, when the block is wide enough to
+ * hold it.
+ * Иконка и подпись всегда стоят на своих итоговых местах, поэтому ничего не выскакивает и высоты не прыгают; от ширины
+ * блока зависит только их прозрачность. Иконка проявляется раньше, подпись позже, когда блок уже вмещает её.
+ */
+const fade = (width: number, from: number, span: number) => Math.min(1, Math.max(0, (width - from) / span));
+const endIcon = (w: number) => fade(w, 22, 20);
+const endLabel = (w: number) => fade(w, 50, 18);
+const startIcon = (w: number) => fade(w, 36, 24);
+const startLabel = (w: number) => fade(w, 84, 28);
 </script>
 
 <template>
@@ -215,9 +227,9 @@ const showLabel = (w: number) => w >= 56;
                 :aria-label="start.label"
                 @click="run(start)"
             >
-                <slot name="action" :action="start" :armed="armed === 'start'" side="start">
-                    <TaoIcon v-if="start.icon" :name="start.icon" :size="22" />
-                    <span v-if="showLabel(startWidth)" class="tx-swipe__label">{{ start.label }}</span>
+                <slot name="action" :action="start" :armed="armed === 'start'" side="start" :width="startWidth">
+                    <TaoIcon v-if="start.icon" :name="start.icon" :size="22" :style="{ opacity: startIcon(startWidth) }" />
+                    <span class="tx-swipe__label" :style="{ opacity: startLabel(startWidth) }">{{ start.label }}</span>
                 </slot>
             </button>
         </div>
@@ -229,13 +241,13 @@ const showLabel = (w: number) => w >= 56;
                 type="button"
                 class="tx-swipe__action"
                 :class="[toneClass(action.tone ?? 'neutral'), { 'tx-swipe__action--armed': i === end.length - 1 && (armed === 'full' || gone) }]"
-                :style="{ width: `${widths[i]}px`, opacity: Math.min(1, (widths[i] ?? 0) / 28) }"
+                :style="{ width: `${widths[i]}px` }"
                 :aria-label="action.label"
                 @click="run(action)"
             >
-                <slot name="action" :action="action" :armed="i === end.length - 1 && armed === 'full'" side="end">
-                    <TaoIcon v-if="action.icon" :name="action.icon" :size="22" />
-                    <span v-if="showLabel(widths[i] ?? 0)" class="tx-swipe__label">{{ action.label }}</span>
+                <slot name="action" :action="action" :armed="i === end.length - 1 && armed === 'full'" side="end" :width="widths[i] ?? 0">
+                    <TaoIcon v-if="action.icon" :name="action.icon" :size="22" :style="{ opacity: endIcon(widths[i] ?? 0) }" />
+                    <span class="tx-swipe__label" :style="{ opacity: endLabel(widths[i] ?? 0) }">{{ action.label }}</span>
                 </slot>
             </button>
         </div>
@@ -334,8 +346,14 @@ const showLabel = (w: number) => w >= 56;
         background-color 0.15s ease;
 }
 
+/* the start action is one line, from the start edge: the icon at a fixed place, the label after it
+   действие слева — одна строка от начального края: иконка на постоянном месте, подпись за ней */
 .tx-swipe__action--start {
     flex: 1;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 10px;
+    padding-inline-start: 22px;
 }
 
 .tx-swipe__action--armed {
@@ -348,17 +366,32 @@ const showLabel = (w: number) => w >= 56;
     outline-offset: -2px;
 }
 
+/* never squeezed or cut with «…»: a label wider than its block stays whole and centred, the block clips it, and it is
+   still transparent then; so the line never changes as the block grows
+   подпись не сжимается и не обрезается «…»: шире блока — остаётся целой и по центру, блок её обрезает, а она в это
+   время ещё прозрачна; поэтому строка не меняется, пока блок растёт */
 .tx-swipe__label {
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    flex: none;
     white-space: nowrap;
+    line-height: 1.2;
+}
+
+.tx-swipe__action :is(svg, .tao-icon) {
+    flex: none;
+}
+
+/* a short fade, so a row settling by itself shows them softly too / короткий переход: строка, доезжающая сама, тоже их проявляет мягко */
+.tx-swipe__label,
+.tx-swipe__action .tao-icon {
+    transition: opacity 0.12s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
     .tx-swipe__front,
     .tx-swipe__start,
-    .tx-swipe__action {
+    .tx-swipe__action,
+    .tx-swipe__label,
+    .tx-swipe__action .tao-icon {
         transition: none;
     }
 }
