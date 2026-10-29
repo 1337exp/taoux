@@ -135,6 +135,11 @@
       "types": "./dist/sortable.d.ts",
       "import": "./dist/sortable.js"
     },
+    "./swiperow": {
+      "types": "./dist/swiperow/index.d.ts",
+      "import": "./dist/swiperow.js"
+    },
+    "./swiperow.css": "./dist/swiperow.css",
     "./storage": {
       "types": "./dist/storage.d.ts",
       "import": "./dist/storage.js"
@@ -180,7 +185,7 @@
     }
   },
   "devDependencies": {
-    "@1337exp/taoui": "^5.0.0",
+    "@1337exp/taoui": "^5.6.2",
     "@types/node": "^26.6.4",
     "@vitejs/plugin-vue": "^6.0.10",
     "@vue/test-utils": "^2.5.1",

@@ -13,7 +13,7 @@ import { describe, expect, it } from 'vitest';
  */
 const COMPOSITES = new Set(['session', 'commands', 'canvas', 'links', 'palette', 'pins', 'curveeditor', 'gradienteditor', 'playback', 'sortable']);
 /** Ярус 2, поля: собирают составные модули в готовое поле на компонентах TaoUI (единственный ярус, которому TaoUI можно). */
-const FIELDS = new Set(['curvefield']);
+const FIELDS = new Set(['curvefield', 'swiperow']);
 
 const srcDir = fileURLToPath(new URL('../src', import.meta.url));
 
