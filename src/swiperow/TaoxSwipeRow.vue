@@ -228,7 +228,7 @@ const startLabel = (w: number) => fade(w, 84, 28);
     <div
         ref="root"
         class="tx-swipe"
-        :class="{ 'tx-swipe--dragging': dragging, 'tx-swipe--armed-full': armed === 'full' || gone }"
+        :class="{ 'tx-swipe--dragging': dragging, 'tx-swipe--armed-full': armed === 'full' || gone, 'tx-swipe--mouse': mouse }"
         @focusin="onFocusIn"
         @focusout="onFocusOut"
     >
@@ -302,6 +302,16 @@ const startLabel = (w: number) => fade(w, 84, 28);
     transition: none;
 }
 
+/* a pull is not a selection: while it runs nothing is selected; with `mouse` the mouse drags the row, so its text is
+   not selected by a press-and-move at all (a finger selects with a long press, which a swipe is not)
+   протяжка — не выделение: пока она идёт, ничего не выделяется; с `mouse` мышь тянет строку, поэтому её текст не
+   выделяется нажатием с движением вовсе (палец выделяет долгим нажатием, а свайп им не является) */
+.tx-swipe--dragging,
+.tx-swipe--mouse .tx-swipe__front {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
 .tx-swipe__start,
 .tx-swipe__end {
     position: absolute;
@@ -330,6 +340,11 @@ const startLabel = (w: number) => fade(w, 84, 28);
 }
 
 .tx-swipe__action {
+    /* a button, not text: a press or a pull over it selects nothing and calls no callout
+       кнопка, а не текст: нажатие или протяжка по ней ничего не выделяет и не вызывает меню */
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
     display: inline-flex;
     flex: none;
     flex-direction: column;

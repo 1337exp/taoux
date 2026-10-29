@@ -3,6 +3,7 @@
 ## 0.5.2
 
 - **`swiperow` without the full swipe.** `:full-swipe="false"` turned the long pull off, but the row hit a hard stop at one and a half times the open actions, and the middle actions still shrank as if the last were about to run. Now a pull past the open actions meets a spring (the row follows ever slower, up to half their width more), the actions grow side by side, and on release the row rests open: nothing runs.
+- **`swiperow` selects nothing by accident.** The actions are buttons, so a press or a pull over them never selects their labels (nor opens the long-press callout on iOS); while a row is pulled nothing is selected, and with `mouse` a press-and-move on the row drags it instead of selecting its text.
 - Sandbox: the task list has no full swipe.
 
 ## 0.5.1
