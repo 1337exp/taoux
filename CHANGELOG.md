@@ -3,6 +3,8 @@
 ## 0.5.1
 
 - **`swiperow`: the actions show without a jump.** The icon and the label always stand where they end up (nothing pops into the layout, so the heights stay), and only their opacity follows the width of their block: the icon fades in first, the label later, once the block holds it. The start action is one line from the start edge, the icon first. A short fade covers the moment the row settles by itself. The `action` slot gets the block's `width`.
+- **`swiperow`: nothing behind, nothing trailing.** On a long pull to the end the start action showed at the start edge: its panel kept a 6px padding and did not clip. The panel clips now and the gap is the button's margin, so at width 0 nothing of it is left (the keyboard still reaches it). Under the finger the actions trailed the row (their widths eased all the time the full swipe was armed, and the icons and labels faded with a delay): now they follow in the same frame, and only the moment the full swipe arms or disarms eases the widths.
+- The sandbox has a second list with no start action: those rows go only to the left.
 - The sandbox mail list sets the actions per row: a newsletter has More, Unsubscribe, Delete; a letter from a person only More and Delete.
 - **Docs:** «Why TaoUX» tells what it is now (gestures and lists, undo by records, storage across tabs, the tiers, the skill), and the skill's description names the new modules. A `taoux-dev` skill for working in the repository (`.claude/skills`, now tracked).
 

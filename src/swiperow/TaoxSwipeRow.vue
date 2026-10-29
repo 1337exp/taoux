@@ -69,9 +69,17 @@ const armed = computed(() => (dragging.value ? armedAt(drag.value, geometry.valu
 const widths = computed(() => endWidths(Math.max(0, -offset.value), geometry.value, armed.value === 'full' || gone.value));
 const lastEnd = computed(() => props.end[props.end.length - 1]);
 
-// a short buzz where the phone can, when an action becomes armed / короткая вибрация там, где телефон умеет
-watch(armed, (next) => {
+// a short buzz where the phone can, when an action becomes armed; and a moment of eased widths for the switch
+// короткая вибрация там, где телефон умеет, когда действие взведено; и миг сглаженных ширин для переключения
+const morph = ref(false);
+let morphTimer: ReturnType<typeof setTimeout> | undefined;
+watch(armed, (next, prev) => {
     if (next && typeof navigator !== 'undefined') navigator.vibrate?.(8);
+    if (next === 'full' || prev === 'full') {
+        morph.value = true;
+        clearTimeout(morphTimer);
+        morphTimer = setTimeout(() => (morph.value = false), 160);
+    }
 });
 
 //---]>
@@ -191,6 +199,7 @@ onMounted(() => {
     }
 });
 onBeforeUnmount(() => {
+    clearTimeout(morphTimer);
     resize?.disconnect();
     document.removeEventListener('pointerdown', onOutside, true);
 });
@@ -215,7 +224,7 @@ const startLabel = (w: number) => fade(w, 84, 28);
     <div
         ref="root"
         class="tx-swipe"
-        :class="{ 'tx-swipe--dragging': dragging, 'tx-swipe--armed-full': armed === 'full' || gone }"
+        :class="{ 'tx-swipe--dragging': dragging, 'tx-swipe--armed-full': armed === 'full' || gone, 'tx-swipe--morph': morph }"
         @focusin="onFocusIn"
         @focusout="onFocusOut"
     >
@@ -297,9 +306,13 @@ const startLabel = (w: number) => fade(w, 84, 28);
     gap: var(--tx-swipe-gap);
 }
 
+/* clipped, with the gap as the button's margin: at width 0 nothing of it is left, while the keyboard can still reach it
+   (a padding kept a 6px box, and the button showed at the start edge of a row pulled the other way)
+   с обрезкой, а зазор — поле кнопки: при ширине 0 от неё ничего не остаётся, а клавиатура всё равно до неё доходит
+   (padding оставлял коробку в 6px, и кнопка виднелась у начального края строки, которую тянули в другую сторону) */
 .tx-swipe__start {
     inset-inline-start: 0;
-    padding-inline-end: var(--tx-swipe-gap);
+    overflow: hidden;
     transition: width 0.22s ease;
 }
 
@@ -335,12 +348,15 @@ const startLabel = (w: number) => fade(w, 84, 28);
         background-color 0.15s ease;
 }
 
+/* under the finger the actions follow the row in the same frame: no width easing, or they trail behind it
+   под пальцем действия идут за строкой в том же кадре: без сглаживания ширины, иначе они отстают */
 .tx-swipe--dragging .tx-swipe__end .tx-swipe__action {
     transition: background-color 0.15s ease;
 }
 
-/* the full swipe armed: the last action takes the row; the widths animate to it / длинный свайп взведён */
-.tx-swipe--armed-full .tx-swipe__end .tx-swipe__action {
+/* only the moment the full swipe arms or disarms eases the widths: the last action takes the row, or gives it back
+   сглаживается только миг взвода и сброса длинного свайпа: последнее действие занимает строку или отдаёт её */
+.tx-swipe--dragging.tx-swipe--morph .tx-swipe__end .tx-swipe__action {
     transition:
         width 0.15s ease,
         background-color 0.15s ease;
@@ -353,6 +369,8 @@ const startLabel = (w: number) => fade(w, 84, 28);
     flex-direction: row;
     justify-content: flex-start;
     gap: 10px;
+    min-width: 0;
+    margin-inline-end: var(--tx-swipe-gap);
     padding-inline-start: 22px;
 }
 
@@ -380,10 +398,16 @@ const startLabel = (w: number) => fade(w, 84, 28);
     flex: none;
 }
 
-/* a short fade, so a row settling by itself shows them softly too / короткий переход: строка, доезжающая сама, тоже их проявляет мягко */
+/* a short fade, so a row settling by itself shows them softly too; under the finger none
+   короткий переход: строка, доезжающая сама, тоже их проявляет мягко; под пальцем без него */
 .tx-swipe__label,
 .tx-swipe__action .tao-icon {
     transition: opacity 0.12s ease;
+}
+
+.tx-swipe--dragging .tx-swipe__label,
+.tx-swipe--dragging .tx-swipe__action .tao-icon {
+    transition: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
