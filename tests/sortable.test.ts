@@ -150,6 +150,8 @@ describe('useSortable: the keyboard', () => {
         key(handle(), ' ');
         expect(w.findAll('li')[0]!.attributes('data-sortable-lifted')).toBe('');
         const live = document.querySelector('[aria-live="assertive"]')!;
+        // fixed at the corner of the window: it never adds to the page height / в углу окна: не прибавляет к высоте страницы
+        expect((live as HTMLElement).style.position).toBe('fixed');
         expect(live.textContent).toContain('Alpha поднят, место 1 из 4');
         key(handle(), 'ArrowDown');
         await nextTick();

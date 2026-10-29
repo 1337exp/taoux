@@ -40,4 +40,7 @@
     --tx-gradient-stop-border: var(--tao-color-border-strong);
     --tx-gradient-stop-outline: color-mix(in srgb, var(--tao-color-text-strong) 55%, transparent);
     --tx-gradient-accent: var(--tao-color-accent);
+
+    /* swiperow */
+    --tx-swipe-bg: var(--tao-color-surface-raised);
 }
