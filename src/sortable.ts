@@ -384,7 +384,10 @@ export function useSortable(container: Ref<HTMLElement | null>, options: Sortabl
         live = document.createElement('div');
         live.setAttribute('aria-live', 'assertive');
         live.setAttribute('aria-atomic', 'true');
-        live.style.cssText = 'position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap';
+        // fixed at the corner of the window: an absolute one at the end of the body stood a pixel below a page exactly
+        // the window's height and gave it a scroll / в углу окна: абсолютная в конце body стояла на пиксель ниже
+        // страницы ровно в высоту окна и давала ей прокрутку
+        live.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;pointer-events:none';
         document.body.appendChild(live);
     });
 

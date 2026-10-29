@@ -1,6 +1,6 @@
 {
   "name": "@1337exp/taoux",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Interaction and behavior building blocks for Vue apps: curve and gradient editors, canvas, undo/redo, playback. Import only what you need, bring your own design.",
   "keywords": [
     "vue",

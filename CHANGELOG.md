@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.3
+
+- **`sortable` no longer gives a page a scroll.** Its live region stood absolute at the end of the body, so on a page exactly the window's height it hung a pixel below and the page scrolled by 1px. It is fixed at the corner of the window now.
+- **`swiperow` takes its colour from `--tx-swipe-bg`.** The face of the row and the ground its actions are tinted on were the raised surface with no way to change them, so a row right on the page showed a lighter edge at its corners. `--tx-swipe-bg` (the raised surface by default) sets both: `var(--tao-color-bg)` for a row on the page. The TaoUI bridge (`taoui.css`) maps it. `--tx-swipe-radius` and `--tx-swipe-gap` now work from an element around the row too: they were set on the row itself, so a value on its list was overridden.
+- **[docs/swiperow.md](docs/swiperow.md):** the variables of the row, and how to test a swipe automatically: synthetic pointer events go to `.tx-swipe__front`, in several moves (the first one past the slop only decides the swipe and becomes the zero point), with the window keeping the focus; a Playwright example with real touches.
+
 ## 0.5.2
 
 - **`swiperow` without the full swipe.** `:full-swipe="false"` turned the long pull off, but the row hit a hard stop at one and a half times the open actions, and the middle actions still shrank as if the last were about to run. Now a pull past the open actions meets a spring (the row follows ever slower, up to half their width more), the actions grow side by side, and on release the row rests open: nothing runs.

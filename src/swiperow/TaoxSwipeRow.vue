@@ -280,12 +280,23 @@ const startLabel = (w: number) => fade(w, 84, 28);
 </template>
 
 <style>
+/*
+ * Variables, on the row or on any element around it (the defaults stand in var(), so an ancestor's value reaches here):
+ *   --tx-swipe-bg      the face of the row and the ground its actions are tinted on (the raised surface; a row right on
+ *                      the page: var(--tao-color-bg))
+ *   --tx-swipe-radius  the corners of the row (the panel radius)
+ *   --tx-swipe-gap     the gap between the end actions (6px)
+ * Переменные — на строке или на любом элементе вокруг неё (значения по умолчанию стоят в var(), поэтому значение предка
+ * доходит сюда): --tx-swipe-bg — лицо строки и основа подкраски действий; --tx-swipe-radius — углы; --tx-swipe-gap —
+ * зазор между действиями справа.
+ */
 .tx-swipe {
-    --tx-swipe-gap: 6px;
-    --tx-swipe-radius: var(--tao-radius-panel, 12px);
+    --_tx-swipe-gap: var(--tx-swipe-gap, 6px);
+    --_tx-swipe-radius: var(--tx-swipe-radius, var(--tao-radius-panel, 12px));
+    --_tx-swipe-bg: var(--tx-swipe-bg, var(--tao-color-surface-raised, #1f1f1f));
     position: relative;
     overflow: hidden;
-    border-radius: var(--tx-swipe-radius);
+    border-radius: var(--_tx-swipe-radius);
 }
 
 .tx-swipe__front {
@@ -294,7 +305,7 @@ const startLabel = (w: number) => fade(w, 84, 28);
     /* the page keeps the vertical scroll, the tracker takes the sideways pull / вертикаль — странице, вбок — трекеру */
     touch-action: pan-y;
     border-radius: inherit;
-    background: var(--tao-color-surface-raised, #1f1f1f);
+    background: var(--_tx-swipe-bg);
     transition: transform 0.22s ease;
 }
 
@@ -317,7 +328,7 @@ const startLabel = (w: number) => fade(w, 84, 28);
     position: absolute;
     inset-block: 0;
     display: flex;
-    gap: var(--tx-swipe-gap);
+    gap: var(--_tx-swipe-gap);
 }
 
 /* clipped, with the gap as the button's margin: at width 0 nothing of it is left, while the keyboard can still reach it
@@ -358,8 +369,8 @@ const startLabel = (w: number) => fade(w, 84, 28);
     padding: 0;
     overflow: hidden;
     border: 0;
-    border-radius: var(--tx-swipe-radius);
-    background: color-mix(in srgb, var(--tao-tone) 22%, var(--tao-color-surface-raised, #1f1f1f));
+    border-radius: var(--_tx-swipe-radius);
+    background: color-mix(in srgb, var(--tao-tone) 22%, var(--_tx-swipe-bg));
     color: var(--tao-tone-text);
     font: inherit;
     font-size: 13px;
@@ -383,12 +394,12 @@ const startLabel = (w: number) => fade(w, 84, 28);
     justify-content: flex-start;
     gap: 10px;
     min-width: 0;
-    margin-inline-end: var(--tx-swipe-gap);
+    margin-inline-end: var(--_tx-swipe-gap);
     padding-inline-start: 22px;
 }
 
 .tx-swipe__action--armed {
-    background: color-mix(in srgb, var(--tao-tone) 45%, var(--tao-color-surface-raised, #1f1f1f));
+    background: color-mix(in srgb, var(--tao-tone) 45%, var(--_tx-swipe-bg));
     color: var(--tao-color-text-strong);
 }
 
