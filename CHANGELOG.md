@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.4
+
+- **`swiperow`: Tab from the start action to an end one.** The start side stayed shown and won, so the end action that got the focus stayed hidden under the row (it came out only after the window lost and got back the focus). An action that gets the focus now shows its side and only its side; the focus on the row's own content shows neither.
+
 ## 0.5.3
 
 - **`sortable` no longer gives a page a scroll.** Its live region stood absolute at the end of the body, so on a page exactly the window's height it hung a pixel below and the page scrolled by 1px. It is fixed at the corner of the window now.
