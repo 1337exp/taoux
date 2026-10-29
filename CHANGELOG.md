@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.2
+
+- **`swiperow` without the full swipe.** `:full-swipe="false"` turned the long pull off, but the row hit a hard stop at one and a half times the open actions, and the middle actions still shrank as if the last were about to run. Now a pull past the open actions meets a spring (the row follows ever slower, up to half their width more), the actions grow side by side, and on release the row rests open: nothing runs.
+- Sandbox: the task list has no full swipe.
+
 ## 0.5.1
 
 - **`swiperow`: the actions show without a jump.** The icon and the label always stand where they end up (nothing pops into the layout, so the heights stay), and only their opacity follows the width of their block: the icon fades in first, the label later, once the block holds it. The start action is one line from the start edge, the icon first. A short fade covers the moment the row settles by itself. The `action` slot gets the block's `width`.

@@ -47,10 +47,23 @@ export function armedAt(offset: number, g: SwipeRowGeometry): 'start' | 'full' |
     return null;
 }
 
-/** How far the row may move: no further than there is something behind it. / Насколько строка может уехать. */
+/**
+ * How far the row may move: no further than there is something behind it. Without the full swipe a pull past the open
+ * actions meets a spring: it still follows the finger, ever slower, up to half the open width more, and on release the
+ * row rests open.
+ * Насколько строка может уехать. Без длинного свайпа протяжка дальше открытых действий упирается в пружину: строка
+ * всё ещё идёт за пальцем, всё медленнее, не дальше ещё половины открытой ширины, а после отпускания остаётся открытой.
+ */
 export function clampOffset(offset: number, g: SwipeRowGeometry): number {
     const right = g.hasStart ? g.width : 0;
-    const left = g.endCount === 0 ? 0 : g.fullSwipe ? -g.width : -endOpenWidth(g) * 1.5;
+    if (offset < 0 && g.endCount > 0 && !g.fullSwipe) {
+        const open = endOpenWidth(g);
+        const over = -offset - open;
+        if (over <= 0) return offset;
+        const room = open / 2;
+        return -(open + room * (1 - 1 / (1 + over / room)));
+    }
+    const left = g.endCount === 0 ? 0 : -g.width;
     return Math.min(right, Math.max(left, offset));
 }
 
@@ -99,7 +112,9 @@ export function endWidths(drag: number, g: SwipeRowGeometry, _armed?: boolean, g
     const room = Math.max(0, drag - gap * n);
     const open = endOpenWidth(g);
     if (n === 1) return [room];
-    if (drag <= open) return Array.from({ length: n }, () => room / n);
+    // without the full swipe nothing is about to run: the actions only grow, side by side
+    // без длинного свайпа ничего не выполнится: действия просто растут, все поровну
+    if (drag <= open || !g.fullSwipe) return Array.from({ length: n }, () => room / n);
 
     // the squeeze runs a little past the full threshold (a fifth of the row more), so on a phone it takes a long stretch
     // of the pull and reads as a slide, not a snap

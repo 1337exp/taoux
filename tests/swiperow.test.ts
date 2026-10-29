@@ -34,7 +34,18 @@ describe('swipe row model', () => {
     it('the row moves no further than there is something behind it', () => {
         expect(clampOffset(200, { ...g, hasStart: false })).toBe(0);
         expect(clampOffset(-200, { ...g, endCount: 0 })).toBe(0);
-        expect(clampOffset(-999, { ...g, fullSwipe: false })).toBe(-342);
+        // without the full swipe: a spring past the open actions, never past half their width more
+        const soft = { ...g, fullSwipe: false };
+        expect(clampOffset(-200, soft)).toBe(-200);
+        expect(clampOffset(-228, soft)).toBe(-228);
+        expect(clampOffset(-300, soft)).toBeGreaterThan(-300);
+        expect(clampOffset(-300, soft)).toBeLessThan(-228);
+        expect(clampOffset(-999, soft)).toBeGreaterThan(-342);
+        expect(clampOffset(-999, soft)).toBeLessThan(clampOffset(-500, soft));
+        expect(armedAt(clampOffset(-999, soft), soft)).toBeNull();
+        expect(swipeRowRelease({ offset: -999, velocity: -2 }, soft)).toEqual({ kind: 'rest', open: true });
+        // and the actions grow side by side, none shrinks
+        expect(endWidths(300, soft)).toEqual([94, 94, 94]);
         expect(clampOffset(-999, g)).toBe(-360);
     });
 
