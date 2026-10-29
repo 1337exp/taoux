@@ -27,11 +27,13 @@
 
 ## Why TaoUX
 
-- **Pay for what you use.** Every module is its own subpath import with its own entry point: `import { zoomAt } from '@1337exp/taoux/camera'`. `sideEffects` is declared, the rest tree-shakes.
-- **Logic first.** The core of a module (camera maths, history, easing, playback) is plain TypeScript with no Vue or DOM unless that is its job, and it is unit-tested that way. Components are thin shells on top.
-- **Your design.** Components are styled by `--tx-*` CSS variables with sensible dark defaults. No design system is required.
-- **Works with TaoUI in one line.** `import '@1337exp/taoux/taoui.css'` and the editors follow the TaoUI theme. [Details below.](#with-taoui)
-- **Typed i18n, undo/redo, autosave, playback** and the other things every editor-like app ends up writing again.
+- **Pay for what you use.** Every module is its own subpath import with its own entry point: `import { zoomAt } from '@1337exp/taoux/camera'`. `sideEffects` is declared, the rest tree-shakes; there is no root entry, so nothing you did not import reaches the bundle.
+- **Logic first, tested without a browser.** The core of a module (camera maths, undo, easing, playback, where a swiped row comes to rest) is plain TypeScript, unit-tested with no DOM. The Vue parts are thin shells on top.
+- **Fingers and keys alike.** Taps, long presses, pinches and swipes that tell a swipe from a scroll; lists reordered by a grip (`sortable`) and rows slid aside for their actions (`swiperow`), each with a keyboard path and a live region for a screen reader.
+- **For apps, not only editors.** Undo by records that is safe next to a sync (`undo`), autosave that never throws and hears other tabs (`storage`), UUIDs for stored records, typed i18n, commands and hotkeys that build the menus.
+- **Your design, or TaoUI in one line.** Components take `--tx-*` CSS variables with dark defaults; `import '@1337exp/taoux/taoui.css'` makes them follow the TaoUI theme and palettes. [Details below.](#with-taoui)
+- **Layers you can rely on.** Primitives import nothing, composites only primitives, and only the fields (`curvefield`, `swiperow`) touch TaoUI: a test reads the imports and keeps it so.
+- **Ready for AI assistants.** The package ships a skill that names every module and the usual mistakes, so an assistant writes TaoUX code instead of guessing.
 
 <table>
   <tr>
@@ -48,7 +50,7 @@
 
 ```bash
 npm install @1337exp/taoux
-npm install @1337exp/taoui   # optional: only for curvefield and the TaoUI bridge
+npm install @1337exp/taoui   # optional: only for curvefield, swiperow and the TaoUI bridge
 ```
 
 Peers: `vue ^3.4` (for the Vue modules) and, optionally, `@1337exp/taoui ^5.0.0`. Modules without Vue need nothing.

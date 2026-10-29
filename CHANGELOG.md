@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.1
+
+- **`swiperow`: the actions show without a jump.** The icon and the label always stand where they end up (nothing pops into the layout, so the heights stay), and only their opacity follows the width of their block: the icon fades in first, the label later, once the block holds it. The start action is one line from the start edge, the icon first. A short fade covers the moment the row settles by itself. The `action` slot gets the block's `width`.
+- The sandbox mail list sets the actions per row: a newsletter has More, Unsubscribe, Delete; a letter from a person only More and Delete.
+- **Docs:** «Why TaoUX» tells what it is now (gestures and lists, undo by records, storage across tabs, the tiers, the skill), and the skill's description names the new modules. A `taoux-dev` skill for working in the repository (`.claude/skills`, now tracked).
+
 ## 0.5.0
 
 - **New module `swiperow` (tier 2, Vue, on TaoUI): `TaoxSwipeRow`, a list row a finger slides sideways, as in a mail app.** To the start (right) one action is behind the row: a pull past its threshold (96px, or a third of a narrow row; or flung that way past half of it) runs it on release and the row comes back, as read / unread. To the end (left) the actions grow out evenly from slivers to their width and the row rests open on them (`v-model:open`), by the nearest stop or a fling; a pull back, a touch outside or an action closes it. Pulled far (60% of the width), the full swipe is armed: the last action takes nearly the whole row, the others shrink to slivers, and the release runs it (delete; `fullSwipe: false` turns it off). Armed actions buzz where the phone can. A vertical move stays the page's scroll; a mouse drags only with `mouse`; the click at the end of a swipe does not reach the row; Tab reaches the actions and opens their side. The gesture is `SwipeTracker` of `gestures`; the decisions are pure and exported (`swipeRowRelease`, `armedAt`, `endWidths`, `clampOffset`). Import `@1337exp/taoux/swiperow.css`. A sandbox page shows a mail list.

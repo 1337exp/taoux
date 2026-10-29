@@ -155,3 +155,23 @@ describe('TaoxSwipeRow', () => {
         expect(onClick).toHaveBeenCalledTimes(1);
     });
 });
+
+describe('TaoxSwipeRow: the actions show without a jump', () => {
+    it('the icon and the label are always laid out; only their opacity follows the width, the icon first', async () => {
+        const w = mountRow();
+        const labels = w.findAll('.tx-swipe__end .tx-swipe__label');
+        expect(labels).toHaveLength(3);
+        expect((labels[0]!.element as HTMLElement).style.opacity).toBe('0');
+        const front = w.find('.tx-swipe__front').element;
+        pointer(front, 'pointerdown', 300, 0);
+        pointer(front, 'pointermove', 280, 200);
+        pointer(front, 'pointermove', 170, 600); // ~130px for three: about 37px each
+        await nextTick();
+        const action = w.find('.tx-swipe__end .tx-swipe__action');
+        const icon = +((action.find('.tao-icon').element as HTMLElement).style.opacity || 0);
+        const label = +((action.find('.tx-swipe__label').element as HTMLElement).style.opacity || 0);
+        expect(icon).toBeGreaterThan(0);
+        expect(label).toBe(0);
+        pointer(front, 'pointercancel', 170, 700);
+    });
+});

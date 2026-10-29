@@ -1,12 +1,13 @@
 ---
 name: taoux
-description: Build editor-like behaviour in Vue 3 apps with @1337exp/taoux (TaoUX) — subpath modules for camera, undo history, document sessions, commands and hotkeys, playback, canvas, curve and gradient editors, and joining them to TaoUI. Use when code imports @1337exp/taoux/*, uses Taox* components or --tx-* variables, or the user asks for TaoUX.
+description: Build interaction in Vue 3 apps with @1337exp/taoux (TaoUX) — subpath modules for gestures (tap, long press, pinch, swipe), reorderable lists (sortable), swipe rows with actions (swiperow), undo by snapshots or by records, document sessions, autosave across tabs, commands and hotkeys, playback, canvas, curve and gradient editors, and joining them to TaoUI. Use when code imports @1337exp/taoux/*, uses Taox* components or --tx-* variables, or the user asks for TaoUX.
 ---
 
 # TaoUX
 
-Behaviour building blocks for editors: the logic is plain TypeScript (tested without a DOM), the few Vue modules are thin
-shells, and TaoUX has **no buttons or fields of its own**. Pair it with TaoUI for the controls, or with your own design.
+Behaviour building blocks for apps and editors: the logic is plain TypeScript (tested without a DOM), the few Vue modules are
+thin shells, and TaoUX has **no buttons or fields of its own** outside the two TaoUI-based fields. Pair it with TaoUI for the
+controls, or with your own design.
 
 ## Rules
 
@@ -16,7 +17,7 @@ shells, and TaoUX has **no buttons or fields of its own**. Pair it with TaoUI fo
    `links.css`, `gradienteditor.css`, `curvefield.css`, `swiperow.css`; `curvefield` needs `curveeditor.css` too).
 3. **With TaoUI, add the bridge**: `import '@1337exp/taoux/taoui.css'` points every `--tx-*` colour at a `--tao-*` role, so
    the editors follow the TaoUI theme and palettes. Zero specificity: your rules win. Without it the editors stay dark.
-4. **Values travel through `v-model`**; TaoUX never renders a TaoUI control itself, except tier-2 `curvefield`.
+4. **Values travel through `v-model`**; TaoUX never renders a TaoUI control itself, except the tier-2 fields `curvefield` and `swiperow`.
 5. **Pre-1.0**: breaking changes happen between minors; read `CHANGELOG.md`.
 
 ## Modules
