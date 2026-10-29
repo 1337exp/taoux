@@ -94,6 +94,7 @@ import { History } from '@1337exp/taoux/history';
 | `ids` | `uuid()` для записей, которые хранятся или синхронизируются; `uid(prefix, taken)` для id внутри одного документа | нет |
 | `ease` | функции движения между точками кривой: 8 семейств × in / out / in-out, `linear`, `step`, кубический Безье; `easeValue`, `isEase` (редактор рисует ими, рантайм считает ими же) | нет |
 | `num` | мелкая числовая математика: `clamp`, `roundTo`, `snapTo`, `niceStep`, `ticks` (общая для кривой, градиента и воспроизведения) | нет |
+| `sortable` (Vue) | перестановка списка за ручку и с клавиатуры: `useSortable(listRef, { onMove })`, `data-sortable-item` / `data-sortable-handle`; остальные расступаются, у края список прокручивается, Esc возвращает, живой регион сообщает скринридеру; `moveItem` | vue (peer) |
 | `session` | жизненный цикл документа: история, автосохранение, файлы, восстановление, уведомления; камера холста необязательна (`countItems`) | vue (peer) |
 | `commands` | реестр команд (подпись, сочетание, `enabled`, `checked`, `run`): `toMenu(layout)` строит дерево `TaoMenuItem[]` для `TaoMenubar` / `TaoContextMenu`, `bind` слушает те же сочетания, `historyCommands` даёт Undo / Redo, которые сами становятся недоступными, `check` находит занятые браузером и повторённые сочетания | DOM (для `bind`) |
 | `palette` | поиск и группы нод для палитры | нет |

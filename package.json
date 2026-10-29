@@ -1,6 +1,6 @@
 {
   "name": "@1337exp/taoux",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Interaction and behavior building blocks for Vue apps: curve and gradient editors, canvas, undo/redo, playback. Import only what you need, bring your own design.",
   "keywords": [
     "vue",
@@ -130,6 +130,10 @@
     "./snap": {
       "types": "./dist/snap.d.ts",
       "import": "./dist/snap.js"
+    },
+    "./sortable": {
+      "types": "./dist/sortable.d.ts",
+      "import": "./dist/sortable.js"
     },
     "./storage": {
       "types": "./dist/storage.d.ts",
