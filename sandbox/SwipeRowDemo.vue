@@ -82,10 +82,10 @@ function reset() {
                 </div>
             </TaoxSwipeRow>
         </div>
-        <h3 class="subtitle">{{ tr('Only to the left: no start action', 'Только влево: без действия слева') }}</h3>
-        <p class="muted">{{ tr('A row without `start` does not move to the right at all.', 'Строка без `start` вправо не сдвигается вовсе.') }}</p>
+        <h3 class="subtitle">{{ tr('Only to the left, no full swipe', 'Только влево, без длинного свайпа') }}</h3>
+        <p class="muted">{{ tr('A row without `start` does not move to the right at all. With `:full-swipe="false"` a long pull to the left only meets a spring and the row rests open: nothing is deleted.', 'Строка без `start` вправо не сдвигается вовсе. С `:full-swipe="false"` длинный свайп влево упирается в пружину, и строка остаётся открытой: ничего не удаляется.') }}</p>
         <div class="mails">
-            <TaoxSwipeRow v-for="task in tasks" :key="task.id" mouse :end="taskEnd" @action="onTask(task, $event)">
+            <TaoxSwipeRow v-for="task in tasks" :key="task.id" mouse :end="taskEnd" :full-swipe="false" @action="onTask(task, $event)">
                 <div class="mail">
                     <div class="mail__body">
                         <div class="mail__top">
