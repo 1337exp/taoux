@@ -13,7 +13,7 @@ shells, and TaoUX has **no buttons or fields of its own**. Pair it with TaoUI fo
 1. **Import by subpath**, there is no root entry: `import { History } from '@1337exp/taoux/history'`. Only what you import
    reaches the bundle. ESM only.
 2. **A Vue module's styles are imported explicitly**: `import '@1337exp/taoux/curveeditor.css'` (also `canvas.css`,
-   `links.css`, `gradienteditor.css`, `curvefield.css`; `curvefield` needs `curveeditor.css` too).
+   `links.css`, `gradienteditor.css`, `curvefield.css`, `swiperow.css`; `curvefield` needs `curveeditor.css` too).
 3. **With TaoUI, add the bridge**: `import '@1337exp/taoux/taoui.css'` points every `--tx-*` colour at a `--tao-*` role, so
    the editors follow the TaoUI theme and palettes. Zero specificity: your rules win. Without it the editors stay dark.
 4. **Values travel through `v-model`**; TaoUX never renders a TaoUI control itself, except tier-2 `curvefield`.
@@ -26,6 +26,7 @@ shells, and TaoUX has **no buttons or fields of its own**. Pair it with TaoUI fo
 | `camera` | pan, zoom around the cursor, screen ↔ world (`zoomAt`) |
 | `history` | `new History(snapshot)`: undo / redo on string snapshots, rapid edits with one `key` merged into one step |
 | `undo` | `new UndoStack({ id, revive, vanish? })`: undo / redo of a list of records by steps that keep only the touched ones (`diffRecords(prev, next, id)` makes a step; a returned record takes its old place); right for a list that is edited and synced, where `History` would store the whole list per step and an undo would roll back a sync. `coalesceMaxMs` caps a merged step of typing |
+| `swiperow` | `<TaoxSwipeRow :start="{ id, label, icon, tone }" :end="[{ id, label, icon, tone }]" v-model:open @action="run">` around a list row: a pull to the start runs `start` past a threshold, to the end opens the actions, a long pull runs the last one (`fullSwipe`, on by default); a mouse drags only with `mouse`; import `@1337exp/taoux/swiperow.css`. Needs TaoUI (tier 2) |
 | `sortable` | `useSortable(listRef, { onMove: (from, to) => (list.value = moveItem(list.value, from, to)) })`; mark each item `data-sortable-item` and a focusable grip inside it `data-sortable-handle` (a TaoButton with `icon="tao-grip"` and an aria-label); style `[data-sortable-dragging]` / `[data-sortable-lifted]`. Keyboard: Space lifts, arrows move, Space drops, Esc returns; `texts: sortableTextsRu` for Russian |
 | `session` | `createDocumentSession(...)`: history + autosave + files + restore + notices for one document; `canUndo` / `canRedo` refs. `camera` is optional (a list, not a canvas); count with `countItems` (`countNodes` is its old name) |
 | `commands` | `createCommands([...])`: one registry for menus, shortcuts and palettes (see below) |

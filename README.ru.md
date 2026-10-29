@@ -101,13 +101,14 @@ import { History } from '@1337exp/taoux/history';
 | `links` (Vue) | слой связей: SVG из готовой геометрии, `--tx-link-*` | vue (peer) |
 | `canvas` (Vue) | холст: жесты мыши и сенсора, колесо, автопрокрутка, клавиши; контракт `CanvasHost` | vue (peer) |
 | `curveeditor` (Vue) | поле редактора кривой: сетка, шаг, границы, знаки, автопрокрутка у края; операции над точками; переходы между точками с ручками Безье; клавиатура (Tab, стрелки, Shift, Insert, Delete) | vue (peer) |
+| `swiperow` (Vue, ярус 2) | `TaoxSwipeRow`: строка списка, которую палец сдвигает вбок, как в почте: вправо одно действие, выполняется после порога (прочитано / не прочитано), влево действия вырастают и остаются открытыми, длинный свайп выполняет последнее (удалить); иконки и тона TaoUI, `@action="id => …"`; до действий можно дойти Tab | vue, **@1337exp/taoui** (peer) |
 | `curvefield` (Vue, ярус 2) | `TaoxCurveField`: кривая с полями на компонентах TaoUI: время и значение точки, переход к следующей точке (`ease`), шаг, удаление и сброс; надписи задаёт приложение | vue, **@1337exp/taoui** (peer) |
 | `gradienteditor` (Vue) | полоса градиента с ручками остановок; операции над остановками, `gradientCss`; клавиатура (Tab, стрелки, Home/End, Insert, Delete) | vue (peer) |
 | `playback` | модель воспроизведения: время, пауза, цикл, скорость, перемотка; `createPlayback` без Vue и `usePlayback` для компонента | vue (peer, для `usePlayback`) |
 | `pins` | позиции пинов-строк, измеренные по DOM: `usePinMeasure`, `createPinRegistry` | vue (peer) |
 | `i18n` | типизированный i18n: `createI18n({ locales, fallback, storageKey })` | vue (peer, опционально) |
 
-Vue-модули (`links`, `canvas`, `curveeditor`, `curvefield`, `gradienteditor`) требуют явного импорта стилей: `import '@1337exp/taoux/canvas.css'`. Составные модули (session, commands, palette, links, canvas, pins, curveeditor, gradienteditor, playback) импортируют только примитивы. Ярус 2, поля (`curvefield`), собирает составные модули в готовое поле на компонентах TaoUI: только ему можно импортировать TaoUI, поэтому `@1337exp/taoui` это необязательная peer-зависимость. Для `curvefield` нужны оба файла стилей, `curveeditor.css` и `curvefield.css`. Всё это охраняет тест `tiers.test.ts`; контракт холста описан в [docs/canvas.ru.md](docs/canvas.ru.md), переходы между точками кривой в [docs/ease.ru.md](docs/ease.ru.md).
+Vue-модули (`links`, `canvas`, `curveeditor`, `curvefield`, `gradienteditor`, `swiperow`) требуют явного импорта стилей: `import '@1337exp/taoux/canvas.css'`. Составные модули (session, commands, palette, links, canvas, pins, curveeditor, gradienteditor, playback) импортируют только примитивы. Ярус 2, поля (`curvefield`, `swiperow`), собирает составные модули в готовое поле на компонентах TaoUI: только ему можно импортировать TaoUI, поэтому `@1337exp/taoui` это необязательная peer-зависимость. Для `curvefield` нужны оба файла стилей, `curveeditor.css` и `curvefield.css`. Всё это охраняет тест `tiers.test.ts`; контракт холста описан в [docs/canvas.ru.md](docs/canvas.ru.md), переходы между точками кривой в [docs/ease.ru.md](docs/ease.ru.md).
 
 Правило: модуль попадает сюда, когда он понадобился во втором проекте. Ядро модулей не знает про Vue и DOM, если это не их задача.
 
@@ -133,7 +134,7 @@ npm run dev         # watch: пересборка JS и деклараций
 
 ## Песочница
 
-Папка `sandbox/` это демо и поле для проверки: страницы подключают модули прямо из `src/`, без сборки. Сейчас там `curveeditor`, `curvefield`, `gradienteditor`, `slider`, `color` и `playback`, с переключателем языка (EN / RU) и темы (тёмная / светлая: тема TaoUI через мост). Новая страница = `sandbox/<имя>.html` + `.ts` + демо `.vue` и ссылка в `sandbox/index.html`. `npm run sandbox:build` собирает статическую копию с относительными путями, её можно положить в любую папку (например, `/sandbox/taoux/`).
+Папка `sandbox/` это демо и поле для проверки: страницы подключают модули прямо из `src/`, без сборки. Сейчас там `curveeditor`, `curvefield`, `gradienteditor`, `slider`, `color`, `playback`, `sortable` и `swiperow`, с переключателем языка (EN / RU) и темы (тёмная / светлая: тема TaoUI через мост). Новая страница = `sandbox/<имя>.html` + `.ts` + демо `.vue` и ссылка в `sandbox/index.html`. `npm run sandbox:build` собирает статическую копию с относительными путями, её можно положить в любую папку (например, `/sandbox/taoux/`).
 
 Скриншоты и ролики в этом README сняты с песочницы: см. [docs/media](docs/media/README.md).
 

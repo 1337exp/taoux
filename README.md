@@ -101,13 +101,14 @@ import { History } from '@1337exp/taoux/history';
 | `links` (Vue) | links layer: SVG from ready geometry, `--tx-link-*` | vue (peer) |
 | `canvas` (Vue) | canvas: mouse and touch gestures, wheel, auto-scroll, keys; the `CanvasHost` contract | vue (peer) |
 | `curveeditor` (Vue) | curve editor plot: grid, snapping, bounds, decimals, auto-scroll at the edge; point operations; per-segment transitions with Bezier handles; keyboard (Tab, arrows, Shift, Insert, Delete) | vue (peer) |
+| `swiperow` (Vue, tier 2) | `TaoxSwipeRow`: a list row a finger slides sideways, as in a mail app: to the start one action that runs past a threshold (read / unread), to the end actions that grow out and stay open, a long pull runs the last one (delete); TaoUI icons and tones, `@action="id => …"`; Tab reaches the actions | vue, **@1337exp/taoui** (peer) |
 | `curvefield` (Vue, tier 2) | `TaoxCurveField`: a curve with fields on TaoUI components: point time and value, transition to the next point (`ease`), snapping, remove and reset; labels come from the app | vue, **@1337exp/taoui** (peer) |
 | `gradienteditor` (Vue) | gradient bar with stop handles; stop operations, `gradientCss`; keyboard (Tab, arrows, Home/End, Insert, Delete) | vue (peer) |
 | `playback` | playback model: time, pause, loop, speed, seeking; `createPlayback` without Vue and `usePlayback` for a component | vue (peer, for `usePlayback`) |
 | `pins` | row pin positions measured from the DOM: `usePinMeasure`, `createPinRegistry` | vue (peer) |
 | `i18n` | typed i18n: `createI18n({ locales, fallback, storageKey })` | vue (peer, optional) |
 
-Vue modules (`links`, `canvas`, `curveeditor`, `curvefield`, `gradienteditor`) need their styles imported explicitly: `import '@1337exp/taoux/canvas.css'`. Composite modules (session, commands, palette, links, canvas, pins, curveeditor, gradienteditor, playback) import only primitives. Tier 2, fields (`curvefield`), assemble composites into a ready field on TaoUI components: it is the only tier allowed to import TaoUI, which is why `@1337exp/taoui` is an optional peer dependency. `curvefield` needs both `curveeditor.css` and `curvefield.css`. The `tiers.test.ts` test guards all of that. The canvas contract is described in [docs/canvas.md](docs/canvas.md) ([Русский](docs/canvas.ru.md)); transitions between curve points are in [docs/ease.md](docs/ease.md) ([Русский](docs/ease.ru.md)).
+Vue modules (`links`, `canvas`, `curveeditor`, `curvefield`, `gradienteditor`, `swiperow`) need their styles imported explicitly: `import '@1337exp/taoux/canvas.css'`. Composite modules (session, commands, palette, links, canvas, pins, curveeditor, gradienteditor, playback) import only primitives. Tier 2, fields (`curvefield`, `swiperow`), assemble composites into a ready field on TaoUI components: it is the only tier allowed to import TaoUI, which is why `@1337exp/taoui` is an optional peer dependency. `curvefield` needs both `curveeditor.css` and `curvefield.css`. The `tiers.test.ts` test guards all of that. The canvas contract is described in [docs/canvas.md](docs/canvas.md) ([Русский](docs/canvas.ru.md)); transitions between curve points are in [docs/ease.md](docs/ease.md) ([Русский](docs/ease.ru.md)).
 
 The rule: a module lands here when a second project needs it. A module's core knows nothing about Vue or the DOM unless that is its job.
 
@@ -131,7 +132,7 @@ Working against a local checkout instead of npm: put `"@1337exp/taoux": "file:..
 
 ## Sandbox
 
-The `sandbox/` folder is a demo and a testing ground: pages import the modules straight from `src/`, with no build. It holds `curveeditor`, `curvefield`, `gradienteditor`, `slider`, `color` and `playback`, with an EN / RU switch and a dark / light switch (the TaoUI theme, through the bridge). A new page is `sandbox/<name>.html` + `.ts` + a demo `.vue` and a link in `sandbox/index.html`. `npm run sandbox:build` makes a static copy with relative paths, ready for any folder (for example `/sandbox/taoux/`).
+The `sandbox/` folder is a demo and a testing ground: pages import the modules straight from `src/`, with no build. It holds `curveeditor`, `curvefield`, `gradienteditor`, `slider`, `color`, `playback`, `sortable` and `swiperow`, with an EN / RU switch and a dark / light switch (the TaoUI theme, through the bridge). A new page is `sandbox/<name>.html` + `.ts` + a demo `.vue` and a link in `sandbox/index.html`. `npm run sandbox:build` makes a static copy with relative paths, ready for any folder (for example `/sandbox/taoux/`).
 
 Screenshots and clips in this README come from the sandbox: see [docs/media](docs/media/README.md).
 
