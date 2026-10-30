@@ -6,6 +6,12 @@
 actions, a long pull runs the last of them (`fullSwipe`, on by default; with `:full-swipe="false"` the pull meets a
 spring and the row rests open).
 
+## Keyboard
+
+Each action button is a Tab stop and shows its side when it gets the focus. With your own keyboard path to the same
+actions (arrows, Delete, a menu key) set `:tabbable="false"`: the buttons leave the Tab order and still work by a click
+or a swipe.
+
 ## Variables
 
 Set them on the row or on any element around it.

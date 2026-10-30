@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.5
+
+- **`swiperow` stays under a floating bar.** The face of a row has `z-index: 1`, and the row had no stacking context of its own, so the faces took part in the stacking of the whole page and were drawn over a floating `TaoNav` (its glass pill included): the text of the rows showed over the menu. The row is `isolation: isolate` now, and the face counts inside it only.
+- **`swiperow` `tabbable`.** `:tabbable="false"` takes the action buttons out of the Tab order (`tabindex="-1"`), for an app with its own keyboard path to the same actions (arrows, Delete, a menu key); they still run by a click or a swipe. On by default.
+
 ## 0.5.4
 
 - **`swiperow`: Tab from the start action to an end one.** The start side stayed shown and won, so the end action that got the focus stayed hidden under the row (it came out only after the window lost and got back the focus). An action that gets the focus now shows its side and only its side; the focus on the row's own content shows neither.

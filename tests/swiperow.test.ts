@@ -189,6 +189,22 @@ describe('TaoxSwipeRow', () => {
         expect(front.style.transform).toBe('translate3d(0px, 0, 0)');
     });
 
+    it('tabbable: false takes the actions out of the Tab order, a click still runs them', async () => {
+        const on = mountRow();
+        expect(on.findAll('.tx-swipe__action').every((b) => b.attributes('tabindex') === undefined)).toBe(true);
+        const off = mountRow({ tabbable: false });
+        const buttons = off.findAll('.tx-swipe__action');
+        expect(buttons.length).toBe(4);
+        expect(buttons.every((b) => b.attributes('tabindex') === '-1')).toBe(true);
+        await buttons[3]!.trigger('click');
+        expect(off.emitted('action')?.[0]).toEqual(['delete']);
+    });
+
+    it('the row is a stacking context of its own, so the face stays under a bar over the list', async () => {
+        const source = ((await import('../src/swiperow/TaoxSwipeRow.vue?raw')).default as string).replace(/\r\n/g, '\n');
+        expect(source).toMatch(/\.tx-swipe \{[^}]*isolation: isolate;/);
+    });
+
     it('a click at the end of a swipe does not reach the row content', async () => {
         const onClick = vi.fn();
         const w = mountRow();
