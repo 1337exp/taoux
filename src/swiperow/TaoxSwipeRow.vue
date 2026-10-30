@@ -24,8 +24,17 @@ const props = withDefaults(
         /** A mouse can drag it too (a touch screen always can). / Тянуть можно и мышью (палец может всегда). */
         mouse?: boolean;
         disabled?: boolean;
+        /**
+         * The action buttons are Tab stops (each shows its side when it gets the focus). Turn it off when the app has
+         * its own keyboard path to the same actions (arrows, Delete, a menu key): the buttons leave the Tab order and
+         * still work by a click or a swipe.
+         * Кнопки действий — остановки Tab (каждая показывает свою сторону при фокусе). Выключите, когда у приложения
+         * свой путь к тем же действиям с клавиатуры (стрелки, Delete, клавиша меню): кнопки уходят из порядка Tab и
+         * по-прежнему работают нажатием и свайпом.
+         */
+        tabbable?: boolean;
     }>(),
-    { start: undefined, end: () => [], actionWidth: 76, fullSwipe: true, mouse: false, disabled: false },
+    { start: undefined, end: () => [], actionWidth: 76, fullSwipe: true, mouse: false, disabled: false, tabbable: true },
 );
 
 const emit = defineEmits<{
@@ -241,6 +250,7 @@ const startLabel = (w: number) => fade(w, 84, 28);
                 type="button"
                 class="tx-swipe__action tx-swipe__action--start"
                 :class="[toneClass(start.tone ?? 'neutral'), { 'tx-swipe__action--armed': armed === 'start' }]"
+                :tabindex="tabbable ? undefined : -1"
                 :aria-label="start.label"
                 @click="run(start)"
             >
@@ -259,6 +269,7 @@ const startLabel = (w: number) => fade(w, 84, 28);
                 class="tx-swipe__action"
                 :class="[toneClass(action.tone ?? 'neutral'), { 'tx-swipe__action--armed': i === end.length - 1 && (armed === 'full' || gone) }]"
                 :style="{ width: `${widths[i]}px` }"
+                :tabindex="tabbable ? undefined : -1"
                 :aria-label="action.label"
                 @click="run(action)"
             >
@@ -295,6 +306,11 @@ const startLabel = (w: number) => fade(w, 84, 28);
  * зазор между действиями справа.
  */
 .tx-swipe {
+    /* a stacking context of its own: the z-index of the face counts inside the row only, so a floating bar or a glass
+       panel over the list stays over its rows
+       свой контекст наложения: z-index лица действует только внутри строки, поэтому плавающая панель или стекло над
+       списком остаются поверх его строк */
+    isolation: isolate;
     --_tx-swipe-gap: var(--tx-swipe-gap, 6px);
     --_tx-swipe-radius: var(--tx-swipe-radius, var(--tao-radius-panel, 12px));
     --_tx-swipe-bg: var(--tx-swipe-bg, var(--tao-color-surface-raised, #1f1f1f));
