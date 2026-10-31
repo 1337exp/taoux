@@ -33,8 +33,19 @@ const props = withDefaults(
          * по-прежнему работают нажатием и свайпом.
          */
         tabbable?: boolean;
+        /**
+         * An open row closes on a press outside it, and that press does not go on to click what lies under it: the tap
+         * that closes is only a tap that closes (a mail app does the same), it does not open another row or press a
+         * button. Turn it off to let the click through after the row has closed. A click on the open row itself never
+         * reaches its content: it closes the row.
+         * Открытая строка закрывается нажатием вне неё, и это нажатие не становится кликом по тому, что под пальцем:
+         * тап «закрыть» только закрывает (как в почтовом приложении), он не открывает другую строку и не жмёт кнопку.
+         * Выключите, чтобы после закрытия клик проходил. Клик по самой открытой строке до её содержимого не доходит:
+         * он закрывает строку.
+         */
+        swallowOutsideClick?: boolean;
     }>(),
-    { start: undefined, end: () => [], actionWidth: 76, fullSwipe: true, mouse: false, disabled: false, tabbable: true },
+    { start: undefined, end: () => [], actionWidth: 76, fullSwipe: true, mouse: false, disabled: false, tabbable: true, swallowOutsideClick: true },
 );
 
 const emit = defineEmits<{
@@ -163,11 +174,17 @@ function onCancel(e: PointerEvent) {
 
 // the end of a swipe also fires a click on the row: it must not open the item
 // конец свайпа даёт и click по строке: он не должен открывать элемент
+// an open row: a click on it only closes it, it does not open the item hidden under the sliver that is left
+// открытая строка: клик по ней только закрывает её, а не открывает элемент под оставшейся полоской
 function onClickCapture(e: MouseEvent) {
     if (swiped) {
         e.stopPropagation();
         e.preventDefault();
         swiped = false;
+    } else if (open.value) {
+        e.stopPropagation();
+        e.preventDefault();
+        open.value = false;
     }
 }
 
@@ -197,14 +214,41 @@ function onFocusOut(e: FocusEvent) {
     open.value = false;
 }
 
-// an open row closes on a touch outside it / открытая строка закрывается касанием вне её
-function onOutside(e: PointerEvent) {
-    if (!root.value?.contains(e.target as Node)) open.value = false;
+// an open row closes on a touch outside it, and the click that follows that touch is swallowed once
+// открытая строка закрывается касанием вне её, а клик, идущий за этим касанием, гасится один раз
+const SWALLOW_MS = 600;
+let swallowTimer: ReturnType<typeof setTimeout> | undefined;
+
+function disarmSwallow() {
+    document.removeEventListener('click', swallowClick, true);
+    clearTimeout(swallowTimer);
 }
-watch(open, (isOpen) => {
-    if (isOpen) document.addEventListener('pointerdown', onOutside, true);
-    else document.removeEventListener('pointerdown', onOutside, true);
-});
+
+function swallowClick(e: MouseEvent) {
+    disarmSwallow();
+    if (root.value?.contains(e.target as Node)) return;
+    e.stopImmediatePropagation();
+    e.preventDefault();
+}
+
+function onOutside(e: PointerEvent) {
+    if (root.value?.contains(e.target as Node)) return;
+    open.value = false;
+    if (!props.swallowOutsideClick) return;
+    // a press that is a scroll or a long press gives no click: the guard goes away by itself
+    // нажатие, ставшее прокруткой или долгим, клика не даёт: охрана снимается сама
+    disarmSwallow();
+    document.addEventListener('click', swallowClick, true);
+    swallowTimer = setTimeout(disarmSwallow, SWALLOW_MS);
+}
+watch(
+    open,
+    (isOpen) => {
+        if (isOpen) document.addEventListener('pointerdown', onOutside, true);
+        else document.removeEventListener('pointerdown', onOutside, true);
+    },
+    { immediate: true },
+);
 
 let resize: ResizeObserver | undefined;
 onMounted(() => {
@@ -219,6 +263,7 @@ onBeforeUnmount(() => {
     stopFocusLoss?.();
     resize?.disconnect();
     document.removeEventListener('pointerdown', onOutside, true);
+    disarmSwallow();
 });
 
 const startWidth = computed(() => Math.max(0, offset.value));

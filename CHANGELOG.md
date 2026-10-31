@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.6
+
+- **`swiperow`: an open row does not click through.** The row that stayed open on its actions still had a live face: a tap on the sliver of it that is left opened the item, and the press outside that closed the row went on to a click on whatever lay under the finger (another row opened). Now a click on the open row only closes it and does not reach its content, and the click after a press outside is swallowed once (a mail app does the same). `:swallow-outside-click="false"` lets the outside click through after the row has closed. A press that gives no click (a scroll) lets go of the guard after 0.6 s. The action buttons work as before.
+- **`swiperow`: a row mounted open** (`open` true from the start) closes on a press outside it too; the listener was only added when `open` changed.
+
 ## 0.5.5
 
 - **`swiperow` stays under a floating bar.** The face of a row has `z-index: 1`, and the row had no stacking context of its own, so the faces took part in the stacking of the whole page and were drawn over a floating `TaoNav` (its glass pill included): the text of the rows showed over the menu. The row is `isolation: isolate` now, and the face counts inside it only.
