@@ -12,6 +12,15 @@ Each action button is a Tab stop and shows its side when it gets the focus. With
 actions (arrows, Delete, a menu key) set `:tabbable="false"`: the buttons leave the Tab order and still work by a click
 or a swipe.
 
+## An open row and a click
+
+While the row is open, only its actions are live. A click on the open row (the sliver of it that is left) closes it
+and does not reach its content, so a tap meant to close never opens the item hidden under it. A press outside the row
+closes it too, and the click that follows that press is swallowed once: it does not open another row or press a button
+(a mail app does the same). A press that gives no click (a scroll) lets go of the guard after 0.6 s. To let the click
+through after the row has closed, set `:swallow-outside-click="false"`; the click on the open row itself is always
+kept from its content.
+
 ## Variables
 
 Set them on the row or on any element around it.

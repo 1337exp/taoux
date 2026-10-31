@@ -1,4 +1,4 @@
-import { mount } from '@vue/test-utils';
+import { mount, type VueWrapper } from '@vue/test-utils';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { nextTick } from 'vue';
 import TaoxSwipeRow from '../src/swiperow/TaoxSwipeRow.vue';
@@ -78,6 +78,8 @@ describe('swipe row model', () => {
     });
 });
 
+const mounted: VueWrapper[] = [];
+
 /** A row with real-looking width; happy-dom has no layout. */
 function mountRow(props: Record<string, unknown> = {}) {
     const w = mount(TaoxSwipeRow, {
@@ -93,6 +95,7 @@ function mountRow(props: Record<string, unknown> = {}) {
         slots: { default: '<div class="item">Finam: investors take profit</div>' },
         attachTo: document.body,
     });
+    mounted.push(w as unknown as VueWrapper);
     return w;
 }
 
@@ -101,6 +104,8 @@ const pointer = (target: Element, type: string, x: number, t = (clock += 16)) =>
     target.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, pointerId: 1, pointerType: 'touch', clientX: x, clientY: 100, timeStamp: t } as PointerEventInit));
 
 afterEach(() => {
+    // a row left mounted keeps its listeners on the document and would take part in the next test
+    mounted.splice(0).forEach((w) => w.unmount());
     document.body.innerHTML = '';
 });
 
@@ -215,6 +220,86 @@ describe('TaoxSwipeRow', () => {
         pointer(front, 'pointerup', 200, 600);
         (w.find('.item').element as HTMLElement).click();
         expect(onClick).not.toHaveBeenCalled();
+        // the swipe left the row open: the next click closes it and does not open the item
+        // свайп оставил строку открытой: следующий клик закрывает её и не открывает элемент
+        (w.find('.item').element as HTMLElement).click();
+        expect(onClick).not.toHaveBeenCalled();
+        await w.setProps({ open: false });
+        (w.find('.item').element as HTMLElement).click();
+        expect(onClick).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe('TaoxSwipeRow: an open row and a click', () => {
+    const outside = () => {
+        const button = document.createElement('button');
+        button.className = 'elsewhere';
+        document.body.append(button);
+        return button;
+    };
+
+    it('a click on the open row closes it and does not reach its content', async () => {
+        const onClick = vi.fn();
+        const w = mountRow({ open: true });
+        w.find('.item').element.addEventListener('click', onClick);
+        (w.find('.item').element as HTMLElement).click();
+        expect(onClick).not.toHaveBeenCalled();
+        expect(w.emitted('update:open')?.at(-1)).toEqual([false]);
+    });
+
+    it('the press outside closes the row, and the click after it is swallowed once', async () => {
+        const onClick = vi.fn();
+        const w = mountRow({ open: true });
+        const other = outside();
+        other.addEventListener('click', onClick);
+        pointer(other, 'pointerdown', 10);
+        expect(w.emitted('update:open')?.at(-1)).toEqual([false]);
+        other.click();
+        expect(onClick).not.toHaveBeenCalled();
+        other.click();
+        expect(onClick).toHaveBeenCalledTimes(1);
+    });
+
+    it('the guard goes away by itself when the press gave no click (a scroll)', async () => {
+        vi.useFakeTimers();
+        try {
+            const onClick = vi.fn();
+            mountRow({ open: true });
+            const other = outside();
+            other.addEventListener('click', onClick);
+            pointer(other, 'pointerdown', 10);
+            vi.advanceTimersByTime(700);
+            other.click();
+            expect(onClick).toHaveBeenCalledTimes(1);
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
+    it('swallowOutsideClick: false closes the row and lets the click through', async () => {
+        const onClick = vi.fn();
+        const w = mountRow({ open: true, swallowOutsideClick: false });
+        const other = outside();
+        other.addEventListener('click', onClick);
+        pointer(other, 'pointerdown', 10);
+        expect(w.emitted('update:open')?.at(-1)).toEqual([false]);
+        other.click();
+        expect(onClick).toHaveBeenCalledTimes(1);
+    });
+
+    it('a press on an action button does not close the row first: the action runs', async () => {
+        const w = mountRow({ open: true });
+        const button = w.findAll('.tx-swipe__end .tx-swipe__action')[2]!;
+        pointer(button.element, 'pointerdown', 10);
+        expect(w.emitted('update:open')).toBeUndefined();
+        await button.trigger('click');
+        expect(w.emitted('action')).toEqual([['delete']]);
+    });
+
+    it('a closed row passes every click', async () => {
+        const onClick = vi.fn();
+        const w = mountRow();
+        w.find('.item').element.addEventListener('click', onClick);
         (w.find('.item').element as HTMLElement).click();
         expect(onClick).toHaveBeenCalledTimes(1);
     });
