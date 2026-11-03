@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.0
+
+- **New module `tour`: the model of a guided tour of a page.** `createTour({ steps, available, onEnd })` is a plain state machine without Vue: `start`, `next`, `prev`, `goTo`, `skip`, `finish`, `setSteps`, `subscribe`. A step is `{ id, ...yours }`; one that `available` refuses (its target is not on the page) is jumped over in both directions, and `first` / `last` say whether there is anywhere to go. A tour ends once as `done` or `skipped`. `useTour` is the same with refs for a component, `createTourMemory(key)` remembers that a tour was seen. It draws nothing: the spotlight and the card belong to the app or to TaoUI.
+
 ## 0.5.6
 
 - **`swiperow`: an open row does not click through.** The row that stayed open on its actions still had a live face: a tap on the sliver of it that is left opened the item, and the press outside that closed the row went on to a click on whatever lay under the finger (another row opened). Now a click on the open row only closes it and does not reach its content, and the click after a press outside is swallowed once (a mail app does the same). `:swallow-outside-click="false"` lets the outside click through after the row has closed. A press that gives no click (a scroll) lets go of the guard after 0.6 s. The action buttons work as before.

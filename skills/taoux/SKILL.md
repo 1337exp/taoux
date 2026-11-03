@@ -46,6 +46,7 @@ controls, or with your own design.
 | `palette` | search and groups for a palette of nodes |
 | `pins` | row pin positions measured from the DOM (`usePinMeasure`, `createPinRegistry`) |
 | `playback` | time, pause, loop, speed, seeking: `createPlayback` (no Vue), `usePlayback` (drives TaoUI `TaoScrubber`) |
+| `tour` | a guided tour of the page, step by step: `createTour` (no Vue; jumps over steps whose target is gone, `done` / `skipped`), `useTour`, `createTourMemory` (shown once); the drawing is up to you or TaoUI |
 | `i18n` | typed i18n: `createI18n({ locales, fallback, storageKey })` |
 | `links` (Vue) | `TaoxLinks`: an SVG layer of links from ready geometry |
 | `canvas` (Vue) | `TaoxCanvas`: pan / zoom canvas with mouse, touch, wheel, auto-scroll, keys; the `CanvasHost` contract |

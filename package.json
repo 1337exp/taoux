@@ -1,6 +1,6 @@
 {
   "name": "@1337exp/taoux",
-  "version": "0.5.6",
+  "version": "0.6.0",
   "description": "Interaction and behavior building blocks for Vue apps: curve and gradient editors, canvas, undo/redo, playback. Import only what you need, bring your own design.",
   "keywords": [
     "vue",
@@ -147,6 +147,10 @@
     "./touch": {
       "types": "./dist/touch.d.ts",
       "import": "./dist/touch.js"
+    },
+    "./tour": {
+      "types": "./dist/tour/index.d.ts",
+      "import": "./dist/tour.js"
     },
     "./undo": {
       "types": "./dist/undo.d.ts",
