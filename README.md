@@ -136,7 +136,7 @@ Working against a local checkout instead of npm: put `"@1337exp/taoux": "file:..
 
 ## Sandbox
 
-The `sandbox/` folder is a demo and a testing ground: pages import the modules straight from `src/`, with no build. It holds `curveeditor`, `curvefield`, `gradienteditor`, `slider`, `color`, `playback`, `sortable` and `swiperow`, with an EN / RU switch and a dark / light switch (the TaoUI theme, through the bridge). A new page is `sandbox/<name>.html` + `.ts` + a demo `.vue` and a link in `sandbox/index.html`. `npm run sandbox:build` makes a static copy with relative paths, ready for any folder (for example `/sandbox/taoux/`).
+The `sandbox/` folder is a demo and a testing ground: pages import the modules straight from `src/`, with no build. It holds `curveeditor`, `curvefield`, `gradienteditor`, `slider`, `color`, `playback`, `sortable`, `swiperow` and `tour`, with an EN / RU switch and a dark / light switch (the TaoUI theme, through the bridge). A new page is `sandbox/<name>.html` + `.ts` + a demo `.vue` and a link in `sandbox/index.html`. `npm run sandbox:build` makes a static copy with relative paths, ready for any folder (for example `/sandbox/taoux/`).
 
 Screenshots and clips in this README come from the sandbox: see [docs/media](docs/media/README.md).
 

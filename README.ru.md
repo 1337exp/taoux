@@ -138,7 +138,7 @@ npm run dev         # watch: пересборка JS и деклараций
 
 ## Песочница
 
-Папка `sandbox/` это демо и поле для проверки: страницы подключают модули прямо из `src/`, без сборки. Сейчас там `curveeditor`, `curvefield`, `gradienteditor`, `slider`, `color`, `playback`, `sortable` и `swiperow`, с переключателем языка (EN / RU) и темы (тёмная / светлая: тема TaoUI через мост). Новая страница = `sandbox/<имя>.html` + `.ts` + демо `.vue` и ссылка в `sandbox/index.html`. `npm run sandbox:build` собирает статическую копию с относительными путями, её можно положить в любую папку (например, `/sandbox/taoux/`).
+Папка `sandbox/` это демо и поле для проверки: страницы подключают модули прямо из `src/`, без сборки. Сейчас там `curveeditor`, `curvefield`, `gradienteditor`, `slider`, `color`, `playback`, `sortable`, `swiperow` и `tour`, с переключателем языка (EN / RU) и темы (тёмная / светлая: тема TaoUI через мост). Новая страница = `sandbox/<имя>.html` + `.ts` + демо `.vue` и ссылка в `sandbox/index.html`. `npm run sandbox:build` собирает статическую копию с относительными путями, её можно положить в любую папку (например, `/sandbox/taoux/`).
 
 Скриншоты и ролики в этом README сняты с песочницы: см. [docs/media](docs/media/README.md).
 
