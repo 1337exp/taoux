@@ -193,7 +193,7 @@
     }
   },
   "devDependencies": {
-    "@1337exp/taoui": "^5.16.2",
+    "@1337exp/taoui": "^5.25.0",
     "@types/node": "^26.6.4",
     "@vitejs/plugin-vue": "^6.0.10",
     "@vue/test-utils": "^2.5.1",

@@ -21,6 +21,7 @@ const demos: Demo[] = [
     { name: 'curvefield', taoui: true, note: ['A curve with TaoUI fields: point, transition (ease), step, reset', 'Кривая с полями на TaoUI: точка, переход (ease), шаг, сброс'] },
     { name: 'playback', taoui: true, note: ['usePlayback drives the time, TaoScrubber shows it: loop, speed, seeking', 'usePlayback ведёт время, TaoScrubber показывает: цикл, скорость, перемотка'] },
     { name: 'swiperow', taoui: true, note: ['A mail list: read / unread to the right, three actions to the left, a long pull deletes', 'Список писем: прочитано / нет вправо, три действия влево, длинный свайп удаляет'] },
+    { name: 'tour', taoui: true, note: ['useTour keeps the steps, TaoTour draws them: skipped targets, interactive step, seen once', 'useTour ведёт шаги, TaoTour рисует: пропуск шагов без цели, интерактивный шаг, показ один раз'] },
     { name: 'sortable', taoui: true, note: ['Reorder a list by a grip: pointer, keyboard, edge scroll', 'Перестановка списка за ручку: мышь, клавиатура, автопрокрутка у края'] },
     { name: 'slider', taoui: true, module: false, note: ['TaoSlider and TaoRangeSlider: range, marks, steps, vertical, timeline', 'TaoSlider и TaoRangeSlider: диапазон, метки, шаги, вертикаль, таймлайн'] },
     { name: 'color', taoui: true, module: false, note: ['TaoColorPicker and TaoColorInput: palette, opacity, swatches, colorModel', 'TaoColorPicker и TaoColorInput: палитра, прозрачность, образцы, colorModel'] },
@@ -47,7 +48,6 @@ const logic: { title: [string, string]; items: { name: string; note: [string, st
         items: [
             { name: 'commands', note: ['A registry: menus, shortcuts, enabled / checked', 'Реестр: меню, сочетания, enabled / checked'] },
             { name: 'hotkeys', note: ['Mod+Shift+Z, any layout, per platform', 'Mod+Shift+Z, любая раскладка, по платформам'] },
-            { name: 'tour', note: ['A guided tour: steps, skipped targets, seen once', 'Тур по странице: шаги, пропуск шагов без цели, показ один раз'] },
         ],
     },
     {
