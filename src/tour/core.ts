@@ -21,6 +21,15 @@ export interface TourState<S extends TourStep = TourStep> {
     step: S | null;
     /** How many steps there are (also those that are jumped over now). / Сколько всего шагов (и тех, что сейчас перепрыгиваются). */
     count: number;
+    /**
+     * The place of the current step among the steps that can be shown now, from 0, and how many of those there are: what
+     * a counter ("2 of 4") and the dots want, since the steps that are jumped over are not counted. `index` / `count`
+     * stay the place in the whole list.
+     * Место текущего шага среди шагов, которые можно показать сейчас, с 0, и сколько таких всего: то, что нужно счётчику
+     * («2 из 4») и точкам, ведь перепрыгиваемые шаги не считаются. `index` / `count` — место в полном списке.
+     */
+    position: number;
+    total: number;
     /** No step to go back to. / Назад идти некуда. */
     first: boolean;
     /** No step to go on to: `next()` ends the tour. / Дальше идти некуда: `next()` завершает тур. */
@@ -92,6 +101,8 @@ export function createTour<S extends TourStep = TourStep>(options: TourOptions<S
         index: -1,
         step: null as S | null,
         count: steps.length,
+        position: -1,
+        total: 0,
         first: true,
         last: true,
     } as Tour<S>;
@@ -99,13 +110,22 @@ export function createTour<S extends TourStep = TourStep>(options: TourOptions<S
     function sync() {
         tour.count = steps.length;
         tour.step = tour.active ? (steps[tour.index] ?? null) : null;
+        let total = 0;
+        let position = -1;
+        for (let i = 0; i < steps.length; i++) {
+            if (!can(i)) continue;
+            if (i <= tour.index) position = tour.active ? total : -1;
+            total++;
+        }
+        tour.total = total;
+        tour.position = position;
         tour.first = !tour.active || seek(tour.index - 1, -1) < 0;
         tour.last = !tour.active || seek(tour.index + 1, 1) < 0;
     }
 
     function emit() {
         sync();
-        const state: TourState<S> = { active: tour.active, index: tour.index, step: tour.step, count: tour.count, first: tour.first, last: tour.last };
+        const state: TourState<S> = { active: tour.active, index: tour.index, step: tour.step, count: tour.count, position: tour.position, total: tour.total, first: tour.first, last: tour.last };
         for (const listener of [...listeners]) {
             listener(state);
         }

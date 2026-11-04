@@ -22,7 +22,7 @@ export type UseTour<S extends TourStep = TourStep> = ToRefs<TourState<S>> & {
  */
 export function useTour<S extends TourStep = TourStep>(options: TourOptions<S>): UseTour<S> {
     const tour = createTour(options);
-    const state = reactive({ active: tour.active, index: tour.index, step: tour.step, count: tour.count, first: tour.first, last: tour.last }) as TourState<S>;
+    const state = reactive({ active: tour.active, index: tour.index, step: tour.step, count: tour.count, position: tour.position, total: tour.total, first: tour.first, last: tour.last }) as TourState<S>;
     const stop = tour.subscribe((s) => Object.assign(state, s));
     onBeforeUnmount(() => {
         stop();

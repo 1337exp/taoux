@@ -8,7 +8,7 @@ Nothing to migrate: a new module, nothing existing changes.
 
 ## 0.6.0
 
-- **New module `tour`: the model of a guided tour of a page.** `createTour({ steps, available, onEnd })` is a plain state machine without Vue: `start`, `next`, `prev`, `goTo`, `skip`, `finish`, `setSteps`, `subscribe`. A step is `{ id, ...yours }`; one that `available` refuses (its target is not on the page) is jumped over in both directions, and `first` / `last` say whether there is anywhere to go. A tour ends once as `done` or `skipped`. `useTour` is the same with refs for a component, `createTourMemory(key)` remembers that a tour was seen. It draws nothing: the spotlight and the card belong to the app or to TaoUI.
+- **New module `tour`: the model of a guided tour of a page.** `createTour({ steps, available, onEnd })` is a plain state machine without Vue: `start`, `next`, `prev`, `goTo`, `skip`, `finish`, `setSteps`, `subscribe`. A step is `{ id, ...yours }`; one that `available` refuses (its target is not on the page) is jumped over in both directions, and `first` / `last` say whether there is anywhere to go, and `position` / `total` count only the steps that can be shown (for a "2 of 4" that does not count the skipped ones). A tour ends once as `done` or `skipped`. `useTour` is the same with refs for a component, `createTourMemory(key)` remembers that a tour was seen. It draws nothing: the spotlight and the card belong to the app or to TaoUI.
 
 ## 0.5.6
 

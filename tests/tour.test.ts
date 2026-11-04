@@ -58,6 +58,17 @@ describe('createTour', () => {
         expect(tour.step?.id).toBe('b');
     });
 
+    it('position and total count only the steps that can be shown, index and count the whole list', () => {
+        const hidden = new Set(['b']);
+        const tour = createTour({ steps, available: (step) => !hidden.has(step.id) });
+        tour.start();
+        expect([tour.position, tour.total]).toEqual([0, 3]);
+        tour.next();
+        expect([tour.step?.id, tour.index, tour.position, tour.count, tour.total]).toEqual(['c', 2, 1, 4, 3]);
+        tour.next();
+        expect([tour.step?.id, tour.position]).toEqual(['d', 2]);
+    });
+
     it('does not start when no step can be shown, or the start does not exist', () => {
         const none = createTour({ steps, available: () => false });
         expect(none.start()).toBe(false);
