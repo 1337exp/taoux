@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.0
+
+Nothing to migrate: a new module, nothing existing changes.
+
+- **New module `undovue`: reactive `canUndo` / `canRedo` for `UndoStack` and `History`.** Both are plain classes whose flags are getters, so an app that wants the Undo and Redo items of a menu to switch on and off had to keep two refs and a `syncFlags()` by hand (every project that uses `undo` or `history` did). `useUndoStack(optionsOrStack)` and `useHistory(initialOrHistory)` wrap the class and keep `canUndo` / `canRedo` (read-only refs) in step after `record`, `undo`, `redo`, `clear`, `commit`, `reset`; `useHistory` also fits `historyCommands` as a source. For a stack you already made (a factory of yours, a store), `useUndoFlags(source)` gives the refs and `sync()`. The classes themselves are not touched.
+
 ## 0.6.0
 
 - **New module `tour`: the model of a guided tour of a page.** `createTour({ steps, available, onEnd })` is a plain state machine without Vue: `start`, `next`, `prev`, `goTo`, `skip`, `finish`, `setSteps`, `subscribe`. A step is `{ id, ...yours }`; one that `available` refuses (its target is not on the page) is jumped over in both directions, and `first` / `last` say whether there is anywhere to go. A tour ends once as `done` or `skipped`. `useTour` is the same with refs for a component, `createTourMemory(key)` remembers that a tour was seen. It draws nothing: the spotlight and the card belong to the app or to TaoUI.
