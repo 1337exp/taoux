@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.1
+
+Nothing to migrate: three options, all off by default; an app that does not pass them works as before.
+
+- **`canvas`: a selection frame that picks only what lies wholly inside.** `options.marquee: 'contain'` (default `'intersect'`, as before). In a level editor a frame drawn over a few objects also touched the ground under them and picked it; with `contain` only the nodes inside the frame are selected (a container still counts by its strip).
+- **`canvas` and `camera`: your own zoom range.** The wheel and the pinch were clamped to 0.2…2 by constants, too narrow for a world thousands of units long. `options.zoom: { min?, max? }` sets the range of the canvas; `zoomAt(cam, sx, sy, factor, limits?)` takes it too, and `zoomLimits(partial)` / `clampZoom(z, limits?)` / `ZOOM_LIMITS` are exported. `session` takes the same `zoom` so a loaded view is clamped to the same range.
+- **`canvas`: the app can keep a key from the canvas.** The canvas listens to Delete, Backspace, Escape and Ctrl+Z / Y on the whole window, so a tool that used Backspace (drop the last point of a path) also deleted the selection. `host.claimsKey(event)` is asked first; returning true leaves the key to the app.
+
 ## 0.7.0
 
 Nothing to migrate: a new module, nothing existing changes.

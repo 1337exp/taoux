@@ -85,11 +85,14 @@ export interface CanvasHost<P = unknown> {
     activate?(target: ActivateTarget): void; // a double click on a link or a node strip
     readonly snapEnabled?: boolean;
     readonly selectMode?: boolean; // the touch "Select" mode
+    claimsKey?(event: KeyboardEvent): boolean; // the app takes this key now: the canvas leaves it alone
 }
 
 export interface CanvasOptions<P> {
     pinAt(target: EventTarget | null): P | null; // the pin under the pointer
     pinNear?(point: { clientX: number; clientY: number }): P | null; // the nearest pin (a node side)
+    marquee?: 'intersect' | 'contain'; // what the selection frame picks; intersect by default
+    zoom?: Partial<ZoomLimits>; // the zoom range of the wheel and the pinch; 0.2…2 by default
 }
 ```
 

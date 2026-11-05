@@ -147,6 +147,17 @@ describe('TaoxCanvas: колесо', () => {
         canvas.dispatchEvent(zoom);
         expect(state.camera.z).toBeGreaterThan(1);
     });
+
+    it('масштаб колеса держится в пределах из опции zoom', () => {
+        const { host, state } = createHost();
+        const canvas = mount(host, { ...options, zoom: { min: 0.05 } });
+        for (let i = 0; i < 40; i++) {
+            const out = new WheelEvent('wheel', { deltaY: 200, bubbles: true, cancelable: true });
+            Object.defineProperty(out, 'ctrlKey', { value: true });
+            canvas.dispatchEvent(out);
+        }
+        expect(state.camera.z).toBeCloseTo(0.05);
+    });
 });
 
 describe('TaoxCanvas: ноды', () => {
@@ -226,6 +237,27 @@ describe('TaoxCanvas: пустое место', () => {
         canvas.dispatchEvent(pointer('pointerup', { clientX: 250, clientY: 250 }));
         vi.restoreAllMocks();
     });
+
+    it('рамка в режиме contain берёт только ноды, целиком лежащие внутри', () => {
+        const { host, state } = createHost();
+        const canvas = mount(host, { ...options, marquee: 'contain' });
+        const rects: Record<string, DOMRect> = {
+            'node-a': { left: 100, right: 200, top: 100, bottom: 200 } as DOMRect,
+            'node-b': { left: 220, right: 400, top: 100, bottom: 200 } as DOMRect,
+        };
+        vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (this: Element) {
+            const key = [...this.classList].find((c) => c in rects);
+            return (key ? rects[key] : { left: 0, right: 800, top: 0, bottom: 600, width: 800, height: 600 }) as DOMRect;
+        });
+
+        canvas.dispatchEvent(pointer('pointerdown', { clientX: 50, clientY: 50 }));
+        canvas.dispatchEvent(pointer('pointermove', { clientX: 300, clientY: 250, buttons: 1 }));
+        expect([...state.selection]).toEqual(['a']); // b задета, но не внутри
+        canvas.dispatchEvent(pointer('pointermove', { clientX: 450, clientY: 250, buttons: 1 }));
+        expect([...state.selection].sort()).toEqual(['a', 'b']);
+        canvas.dispatchEvent(pointer('pointerup', { clientX: 450, clientY: 250 }));
+        vi.restoreAllMocks();
+    });
 });
 
 describe('TaoxCanvas: связи', () => {
@@ -278,6 +310,15 @@ describe('TaoxCanvas: клавиши', () => {
         state.paletteOpen = true;
         key({ key: 'Escape' });
         expect(state.paletteOpen).toBe(false);
+    });
+
+    it('клавишу, которую забрало приложение (claimsKey), холст не трогает', () => {
+        const { host, calls } = createHost({ claimsKey: (e) => e.key === 'Backspace' });
+        mount(host);
+        key({ key: 'Backspace' });
+        expect(calls.some((c) => c.startsWith('removeSelected'))).toBe(false);
+        key({ key: 'Delete' });
+        expect(calls).toContain('removeSelected()');
     });
 
     it('в полях ввода горячие клавиши не перехватываются', () => {

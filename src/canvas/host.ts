@@ -1,4 +1,4 @@
-import type { Camera } from '../camera';
+import type { Camera, ZoomLimits } from '../camera';
 
 /**
  * A mutable tuple: app stores accept exactly these.
@@ -128,6 +128,13 @@ export interface CanvasHost<P = unknown> {
      * Сенсорный режим «Выделение»: один палец рисует рамку, тап добавляет в выделение.
      */
     readonly selectMode?: boolean;
+    /**
+     * The app takes this key now (a tool in progress uses Backspace or Escape): the canvas leaves it alone.
+     * Asked before the canvas keys (Delete, Backspace, Escape, Ctrl+Z / Y). No member: the canvas takes its keys as before.
+     * Приложение сейчас забирает эту клавишу (идущий инструмент занял Backspace или Escape): холст её не трогает.
+     * Спрашивается перед клавишами холста (Delete, Backspace, Escape, Ctrl+Z / Y). Нет члена: холст берёт свои клавиши, как раньше.
+     */
+    claimsKey?(event: KeyboardEvent): boolean;
 }
 
 /**
@@ -151,4 +158,16 @@ export interface CanvasOptions<P> {
      * Пин, ближайший к точке: например, сторона ноды, над телом которой отпустили связь. Без него берётся `pinAt`.
      */
     pinNear?(point: { clientX: number; clientY: number }): P | null;
+    /**
+     * What the selection frame picks: `intersect` (default) — every node it touches; `contain` — only nodes lying
+     * wholly inside it (a level editor, where a frame over objects must not pick the ground under them).
+     * Что берёт рамка выделения: `intersect` (по умолчанию) — всякую ноду, которую задела; `contain` — только ноды,
+     * целиком лежащие внутри (редактор уровней, где рамка над объектами не должна брать землю под ними).
+     */
+    marquee?: 'intersect' | 'contain';
+    /**
+     * The zoom range of the wheel and the pinch; an end not given keeps its default (0.2…2).
+     * Диапазон масштаба колеса и щипка; не заданный конец остаётся по умолчанию (0.2…2).
+     */
+    zoom?: Partial<ZoomLimits>;
 }

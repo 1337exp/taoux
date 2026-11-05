@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MAX_ZOOM, MIN_ZOOM, panBy, screenToWorld, worldToScreen, zoomAt } from '../src/camera';
+import { clampZoom, MAX_ZOOM, MIN_ZOOM, panBy, screenToWorld, worldToScreen, zoomAt, zoomLimits } from '../src/camera';
 
 describe('camera', () => {
     it('screenToWorld и worldToScreen взаимно обратны', () => {
@@ -24,5 +24,18 @@ describe('camera', () => {
         const cam = { x: 0, y: 0, z: 1 };
         expect(zoomAt(cam, 0, 0, 100).z).toBe(MAX_ZOOM);
         expect(zoomAt(cam, 0, 0, 0.001).z).toBe(MIN_ZOOM);
+    });
+
+    it('zoomAt берёт свои пределы, если их передали', () => {
+        const cam = { x: 0, y: 0, z: 1 };
+        const limits = zoomLimits({ min: 0.05, max: 4 });
+        expect(zoomAt(cam, 0, 0, 100, limits).z).toBe(4);
+        expect(zoomAt(cam, 0, 0, 0.001, limits).z).toBe(0.05);
+    });
+
+    it('zoomLimits подставляет непереданный конец по умолчанию', () => {
+        expect(zoomLimits()).toEqual({ min: MIN_ZOOM, max: MAX_ZOOM });
+        expect(zoomLimits({ min: 0.05 })).toEqual({ min: 0.05, max: MAX_ZOOM });
+        expect(clampZoom(10)).toBe(MAX_ZOOM);
     });
 });
