@@ -1,5 +1,5 @@
 import { onMounted, onUnmounted, ref, watch, type Ref } from 'vue';
-import { panBy, screenToWorld, zoomAt } from '../camera';
+import { panBy, screenToWorld, zoomAt, zoomLimits } from '../camera';
 import { createEdgeScroller } from '../edgescroll';
 import { LONG_PRESS_MS, PinchTracker, TapRecognizer, pinchOf, type Sample } from '../gestures';
 import { wheelIntent } from '../wheel';
@@ -138,7 +138,11 @@ export function useCanvasGestures<P>(root: Ref<HTMLElement | null>, host: Canvas
             // Контейнер выделяется только за полосу: иначе любая рамка выбирала бы всю группу целиком.
             const area = el.hasAttribute('data-node-container') ? (el.querySelector('[data-node-handle]') ?? el) : el;
             const r = area.getBoundingClientRect();
-            if (r.left < right && r.right > left && r.top < bottom && r.bottom > top) ids.push(el.dataset.nodeId!);
+            const hit =
+                options.marquee === 'contain'
+                    ? r.left >= left && r.right <= right && r.top >= top && r.bottom <= bottom
+                    : r.left < right && r.right > left && r.top < bottom && r.bottom > top;
+            if (hit) ids.push(el.dataset.nodeId!);
         }
         return ids;
     }
@@ -346,7 +350,7 @@ export function useCanvasGestures<P>(root: Ref<HTMLElement | null>, host: Canvas
 
         const step = pinch.update(pinchOf(a, b));
         const rect = el.getBoundingClientRect();
-        host.setCamera(panBy(zoomAt(host.camera, step.pivot[0] - rect.left, step.pivot[1] - rect.top, step.factor), step.pan[0], step.pan[1]));
+        host.setCamera(panBy(zoomAt(host.camera, step.pivot[0] - rect.left, step.pivot[1] - rect.top, step.factor, zoomLimits(options.zoom)), step.pan[0], step.pan[1]));
     }
 
     //--------------------------------------------------
@@ -634,6 +638,7 @@ export function useCanvasGestures<P>(root: Ref<HTMLElement | null>, host: Canvas
     function onKey(e: KeyboardEvent) {
         const tag = (e.target as HTMLElement | null)?.tagName;
         if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (e.target as HTMLElement | null)?.isContentEditable) return;
+        if (host.claimsKey?.(e)) return;
 
         if (e.ctrlKey || e.metaKey) {
             if (e.code === 'KeyZ' && !e.shiftKey) host.undo();
@@ -697,7 +702,7 @@ export function useCanvasGestures<P>(root: Ref<HTMLElement | null>, host: Canvas
         const rect = el.getBoundingClientRect();
         const intent = wheelIntent(e, rect.height);
         if (intent.kind === 'zoom') {
-            host.setCamera(zoomAt(host.camera, e.clientX - rect.left, e.clientY - rect.top, intent.factor));
+            host.setCamera(zoomAt(host.camera, e.clientX - rect.left, e.clientY - rect.top, intent.factor, zoomLimits(options.zoom)));
         } else {
             host.setCamera(panBy(host.camera, intent.dx, intent.dy));
         }

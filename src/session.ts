@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import { MAX_ZOOM, MIN_ZOOM, type Camera } from './camera';
+import { clampZoom, zoomLimits, type Camera, type ZoomLimits } from './camera';
 import { History } from './history';
 import type { SavedStorage } from './storage';
 
@@ -95,6 +95,11 @@ export interface SessionOptions<D, K extends string> {
      * Сколько секунд показывать уведомление, мс.
      */
     noticeMs?: number;
+    /**
+     * The zoom range a loaded view is clamped to: the same as the canvas `zoom` option (default 0.2…2).
+     * Диапазон, в который зажимается масштаб загруженного вида: тот же, что у опции холста `zoom` (по умолчанию 0.2…2).
+     */
+    zoom?: Partial<ZoomLimits>;
 }
 
 const DEFAULT_NOTICE_MS = 5000;
@@ -241,7 +246,7 @@ export function createDocumentSession<D, K extends string>(options: SessionOptio
     function load(next: D, view?: Camera, resetHistory = false) {
         doc.set(next);
         options.onReset?.();
-        if (view && camera) camera.set({ x: view.x, y: view.y, z: Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, view.z)) });
+        if (view && camera) camera.set({ x: view.x, y: view.y, z: clampZoom(view.z, zoomLimits(options.zoom)) });
 
         if (resetHistory) {
             history.reset(snapshot());

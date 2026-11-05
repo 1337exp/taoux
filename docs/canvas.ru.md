@@ -85,11 +85,14 @@ export interface CanvasHost<P = unknown> {
     activate?(target: ActivateTarget): void; // двойной клик по связи или по полосе ноды
     readonly snapEnabled?: boolean;
     readonly selectMode?: boolean; // сенсорный режим «Выделение»
+    claimsKey?(event: KeyboardEvent): boolean; // приложение сейчас забирает клавишу: холст её не трогает
 }
 
 export interface CanvasOptions<P> {
     pinAt(target: EventTarget | null): P | null; // пин под указателем
     pinNear?(point: { clientX: number; clientY: number }): P | null; // ближайший пин (сторона ноды)
+    marquee?: 'intersect' | 'contain'; // что берёт рамка выделения; по умолчанию intersect
+    zoom?: Partial<ZoomLimits>; // диапазон масштаба колеса и щипка; по умолчанию 0.2…2
 }
 ```
 

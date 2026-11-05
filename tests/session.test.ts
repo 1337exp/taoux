@@ -18,7 +18,7 @@ const keys = {
     loadError: (code: string): Key => `error.${code}`,
 } as const;
 
-function setup(overrides: { dropped?: number } = {}) {
+function setup(overrides: { dropped?: number; zoom?: { min?: number; max?: number } } = {}) {
     const doc = ref<Doc>({ items: [] });
     const camera = ref({ x: 0, y: 0, z: 1 });
     const storage = createSavedStorage('test.doc');
@@ -46,6 +46,7 @@ function setup(overrides: { dropped?: number } = {}) {
         keys,
         onReset,
         onRestore,
+        zoom: overrides.zoom,
     });
     return { doc, camera, storage, session, onReset, onRestore };
 }
@@ -181,6 +182,14 @@ describe('файлы и восстановление', () => {
 
         session.undo(); // открытие файла можно отменить
         expect(doc.value.items).toEqual([]);
+    });
+
+    it('зажимает масштаб открытого файла в пределы из опции zoom', () => {
+        const { camera, session } = setup({ zoom: { min: 0.05, max: 4 } });
+        session.importText(JSON.stringify({ d: { items: [] }, view: { x: 0, y: 0, z: 0.01 } }));
+        expect(camera.value.z).toBe(0.05);
+        session.importText(JSON.stringify({ d: { items: [] }, view: { x: 0, y: 0, z: 3 } }));
+        expect(camera.value.z).toBe(3);
     });
 
     it('сообщает об отброшенных связях', () => {
