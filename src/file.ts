@@ -5,18 +5,33 @@
 export const MAX_FILE_BYTES = 5_000_000;
 
 /**
+ * Downloads bytes (or any `BlobPart`: a `Blob`, a string) as a file through a temporary link. `mime` is the type
+ * of the file; without it a `Blob` keeps its own type and anything else is `application/octet-stream`.
+ * Скачивание байтов (или любого `BlobPart`: `Blob`, строки) как файла через временную ссылку. `mime` — тип файла;
+ * без него `Blob` сохраняет свой тип, а всё остальное идёт как `application/octet-stream`.
+ */
+export function downloadBlob(filename: string, data: BlobPart, mime?: string): void {
+    const type = mime ?? (data instanceof Blob && data.type ? data.type : 'application/octet-stream');
+    const url = URL.createObjectURL(new Blob([data], { type }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    // Some browsers only follow a link that is in the document.
+    // Часть браузеров идёт только по ссылке, которая есть в документе.
+    document.body.append(link);
+    link.click();
+    link.remove();
+    // The browser must get time to start the download, so the link is not released at once.
+    // Браузер должен успеть начать скачивание, поэтому освобождаем ссылку не сразу.
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/**
  * Downloads text as a file through a temporary link. `mime` is the type of the file (JSON by default).
  * Скачивание текста как файла через временную ссылку. `mime` — тип файла (по умолчанию JSON).
  */
 export function downloadText(filename: string, text: string, mime = 'application/json'): void {
-    const url = URL.createObjectURL(new Blob([text], { type: mime }));
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    link.click();
-    // The browser must get time to start the download, so the link is not released at once.
-    // Браузер должен успеть начать скачивание, поэтому освобождаем ссылку не сразу.
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    downloadBlob(filename, text, mime);
 }
 
 export type ReadTextResult = { ok: true; text: string } | { ok: false; error: 'tooLarge' | 'unreadable' };

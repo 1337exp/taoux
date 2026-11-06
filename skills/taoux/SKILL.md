@@ -33,7 +33,7 @@ controls, or with your own design.
 | `commands` | `createCommands([...])`: one registry for menus, shortcuts and palettes (see below) |
 | `hotkeys` | `parseHotkey('Mod+Shift+Z')`, `matchHotkey`, `formatHotkey` (`Ctrl+Shift+Z` / `⇧⌘Z`), `isReservedHotkey`, `bindHotkeys(element, map)` |
 | `storage` | autosave to localStorage that never throws; `tryWrite` gives the reason (`quota` / `denied`), `remove`, `subscribe` for changes from other tabs |
-| `file` | `downloadText(name, text, mime?)`; `readTextFile(file, limit?)` reads a picked file, refusing a big one |
+| `file` | `downloadBlob(name, data, mime?)` saves bytes or a `Blob`; `downloadText(name, text, mime?)`; `readTextFile(file, limit?)` reads a picked file, refusing a big one |
 | `snap` | soft snapping to a grid, threshold follows the zoom |
 | `wheel` | wheel / trackpad → pan or zoom, like Figma (zoom only with Ctrl / ⌘ or a pinch) |
 | `edgescroll` | auto-scroll near an edge while dragging (`createEdgeScroller`) |

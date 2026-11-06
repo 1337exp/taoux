@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.0
+
+Nothing to migrate: one new function; `downloadText` keeps its signature and result.
+
+- **`file`: `downloadBlob(filename, data, mime?)`.** `downloadText` could only save a string, so an app that makes bytes (a ZIP, a PNG) wrote its own copy of the temporary-link dance. `downloadBlob` takes any `BlobPart` (`Uint8Array`, `Blob`, string); without `mime` a `Blob` keeps its own type and anything else is `application/octet-stream`. `downloadText` is now a thin call to it.
+- **`file`: the download link is in the document while it is clicked.** Some browsers follow a link only if it is attached; the link is added to the body for the click and removed right after (`downloadText` gets this too).
+
 ## 0.7.1
 
 Nothing to migrate: three options, all off by default; an app that does not pass them works as before.
