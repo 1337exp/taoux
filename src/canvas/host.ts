@@ -26,7 +26,18 @@ export type ResizeEdge = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
  * What the canvas asks to do on a double click or a double tap.
  * Что холст просит сделать по двойному клику или двойному тапу.
  */
-export type ActivateTarget = { kind: 'link'; id: string; at: Point } | { kind: 'handle'; nodeId: string };
+export type ActivateTarget =
+    | {
+          kind: 'link';
+          id: string;
+          at: Point;
+          /**
+           * The element under the pointer, so the app can tell the line from something drawn on it (a label).
+           * Элемент под указателем: приложение отличит линию от того, что нарисовано на ней (подписи).
+           */
+          element: Element | null;
+      }
+    | { kind: 'handle'; nodeId: string };
 
 /**
  * What a right click landed on: a node, a link or an empty place.

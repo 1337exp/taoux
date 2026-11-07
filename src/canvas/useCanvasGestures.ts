@@ -706,7 +706,7 @@ export function useCanvasGestures<P>(root: Ref<HTMLElement | null>, host: Canvas
         const under = document.elementFromPoint(p.clientX, p.clientY);
         const connId = connIdAt(under);
         if (connId) {
-            host.activate({ kind: 'link', id: connId, at: cursorWorld(p) });
+            host.activate({ kind: 'link', id: connId, at: cursorWorld(p), element: under });
             return;
         }
 

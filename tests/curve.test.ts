@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { HEAD_MIN_PX, curvePath, headSizePx, linkShape } from '../src/curve';
+import { linkPointAt, HEAD_MIN_PX, curvePath, headSizePx, linkShape } from '../src/curve';
 
 describe('linkShape', () => {
     it('без стрелки наконечника нет', () => {
@@ -48,5 +48,35 @@ describe('linkShape: вертикальные связи', () => {
 describe('curvePath', () => {
     it('горизонтальные касательные, минимум 60', () => {
         expect(curvePath(0, 0, 10, 0)).toBe('M 0 0 C 60 0, -50 0, 10 0');
+    });
+});
+
+describe('linkPointAt', () => {
+    it('концы кривой это пины, середина лежит между ними и на кривой симметрично', () => {
+        const a: [number, number] = [0, 0];
+        const b: [number, number] = [200, 100];
+        expect(linkPointAt(a, 'right', b, 'left', 0)).toEqual(a);
+        expect(linkPointAt(a, 'right', b, 'left', 1)).toEqual(b);
+        // горизонтальные касательные и симметричные пины: середина ровно посередине
+        const mid = linkPointAt(a, 'right', b, 'left');
+        expect(mid[0]).toBeCloseTo(100);
+        expect(mid[1]).toBeCloseTo(50);
+    });
+
+    it('вертикальная связь: середина смещается по оси стороны, а не уходит вбок', () => {
+        const mid = linkPointAt([0, 0], 'bottom', [0, 300], 'top');
+        expect(mid[0]).toBeCloseTo(0);
+        expect(mid[1]).toBeCloseTo(150);
+    });
+
+    it('совпадает с серединой пути linkShape (без стрелки)', () => {
+        const a: [number, number] = [10, 20];
+        const b: [number, number] = [400, 90];
+        const shape = linkShape(a, 'right', b, 'left', 'none', 1);
+        const nums = shape.d.match(/-?\d+(\.\d+)?/g)!.map(Number); // M ax ay C c1x c1y, c2x c2y, bx by
+        const [ax, ay, c1x, c1y, c2x, c2y, bx, by] = nums as [number, number, number, number, number, number, number, number];
+        const mid = linkPointAt(a, 'right', b, 'left');
+        expect(mid[0]).toBeCloseTo((ax + 3 * c1x + 3 * c2x + bx) / 8);
+        expect(mid[1]).toBeCloseTo((ay + 3 * c1y + 3 * c2y + by) / 8);
     });
 });

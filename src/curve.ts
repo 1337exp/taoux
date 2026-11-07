@@ -99,6 +99,24 @@ export function linkShape(a: Point, aSide: Side, b: Point, bSide: Side, arrow: A
 }
 
 /**
+ * A point on the curve of `linkShape` (the same Bezier, without the arrowhead trimming): `t` = 0 is the first pin, 1 the
+ * second, 0.5 the middle. A label on a link, a handle, a marker sit there.
+ * Точка на кривой `linkShape` (та же кривая Безье, без подрезки под наконечник): `t` = 0 первый пин, 1 второй, 0.5 середина.
+ * Там стоит подпись связи, ручка, маркер.
+ */
+export function linkPointAt(a: Point, aSide: Side, b: Point, bSide: Side, t = 0.5): Point {
+    const [ax, ay] = OUT[aSide];
+    const [bx, by] = OUT[bSide];
+    const ta = tension(aSide, a, b);
+    const tb = tension(bSide, a, b);
+    const c1: Point = [a[0] + ax * ta, a[1] + ay * ta];
+    const c2: Point = [b[0] + bx * tb, b[1] + by * tb];
+    const u = 1 - t;
+    const mix = (i: 0 | 1) => u * u * u * a[i] + 3 * u * u * t * c1[i] + 3 * u * t * t * c2[i] + t * t * t * b[i];
+    return [mix(0), mix(1)];
+}
+
+/**
  * A cubic Bezier curve with horizontal tangents, as in Blueprint (for links "output on the right, input on the left").
  * Кубическая кривая Безье с горизонтальными касательными, как в Blueprint (для связей «выход справа, вход слева»).
  */

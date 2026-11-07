@@ -512,7 +512,7 @@ describe('TaoxCanvas: двойной клик', () => {
         canvas.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, clientX: 5, clientY: 6 }));
         canvas.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, clientX: 5, clientY: 6 }));
 
-        expect(activate).toHaveBeenNthCalledWith(1, { kind: 'link', id: 'c1', at: [5, 6] });
+        expect(activate).toHaveBeenNthCalledWith(1, { kind: 'link', id: 'c1', at: [5, 6], element: canvas.querySelector('.link') });
         expect(activate).toHaveBeenNthCalledWith(2, { kind: 'handle', nodeId: 'b' });
         vi.restoreAllMocks();
     });
