@@ -197,13 +197,6 @@ function setDirection(v: unknown) {
 
 <style scoped>
 .tx-curve-field {
-    --tx-curve-bg: var(--tao-color-surface-sunken);
-    --tx-curve-border: var(--tao-color-border);
-    --tx-curve-grid: var(--tao-color-border);
-    --tx-curve-label: var(--tao-color-text-muted);
-    --tx-curve-text: var(--tao-color-text);
-    --tx-curve-accent: var(--tao-color-accent);
-
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -219,7 +212,7 @@ function setDirection(v: unknown) {
     display: flex;
     flex-direction: column;
     gap: 2px;
-    color: var(--tao-color-text-muted);
+    color: var(--tx-curve-label, #8b929c);
     font-size: 11px;
 }
 
@@ -230,7 +223,7 @@ function setDirection(v: unknown) {
 }
 
 .tx-curve-field__title {
-    color: var(--tao-color-text-muted);
+    color: var(--tx-curve-label, #8b929c);
     font-size: 11px;
 }
 

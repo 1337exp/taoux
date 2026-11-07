@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.9.0
+
+Migrate: `curvefield` and `swiperow` now take their colours from the bridge like the other modules, so import `@1337exp/taoux/taoui.css` with them (`curvefield` drew the plot in TaoUI colours by itself, `swiperow` read the TaoUI tone tokens). Without it they use the built-in dark defaults. `swiperow` without the bridge has a 12px radius (it was the TaoUI panel radius).
+
+- **The TaoUI bridge is a contract.** `theme/taoui.css` is the only file that names a `--tao-*` token; the modules read `--tx-*` with a fallback. `tests/bridge.test.ts` checks that no file in `src/` names `--tao-*`, that every themed variable (colour, tone, radius) the components read is mapped, and that the bridge points only at tokens the installed TaoUI defines.
+- **Corner radius through the bridge.** New `--tx-curve-radius`, `--tx-gradient-radius`, `--tx-canvas-radius` (defaults 4px, 4px, 6px, as before) mapped to `--tao-radius-control`; `--tx-swipe-radius` is mapped to `--tao-radius-panel`.
+- **`swiperow`: the action tone and the focus ring have variables.** `--tx-swipe-tone`, `--tx-swipe-tone-text`, `--tx-swipe-armed-text`, `--tx-swipe-accent`; the bridge maps the tone on the action element.
+- **`curveeditor`: the label of zero stays bright.** The brightness of the end labels of the value axis was decided by their place in the list, so a new label below zero took the colour from it while the scale was rescaling; now zero keeps it.
+
 ## 0.8.0
 
 Nothing to migrate: one new function; `downloadText` keeps its signature and result.

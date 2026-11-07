@@ -27,9 +27,11 @@ Set them on the row or on any element around it.
 
 | Variable | Default | What |
 | --- | --- | --- |
-| `--tx-swipe-bg` | `var(--tao-color-surface-raised)` | The face of the row and the ground its actions are tinted on. A row that lies right on the page: `var(--tao-color-bg)` |
-| `--tx-swipe-radius` | `var(--tao-radius-panel, 12px)` | The corners of the row |
+| `--tx-swipe-bg` | `#1f1f1f`; the bridge: the raised surface | The face of the row and the ground its actions are tinted on. A row that lies right on the page: the page background colour |
+| `--tx-swipe-radius` | `12px`; the bridge: the panel radius | The corners of the row |
 | `--tx-swipe-gap` | `6px` | The gap between the end actions |
+| `--tx-swipe-tone`, `--tx-swipe-tone-text` | grey; the bridge: the tone of the action | The colour of an action and its text (set on `.tx-swipe__action`) |
+| `--tx-swipe-armed-text`, `--tx-swipe-accent` | white, blue; the bridge: strong text, accent | The text of an armed action and the focus ring |
 
 ## Testing a swipe
 

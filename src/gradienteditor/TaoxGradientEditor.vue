@@ -212,14 +212,16 @@ function onBarClick(e: MouseEvent) {
 /*
  * Configured with CSS variables on any ancestor:
  * Настройка через CSS-переменные на любом предке:
- *   --tx-gradient-border, --tx-gradient-stop-border, --tx-gradient-stop-outline, --tx-gradient-accent.
+ *   --tx-gradient-border, --tx-gradient-stop-border, --tx-gradient-stop-outline, --tx-gradient-accent,
+ *   --tx-gradient-radius (the corners of the bar, 4px by default).
+ *   --tx-gradient-radius — углы полосы, по умолчанию 4px.
  */
 .tx-gradient {
     position: relative;
     height: 22px;
     margin-bottom: 20px; /* room for the stop handles and the mark of the selected one / место под ручки остановок и отметку выбранной */
     border: 1px solid var(--tx-gradient-border, #2a2d33);
-    border-radius: 4px;
+    border-radius: var(--tx-gradient-radius, 4px);
     /* a checkerboard under the bar shows transparency / шахматка под полосой показывает прозрачность */
     background-color: #fff;
     background-size: 100% 100%, 12px 12px;

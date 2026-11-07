@@ -22,12 +22,12 @@ const used = new Set(
         .flatMap((f) => [...readFileSync(f, 'utf8').matchAll(/var\((--tx-[a-z0-9-]+)/g)].map((m) => m[1]!)),
 );
 
-/** Colour variables: what the bridge is for. Sizes, widths and opacities stay with the module. */
-const isColour = (name: string) => /-(bg|border|grid|label|text|accent|accent-subtle|color|outline|minor|major)$/.test(name) && !name.endsWith('-line-color');
+/** Theme variables: what the bridge is for (colours, tones and corner radii). Sizes, widths and opacities stay with the module. */
+const isThemed = (name: string) => /-(bg|border|grid|label|text|accent|accent-subtle|color|outline|minor|major|tone|radius)$/.test(name) && !name.endsWith('-line-color');
 
 describe('theme/taoui.css (the TaoUI bridge)', () => {
-    it('maps every colour variable the components read', () => {
-        const missing = [...used].filter((name) => isColour(name) && !mapped.has(name));
+    it('maps every theme variable (colour, tone, radius) the components read', () => {
+        const missing = [...used].filter((name) => isThemed(name) && !mapped.has(name));
         expect(missing).toEqual([]);
     });
 
@@ -46,6 +46,15 @@ describe('theme/taoui.css (the TaoUI bridge)', () => {
         expect(defined.size).toBeGreaterThan(50);
         const referenced = [...bridge.matchAll(/var\((--tao-[a-z0-9-]+)/g)].map((m) => m[1]!);
         expect(referenced.filter((name) => !defined.has(name))).toEqual([]);
+    });
+
+    it('is the only place that names a TaoUI token (the contract)', () => {
+        // The modules read `--tx-*` with a built-in fallback; `--tao-*` belongs to the bridge alone
+        const offenders = walk(join(root, 'src'))
+            .filter((f) => /\.(vue|ts)$/.test(f))
+            .filter((f) => /--tao-/.test(readFileSync(f, 'utf8')))
+            .map((f) => f.slice(root.length).replaceAll('\\', '/'));
+        expect(offenders).toEqual([]);
     });
 
     it('is shipped: exported and listed in files', () => {

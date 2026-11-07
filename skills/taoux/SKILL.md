@@ -15,7 +15,8 @@ controls, or with your own design.
    reaches the bundle. ESM only.
 2. **A Vue module's styles are imported explicitly**: `import '@1337exp/taoux/curveeditor.css'` (also `canvas.css`,
    `links.css`, `gradienteditor.css`, `curvefield.css`, `swiperow.css`; `curvefield` needs `curveeditor.css` too).
-3. **With TaoUI, add the bridge**: `import '@1337exp/taoux/taoui.css'` points every `--tx-*` colour at a `--tao-*` role, so
+3. **With TaoUI, add the bridge**: `import '@1337exp/taoux/taoui.css'` points every `--tx-*` colour, tone and corner radius at a `--tao-*` token (the bridge is the only file that names
+   `--tao-*`; a module that needs a new one gets a `--tx-*` variable and a line there), so
    the editors follow the TaoUI theme and palettes. Zero specificity: your rules win. Without it the editors stay dark.
 4. **Values travel through `v-model`**; TaoUX never renders a TaoUI control itself, except the tier-2 fields `curvefield` and `swiperow`.
 5. **Pre-1.0**: breaking changes happen between minors; read `CHANGELOG.md`.

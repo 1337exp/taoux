@@ -8,9 +8,14 @@
  * wins: override a single variable on `:root` or on any ancestor of the component.
  * The `--tx-*` variables of a module are listed in the comment at the top of its styles.
  *
+ * THE CONTRACT: this file is the only place in TaoUX that names a `--tao-*` token. The modules read `--tx-*` with a
+ * built-in fallback; a TaoUI token that is renamed or dropped is fixed here, once (tests/bridge.test.ts enforces both).
+ *
  * Мост TaoUX → TaoUI: наводит переменные `--tx-*` на токены `--tao-*`, и редакторы следуют теме TaoUI
  * (тёмной, светлой, своей) одним импортом. Чистый CSS, без зависимости от пакета TaoUI. Специфичность
  * нулевая (`:where`): любое ваше правило главнее.
+ * КОНТРАКТ: только в этом файле TaoUX называет токены `--tao-*`. Модули читают `--tx-*` со встроенным запасным значением;
+ * переименованный или убранный токен TaoUI правится здесь, один раз (оба условия держит tests/bridge.test.ts).
  */
 :where(:root) {
     /* canvas */
@@ -27,7 +32,10 @@
     --tx-link-preview-color: var(--tao-color-accent);
     --tx-link-invalid-color: var(--tao-color-danger);
 
+    --tx-canvas-radius: var(--tao-radius-control);
+
     /* curve editor */
+    --tx-curve-radius: var(--tao-radius-control);
     --tx-curve-bg: var(--tao-color-surface-sunken);
     --tx-curve-border: var(--tao-color-border);
     --tx-curve-grid: var(--tao-color-border);
@@ -36,6 +44,7 @@
     --tx-curve-accent: var(--tao-color-accent);
 
     /* gradient editor */
+    --tx-gradient-radius: var(--tao-radius-control);
     --tx-gradient-border: var(--tao-color-border);
     --tx-gradient-stop-border: var(--tao-color-border-strong);
     --tx-gradient-stop-outline: color-mix(in srgb, var(--tao-color-text-strong) 55%, transparent);
@@ -43,4 +52,13 @@
 
     /* swiperow */
     --tx-swipe-bg: var(--tao-color-surface-raised);
+    --tx-swipe-radius: var(--tao-radius-panel);
+    --tx-swipe-armed-text: var(--tao-color-text-strong);
+    --tx-swipe-accent: var(--tao-color-accent);
+}
+
+/* The tone of a swipe action: TaoUI sets --tao-tone on the action itself (toneClass), so this maps on the element, not on :root */
+:where(.tx-swipe__action) {
+    --tx-swipe-tone: var(--tao-tone);
+    --tx-swipe-tone-text: var(--tao-tone-text);
 }

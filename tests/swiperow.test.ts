@@ -379,9 +379,8 @@ describe('swiperow background', () => {
     it('the face and the tint of the actions come from --tx-swipe-bg', async () => {
         const source = ((await import('../src/swiperow/TaoxSwipeRow.vue?raw')).default as string).replace(/\r\n/g, '\n');
         // the public names stand only in var() with a default, so a value on an ancestor reaches the row
-        expect(source).toContain('--_tx-swipe-bg: var(--tx-swipe-bg, var(--tao-color-surface-raised, #1f1f1f));');
+        expect(source).toContain('--_tx-swipe-bg: var(--tx-swipe-bg, #1f1f1f);');
         expect(source).not.toMatch(/^\s*--tx-swipe-[a-z]+:/m);
         expect(source).toMatch(/\.tx-swipe__front \{[^}]*background: var\(--_tx-swipe-bg\);/);
-        expect(source.match(/var\(--tao-color-surface-raised/g)).toHaveLength(1);
     });
 });

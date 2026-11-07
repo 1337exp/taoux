@@ -503,8 +503,10 @@ const labelOf = (i: number, p: CurvePoint) => (props.pointLabel ? props.pointLab
  * Настройка через CSS-переменные на любом предке:
  *   --tx-curve-bg, --tx-curve-border, --tx-curve-grid, --tx-curve-label, --tx-curve-accent,
  * --tx-curve-text (the numbers at the ends of the axes: start and end of the scale, brighter than the rest),
+ * --tx-curve-radius (the corners of the plot, 4px by default),
  * --tx-curve-dot-opacity (opacity of unselected points, 0.3 by default).
  *   --tx-curve-text (цифры у краёв осей: начало и конец шкалы, ярче остальных),
+ *   --tx-curve-radius (углы графика, по умолчанию 4px),
  *   --tx-curve-dot-opacity (непрозрачность невыбранных точек, по умолчанию 0.3).
  */
 .tx-curve {
@@ -512,7 +514,7 @@ const labelOf = (i: number, p: CurvePoint) => (props.pointLabel ? props.pointLab
     width: 100%;
     height: auto;
     border: 1px solid var(--tx-curve-border, #2a2d33);
-    border-radius: 4px;
+    border-radius: var(--tx-curve-radius, 4px);
     background: var(--tx-curve-bg, #15171b);
     touch-action: none;
     user-select: none;

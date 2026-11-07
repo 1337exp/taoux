@@ -343,12 +343,17 @@ const startLabel = (w: number) => fade(w, 84, 28);
 /*
  * Variables, on the row or on any element around it (the defaults stand in var(), so an ancestor's value reaches here):
  *   --tx-swipe-bg      the face of the row and the ground its actions are tinted on (the raised surface; a row right on
- *                      the page: var(--tao-color-bg))
- *   --tx-swipe-radius  the corners of the row (the panel radius)
+ *                      the page: the page background colour)
+ *   --tx-swipe-radius  the corners of the row (12px)
  *   --tx-swipe-gap     the gap between the end actions (6px)
+ *   --tx-swipe-tone, --tx-swipe-tone-text, --tx-swipe-armed-text, --tx-swipe-accent
+ *                      the colour of an action (set on the action itself), its text, the text of an armed action and the
+ *                      focus ring; the TaoUI bridge maps them to the tone of the action
  * Переменные — на строке или на любом элементе вокруг неё (значения по умолчанию стоят в var(), поэтому значение предка
  * доходит сюда): --tx-swipe-bg — лицо строки и основа подкраски действий; --tx-swipe-radius — углы; --tx-swipe-gap —
- * зазор между действиями справа.
+ * зазор между действиями справа; --tx-swipe-tone, --tx-swipe-tone-text, --tx-swipe-armed-text, --tx-swipe-accent —
+ * цвет действия (задаётся на самом действии), его текст, текст сработавшего действия и кольцо фокуса; мост TaoUI
+ * наводит их на тон действия.
  */
 .tx-swipe {
     /* a stacking context of its own: the z-index of the face counts inside the row only, so a floating bar or a glass
@@ -357,8 +362,8 @@ const startLabel = (w: number) => fade(w, 84, 28);
        списком остаются поверх его строк */
     isolation: isolate;
     --_tx-swipe-gap: var(--tx-swipe-gap, 6px);
-    --_tx-swipe-radius: var(--tx-swipe-radius, var(--tao-radius-panel, 12px));
-    --_tx-swipe-bg: var(--tx-swipe-bg, var(--tao-color-surface-raised, #1f1f1f));
+    --_tx-swipe-radius: var(--tx-swipe-radius, 12px);
+    --_tx-swipe-bg: var(--tx-swipe-bg, #1f1f1f);
     position: relative;
     overflow: hidden;
     border-radius: var(--_tx-swipe-radius);
@@ -435,8 +440,8 @@ const startLabel = (w: number) => fade(w, 84, 28);
     overflow: hidden;
     border: 0;
     border-radius: var(--_tx-swipe-radius);
-    background: color-mix(in srgb, var(--tao-tone) 22%, var(--_tx-swipe-bg));
-    color: var(--tao-tone-text);
+    background: color-mix(in srgb, var(--tx-swipe-tone, #9ca3af) 22%, var(--_tx-swipe-bg));
+    color: var(--tx-swipe-tone-text, #d1d5db);
     font: inherit;
     font-size: 13px;
     cursor: pointer;
@@ -464,12 +469,12 @@ const startLabel = (w: number) => fade(w, 84, 28);
 }
 
 .tx-swipe__action--armed {
-    background: color-mix(in srgb, var(--tao-tone) 45%, var(--_tx-swipe-bg));
-    color: var(--tao-color-text-strong);
+    background: color-mix(in srgb, var(--tx-swipe-tone, #9ca3af) 45%, var(--_tx-swipe-bg));
+    color: var(--tx-swipe-armed-text, #fff);
 }
 
 .tx-swipe__action:focus-visible {
-    outline: 2px solid var(--tao-color-accent);
+    outline: 2px solid var(--tx-swipe-accent, #4fc3f7);
     outline-offset: -2px;
 }
 

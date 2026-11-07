@@ -87,7 +87,9 @@ defineExpose({ root });
 /*
  * Configured with CSS variables on the canvas or an ancestor:
  * Настройка через CSS-переменные на холсте или предке:
- *   --tx-canvas-bg, --tx-canvas-grid-minor, --tx-canvas-grid-major, --tx-canvas-accent, --tx-canvas-accent-subtle.
+ *   --tx-canvas-bg, --tx-canvas-grid-minor, --tx-canvas-grid-major, --tx-canvas-accent, --tx-canvas-accent-subtle,
+ *   --tx-canvas-radius (the corners of the debug badge, 6px by default).
+ *   --tx-canvas-radius — углы отладочной плашки, по умолчанию 6px.
  */
 .tx-canvas {
     position: relative;
@@ -136,7 +138,7 @@ defineExpose({ root });
     left: 8px;
     bottom: 8px;
     padding: 4px 8px;
-    border-radius: 6px;
+    border-radius: var(--tx-canvas-radius, 6px);
     background: rgba(0, 0, 0, 0.7);
     color: #fff;
     font: 12px/1.3 monospace;

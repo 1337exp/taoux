@@ -9,7 +9,7 @@
 
 That is all. TaoUX works without TaoUI (every variable has a dark default), and TaoUI works without TaoUX even more so.
 
-**Without the bridge** the editors keep their dark defaults, so on a light page `TaoxCurveEditor` and `TaoxGradientEditor` look like dark islands with a blue accent. `TaoxCurveField` (it is built from TaoUI components) follows the theme by itself.
+**Without the bridge** the editors keep their dark defaults, so on a light page `TaoxCurveEditor` and `TaoxGradientEditor` look like dark islands with a blue accent. `TaoxCurveField` and `TaoxSwipeRow` need the bridge too: their TaoUI controls follow the theme by themselves, but the plot and the action tones come from `--tx-*`.
 
 ## Who may depend on whom
 
@@ -43,6 +43,14 @@ Change one variable on `:root` or on any ancestor of the component:
     --tx-curve-accent: var(--tao-color-info);   /* blue curve in an otherwise pink app */
 }
 ```
+
+### The bridge is a contract
+
+`taoui.css` is the only place in TaoUX that names a `--tao-*` token. Components read `--tx-*` with a built-in fallback, even the fields that are made of TaoUI components. So:
+
+- **Take from TaoUI only through the bridge.** A new colour, tone or corner radius a module needs is a new `--tx-<module>-*` variable plus one line in the bridge, never `var(--tao-...)` in a component.
+- **When TaoUI renames or drops a token, one file changes.** `tests/bridge.test.ts` fails if the bridge points at a token the installed TaoUI does not define, if a component reads a themed variable (colour, tone, radius) that the bridge does not map, or if any file in `src/` names `--tao-*`.
+- **What the bridge covers:** colours, the tone of swipe actions and corner radii. Sizes, fonts, spacing and durations stay with the module: the app sets them.
 
 The full list of variables of each module is in the comment at the top of its styles (`src/<module>/*.vue`). What you do not map keeps its default. The bridge itself is [theme/taoui.css](../theme/taoui.css); a test checks that it covers every colour variable the components read and only points at tokens TaoUI defines.
 
