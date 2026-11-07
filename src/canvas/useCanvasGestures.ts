@@ -373,6 +373,15 @@ export function useCanvasGestures<P>(root: Ref<HTMLElement | null>, host: Canvas
             el.focus();
             mode = 'pan';
         } else if (e.button === 0) {
+            // A placing tool is armed: this press only says where. Not for a field inside a node (its text keeps the press).
+            // Включён инструмент «поставить»: это нажатие лишь говорит куда. Кроме поля внутри ноды (текст оставляет нажатие себе).
+            if (host.placing && host.placeAt && !isEditable(e.target)) {
+                const rect = el.getBoundingClientRect();
+                host.placeAt([e.clientX - rect.left, e.clientY - rect.top], cursorWorld(e));
+                e.preventDefault();
+                return;
+            }
+
             const id = nodeIdAt(e.target);
 
             // An input field inside a node: select the node and hand the event to the field (focus, caret, text selection).

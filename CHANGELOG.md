@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.10.0
+
+Nothing to migrate: two optional host members; a host without them works as before.
+
+- **`canvas`: a "place" tool.** A toolbar with "Note", "Frame", "Text" tools needs the canvas to say where the next click landed. `host.placing` (readonly boolean) arms it; while it is true, a left press on the canvas calls `host.placeAt(screen, world)` and does nothing else (no selection, no frame, no drag); a field inside a node keeps its own press, the right and middle buttons still pan. Disarming the tool (after one placement, on Esc) is the app's business. Both members are needed: without `placeAt` the flag is ignored.
+
 ## 0.9.0
 
 Migrate: `curvefield` and `swiperow` now take their colours from the bridge like the other modules, so import `@1337exp/taoux/taoui.css` with them (`curvefield` drew the plot in TaoUI colours by itself, `swiperow` read the TaoUI tone tokens). Without it they use the built-in dark defaults. `swiperow` without the bridge has a 12px radius (it was the TaoUI panel radius).

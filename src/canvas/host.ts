@@ -135,6 +135,20 @@ export interface CanvasHost<P = unknown> {
      * Спрашивается перед клавишами холста (Delete, Backspace, Escape, Ctrl+Z / Y). Нет члена: холст берёт свои клавиши, как раньше.
      */
     claimsKey?(event: KeyboardEvent): boolean;
+    /**
+     * A "place something" tool is armed (a note, a frame): the next left press on the canvas calls `placeAt` and does nothing else
+     * (no selection, no frame, no drag). Esc and the end of the tool are the app's business (disarm in `placeAt` or on a key).
+     * Both members are needed; without `placeAt` the flag is ignored.
+     * Включён инструмент «поставить» (заметку, рамку): следующее нажатие левой кнопкой по холсту зовёт `placeAt` и больше ничего
+     * не делает (ни выделения, ни рамки, ни перетаскивания). Esc и конец инструмента — забота приложения (снять в `placeAt` или по клавише).
+     * Нужны оба члена; без `placeAt` флаг игнорируется.
+     */
+    readonly placing?: boolean;
+    /**
+     * Where the press landed: `screen` in px relative to the canvas, `world` in world units.
+     * Куда пришлось нажатие: `screen` в px относительно холста, `world` в мировых единицах.
+     */
+    placeAt?(screen: Point, world: Point): void;
 }
 
 /**

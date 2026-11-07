@@ -329,6 +329,49 @@ describe('TaoxCanvas: клавиши', () => {
     });
 });
 
+describe('TaoxCanvas: инструмент «поставить»', () => {
+    it('пока он включён, нажатие зовёт placeAt с экранной и мировой точкой и больше ничего не делает', () => {
+        const placeAt = vi.fn();
+        const { host, state, calls } = createHost({ placing: true, placeAt });
+        state.camera = { x: 100, y: 50, z: 2 };
+        const canvas = mount(host);
+
+        canvas.dispatchEvent(pointer('pointerdown', { clientX: 300, clientY: 250 }));
+        canvas.dispatchEvent(pointer('pointerup', { clientX: 300, clientY: 250 }));
+
+        expect(placeAt).toHaveBeenCalledTimes(1);
+        const [screen, world] = placeAt.mock.calls[0]!;
+        expect(world).toEqual([(screen[0] - 100) / 2, (screen[1] - 50) / 2]);
+        expect(calls.some((c) => /^(setSelection|beginDrag|toggle)/.test(c))).toBe(false);
+    });
+
+    it('на ноде тоже ставит, но поле ввода внутри ноды оставляет нажатие себе', () => {
+        const placeAt = vi.fn();
+        const { host } = createHost({ placing: true, placeAt });
+        const canvas = mount(host);
+
+        canvas.querySelector('.node-b')!.dispatchEvent(pointer('pointerdown'));
+        expect(placeAt).toHaveBeenCalledTimes(1);
+
+        canvas.querySelector('.field-a')!.dispatchEvent(pointer('pointerdown'));
+        expect(placeAt).toHaveBeenCalledTimes(1);
+    });
+
+    it('правая кнопка и выключенный флаг работают как раньше', () => {
+        const placeAt = vi.fn();
+        const off = createHost({ placing: false, placeAt });
+        mount(off.host).querySelector('.node-b')!.dispatchEvent(pointer('pointerdown'));
+        expect(placeAt).not.toHaveBeenCalled();
+        expect(off.calls.some((c) => c.startsWith('beginDrag'))).toBe(true);
+    });
+
+    it('без placeAt флаг игнорируется', () => {
+        const { host, calls } = createHost({ placing: true });
+        mount(host).querySelector('.node-b')!.dispatchEvent(pointer('pointerdown'));
+        expect(calls.some((c) => c.startsWith('beginDrag'))).toBe(true);
+    });
+});
+
 describe('TaoxCanvas: двойной клик', () => {
     it('зовёт activate для связи и для полосы ноды, если хост это умеет', () => {
         const activate = vi.fn();

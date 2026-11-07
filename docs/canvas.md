@@ -86,6 +86,8 @@ export interface CanvasHost<P = unknown> {
     readonly snapEnabled?: boolean;
     readonly selectMode?: boolean; // the touch "Select" mode
     claimsKey?(event: KeyboardEvent): boolean; // the app takes this key now: the canvas leaves it alone
+    readonly placing?: boolean; // a "place" tool is armed: the next left press only calls placeAt
+    placeAt?(screen: Point, world: Point): void;
 }
 
 export interface CanvasOptions<P> {

@@ -86,6 +86,8 @@ export interface CanvasHost<P = unknown> {
     readonly snapEnabled?: boolean;
     readonly selectMode?: boolean; // сенсорный режим «Выделение»
     claimsKey?(event: KeyboardEvent): boolean; // приложение сейчас забирает клавишу: холст её не трогает
+    readonly placing?: boolean; // включён инструмент «поставить»: следующее нажатие левой кнопкой только зовёт placeAt
+    placeAt?(screen: Point, world: Point): void;
 }
 
 export interface CanvasOptions<P> {
