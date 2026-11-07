@@ -66,6 +66,8 @@ throws for an unknown pointer, so keep it in `try`. Reactive styles update on th
 ## Conventions
 
 - Comments in English and Russian, the English first, in the style of the file.
-- Components are styled by `--tx-*` variables (or TaoUI roles in a field); the bridge `theme/taoui.css` maps `--tx-*` to the
-  13 contract `--tao-color-*` roles (`tests/bridge.test.ts` reads every stylesheet of the installed TaoUI).
+- Components are styled by `--tx-*` variables with a built-in fallback, never by `--tao-*`, fields included: the bridge
+  `theme/taoui.css` is the only file that names a `--tao-*` token and maps colours, tones and radii. A new themed value is a
+  `--tx-<module>-*` variable plus a line there. `tests/bridge.test.ts` enforces it and reads every stylesheet of the
+  installed TaoUI. The import of the bridge is explicit for every module, fields too.
 - Git checks files out with CRLF on Windows: a test that reads a source file as text normalises `\r\n` first.

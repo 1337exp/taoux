@@ -34,7 +34,7 @@ Installing from npm needs no bundler tweaks: a normal `npm install @1337exp/taou
 
 ## Step 2. Theme: the bridge
 
-`@1337exp/taoux/taoui.css` sets every colour variable of the TaoUX modules to a TaoUI token (canvas, links, curve and gradient editors). It is plain CSS with zero specificity (`:where(:root)`) and no dependency on the TaoUI package, so a TaoUI theme switch (`data-tao-theme="light"`) re-colours the editors too, and any rule of yours wins.
+`@1337exp/taoux/taoui.css` sets every colour, tone and corner-radius variable of the TaoUX modules to a TaoUI token (canvas, links, curve and gradient editors, swipe row). It is plain CSS with zero specificity (`:where(:root)`) and no dependency on the TaoUI package, so a TaoUI theme switch (`data-tao-theme="light"`) re-colours the editors too, and any rule of yours wins.
 
 Change one variable on `:root` or on any ancestor of the component:
 
