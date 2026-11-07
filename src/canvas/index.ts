@@ -5,6 +5,7 @@ export type {
     CanvasHost,
     CanvasOptions,
     ConnectHost,
+    ContextTarget,
     Point,
     Rect,
     ResizeEdge,

@@ -329,6 +329,55 @@ describe('TaoxCanvas: клавиши', () => {
     });
 });
 
+describe('TaoxCanvas: контекстное меню', () => {
+    /** happy-dom не считает раскладку: «что под указателем» подставляем сами. */
+    const under = (el: Element | null) => {
+        (document as unknown as { elementFromPoint: () => Element | null }).elementFromPoint = () => el;
+    };
+    const rightClick = (canvas: HTMLElement, at = { clientX: 50, clientY: 60 }) => {
+        canvas.dispatchEvent(pointer('pointerdown', { button: 2, ...at }));
+        canvas.dispatchEvent(pointer('pointerup', { button: 2, ...at }));
+    };
+
+    it('правый клик без сдвига зовёт contextMenu с целью: нода, связь, пусто', () => {
+        const contextMenu = vi.fn<NonNullable<CanvasHost<Pin>['contextMenu']>>(() => true);
+        const { host, calls } = createHost({ contextMenu });
+        const canvas = mount(host);
+
+        under(canvas.querySelector('.node-b'));
+        rightClick(canvas);
+        under(canvas.querySelector('.link'));
+        rightClick(canvas);
+        under(canvas);
+        rightClick(canvas);
+
+        expect(contextMenu.mock.calls.map((c) => c[2])).toEqual([{ kind: 'node', nodeId: 'b' }, { kind: 'link', id: 'c1' }, { kind: 'empty' }]);
+        expect(contextMenu.mock.calls[0]![0]).toHaveLength(2); // экранная точка
+        expect(contextMenu.mock.calls[0]![1]).toHaveLength(2); // мировая точка
+        expect(calls.some((c) => c.startsWith('openPalette'))).toBe(false); // меню показано: палитра не нужна
+    });
+
+    it('false от приложения оставляет прежнее: открывается палитра', () => {
+        const { host, calls } = createHost({ contextMenu: () => false });
+        const canvas = mount(host);
+        under(canvas);
+        rightClick(canvas);
+        expect(calls.some((c) => c.startsWith('openPalette'))).toBe(true);
+    });
+
+    it('правая кнопка, которой водили, двигает холст и меню не зовёт; без члена всё как раньше', () => {
+        const contextMenu = vi.fn(() => true);
+        const { host, state } = createHost({ contextMenu });
+        const canvas = mount(host);
+        under(canvas);
+        canvas.dispatchEvent(pointer('pointerdown', { button: 2, clientX: 50, clientY: 60 }));
+        canvas.dispatchEvent(pointer('pointermove', { clientX: 90, clientY: 80, buttons: 2 }));
+        canvas.dispatchEvent(pointer('pointerup', { button: 2, clientX: 90, clientY: 80 }));
+        expect(contextMenu).not.toHaveBeenCalled();
+        expect(state.camera.x).toBe(40);
+    });
+});
+
 describe('TaoxCanvas: инструмент «поставить»', () => {
     it('пока он включён, нажатие зовёт placeAt с экранной и мировой точкой и больше ничего не делает', () => {
         const placeAt = vi.fn();

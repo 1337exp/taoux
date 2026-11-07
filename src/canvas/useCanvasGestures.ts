@@ -3,7 +3,7 @@ import { panBy, screenToWorld, zoomAt, zoomLimits } from '../camera';
 import { createEdgeScroller } from '../edgescroll';
 import { LONG_PRESS_MS, PinchTracker, TapRecognizer, pinchOf, type Sample } from '../gestures';
 import { wheelIntent } from '../wheel';
-import type { CanvasHost, CanvasOptions, Point, Rect, ResizeEdge } from './host';
+import type { CanvasHost, CanvasOptions, ContextTarget, Point, Rect, ResizeEdge } from './host';
 
 const PAN_CLICK_THRESHOLD = 4; // a right button moved less than this is a click (it opens the palette) / ПКМ, сдвинутая меньше, это клик (открывает палитру)
 
@@ -116,6 +116,20 @@ export function useCanvasGestures<P>(root: Ref<HTMLElement | null>, host: Canvas
     function cursorWorld(e: Pointer): Point {
         const rect = root.value!.getBoundingClientRect();
         return screenToWorld(host.camera, e.clientX - rect.left, e.clientY - rect.top);
+    }
+
+    /**
+     * A right click: ask the app for a menu for what lies under the pointer. True when it showed one.
+     * Правый клик: просим у приложения меню для того, что под указателем. True, если оно его показало.
+     */
+    function openContextAt(e: Pointer): boolean {
+        if (!host.contextMenu) return false;
+        const under = document.elementFromPoint(e.clientX, e.clientY);
+        const link = connIdAt(under);
+        const node = nodeIdAt(under);
+        const target: ContextTarget = link ? { kind: 'link', id: link } : node ? { kind: 'node', nodeId: node } : { kind: 'empty' };
+        const rect = root.value!.getBoundingClientRect();
+        return host.contextMenu([e.clientX - rect.left, e.clientY - rect.top], cursorWorld(e), target);
     }
 
     function openPaletteAt(e: Pointer, origin: P | null) {
@@ -632,7 +646,7 @@ export function useCanvasGestures<P>(root: Ref<HTMLElement | null>, host: Canvas
             host.endDrag();
             host.commit(); // a drag or a resize as a whole: one history step (nothing is recorded without a shift) / перетаскивание или изменение размера целиком: один шаг истории (без сдвига ничего не запишется)
         } else if (mode === 'pan' && e.button === 2 && panDistance < PAN_CLICK_THRESHOLD) {
-            openPaletteAt(e, null);
+            if (!openContextAt(e)) openPaletteAt(e, null);
         }
         mode = 'idle';
         marquee.value = null;
