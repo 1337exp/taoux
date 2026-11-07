@@ -345,7 +345,7 @@ describe('TaoxCanvas: инструмент «поставить»', () => {
         expect(calls.some((c) => /^(setSelection|beginDrag|toggle)/.test(c))).toBe(false);
     });
 
-    it('на ноде тоже ставит, но поле ввода внутри ноды оставляет нажатие себе', () => {
+    it('на ноде и на поле ввода внутри неё тоже ставит', () => {
         const placeAt = vi.fn();
         const { host } = createHost({ placing: true, placeAt });
         const canvas = mount(host);
@@ -354,7 +354,7 @@ describe('TaoxCanvas: инструмент «поставить»', () => {
         expect(placeAt).toHaveBeenCalledTimes(1);
 
         canvas.querySelector('.field-a')!.dispatchEvent(pointer('pointerdown'));
-        expect(placeAt).toHaveBeenCalledTimes(1);
+        expect(placeAt).toHaveBeenCalledTimes(2);
     });
 
     it('правая кнопка и выключенный флаг работают как раньше', () => {
