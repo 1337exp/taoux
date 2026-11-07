@@ -144,6 +144,8 @@ export function useSortable(container: Ref<HTMLElement | null>, options: Sortabl
         starts: number[];
         sizes: number[];
         step: number;
+        /** Screen px per CSS px of the list: 1 normally, the zoom when the list sits in a scaled canvas. / Экранных px на CSS-px списка: 1, а в масштабируемом холсте равно масштабу. */
+        scale: number;
         els: HTMLElement[];
         handle: HTMLElement;
         pointerId: number;
@@ -178,7 +180,9 @@ export function useSortable(container: Ref<HTMLElement | null>, options: Sortabl
 
     function follow() {
         if (!drag) return;
-        const pointer = (axis === 'y' ? drag.last[1] : drag.last[0]) + scrollPos(drag.scroller) - drag.scroll0;
+        // the scrolled distance is in CSS px of the list, the pointer in screen px: bring them to one unit
+        // прокрутка в CSS-px списка, указатель в экранных px: приводим к одной единице
+        const pointer = (axis === 'y' ? drag.last[1] : drag.last[0]) + (scrollPos(drag.scroller) - drag.scroll0) * drag.scale;
         // the item stays within the list: past its ends it would make the scrolled area longer, the edge scroll would
         // follow it, and the two would run away together
         // элемент не выходит за пределы списка: за краями он удлинял бы прокручиваемую область, прокрутка у края шла бы
@@ -195,7 +199,9 @@ export function useSortable(container: Ref<HTMLElement | null>, options: Sortabl
         drag.to = to;
         const shifts = sortShifts(drag.els.length, drag.from, to, drag.step);
         drag.els.forEach((el, i) => {
-            const value = i === drag!.from ? offset : shifts[i]!;
+            // measured in screen px, drawn in the list's own px: in a scaled canvas the two differ by the zoom
+            // считали в экранных px, рисуем в px самого списка: в масштабируемом холсте они различаются на масштаб
+            const value = (i === drag!.from ? offset : shifts[i]!) / drag!.scale;
             el.style.transform = value ? (axis === 'y' ? `translateY(${value}px)` : `translateX(${value}px)`) : '';
         });
     }
@@ -215,6 +221,10 @@ export function useSortable(container: Ref<HTMLElement | null>, options: Sortabl
         // остальные расступаются на размер перетаскиваемого элемента и зазор между элементами
         const gap = els.length > 1 ? Math.max(0, along(rects[1]!) - along(rects[0]!) - sizeOf(rects[0]!)) : 0;
         const step = sizeOf(rects[from]!) + gap;
+        // a list inside a scaled ancestor (a zoomable canvas) is drawn smaller or larger than its CSS size
+        // список внутри масштабированного предка (холст с зумом) нарисован меньше или больше своего CSS-размера
+        const css = axis === 'y' ? els[from]!.offsetHeight : els[from]!.offsetWidth;
+        const scale = css > 0 && sizeOf(rects[from]!) > 0 ? sizeOf(rects[from]!) / css : 1;
         drag = {
             from,
             to: from,
@@ -223,6 +233,7 @@ export function useSortable(container: Ref<HTMLElement | null>, options: Sortabl
             starts: rects.map(along),
             sizes: rects.map(sizeOf),
             step,
+            scale,
             els,
             handle,
             pointerId: event.pointerId,

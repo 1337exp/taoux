@@ -107,6 +107,20 @@ describe('useSortable: the pointer', () => {
         expect(w.findAll('li').map((li) => li.text())).toEqual(['Beta', 'Gamma', 'Alpha', 'Delta']);
     });
 
+    it('a list in a scaled ancestor (a zoomed canvas): the screen distance is drawn in the list own px', async () => {
+        const { w, moves } = mountList();
+        const items = w.findAll('li').map((li) => li.element as HTMLElement);
+        // the rects are 40 screen px tall, the CSS height is 20: the list is drawn at zoom 2
+        items.forEach((el) => Object.defineProperty(el, 'offsetHeight', { configurable: true, value: 20 }));
+        pointer('pointerdown', items[0]!.querySelector('button')!, 20);
+        pointer('pointermove', document, 20 + 100);
+        expect(items[0]!.style.transform).toBe('translateY(50px)'); // 100 screen px = 50 list px
+        expect(items[1]!.style.transform).toBe('translateY(-24px)'); // 48 screen px of room
+        pointer('pointerup', document, 120);
+        await nextTick();
+        expect(moves).toEqual([[0, 2]]); // the place is still decided in screen px
+    });
+
     it('past the end of the list: the last place, and the item is drawn no further than the end', async () => {
         const { w, moves } = mountList();
         const items = w.findAll('li').map((li) => li.element as HTMLElement);
