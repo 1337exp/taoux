@@ -4,6 +4,7 @@
 
 Nothing to migrate: two optional host members; a host without them works as before.
 
+- **`camera`: `fitCamera(rect, size, padding?, limits?)`.** The camera that shows a whole rectangle in a view, centred, with air around, zoom clamped to the limits (with `max: 1`: fit but never enlarge). "Zoom to fit" of every canvas editor was a few lines each app wrote again.
 - **`canvas`: a "place" tool.** A toolbar with "Note", "Frame", "Text" tools needs the canvas to say where the next click landed. `host.placing` (readonly boolean) arms it; while it is true, a left press on the canvas calls `host.placeAt(screen, world)` and does nothing else (no selection, no frame, no drag); a field inside a node keeps its own press, the right and middle buttons still pan. Disarming the tool (after one placement, on Esc) is the app's business. Both members are needed: without `placeAt` the flag is ignored.
 
 ## 0.9.0

@@ -25,7 +25,7 @@ controls, or with your own design.
 
 | Import | What for |
 |---|---|
-| `camera` | pan, zoom around the cursor, screen ↔ world (`zoomAt`; the range is 0.2…2 unless you pass `ZoomLimits`) |
+| `camera` | pan, zoom around the cursor, screen ↔ world (`zoomAt`; the range is 0.2…2 unless you pass `ZoomLimits`), `fitCamera(rect, size, padding?, limits?)` for "zoom to fit" |
 | `history` | `new History(snapshot)`: undo / redo on string snapshots, rapid edits with one `key` merged into one step |
 | `undo` | `new UndoStack({ id, revive, vanish? })`: undo / redo of a list of records by steps that keep only the touched ones (`diffRecords(prev, next, id)` makes a step; a returned record takes its old place); right for a list that is edited and synced, where `History` would store the whole list per step and an undo would roll back a sync. `coalesceMaxMs` caps a merged step of typing |
 | `swiperow` | `<TaoxSwipeRow :start="{ id, label, icon, tone }" :end="[{ id, label, icon, tone }]" v-model:open @action="run">` around a list row: a pull to the start runs `start` past a threshold, to the end opens the actions, a long pull runs the last one (`fullSwipe`, on by default); a mouse drags only with `mouse`; `:tabbable="false"` takes the actions out of the Tab order when the app has its own keys for them; an open row closes on a click on it or a press outside, and that click does not go on (once; `:swallow-outside-click="false"` lets the outside one through); `--tx-swipe-bg` for a row right on the page (see docs/swiperow.md); import `@1337exp/taoux/swiperow.css`. Needs TaoUI (tier 2) |

@@ -57,3 +57,24 @@ export function zoomAt(cam: Camera, sx: number, sy: number, factor: number, limi
     const k = z / cam.z;
     return { x: sx - (sx - cam.x) * k, y: sy - (sy - cam.y) * k, z };
 }
+
+/**
+ * A camera that shows the whole rectangle `rect` (world units) in a view `size` (px), centred, with `padding` px of air
+ * on every side. The zoom is clamped to `limits` (a tiny rectangle is not blown up beyond `max`; with `max` set to 1 it is
+ * "fit, but never enlarge"). An empty or degenerate rectangle gives the default camera.
+ * Камера, которая показывает весь прямоугольник `rect` (мировые единицы) в области `size` (px), по центру, с запасом
+ * `padding` px со всех сторон. Масштаб ограничен `limits` (крошечный прямоугольник не раздувается выше `max`; с `max`, равным 1,
+ * это «вписать, но не увеличивать»). Пустой или вырожденный прямоугольник даёт камеру по умолчанию.
+ */
+export function fitCamera(
+    rect: { x: number; y: number; w: number; h: number } | null,
+    size: { w: number; h: number },
+    padding = 48,
+    limits: Readonly<ZoomLimits> = ZOOM_LIMITS,
+): Camera {
+    if (!rect || rect.w <= 0 || rect.h <= 0 || size.w <= 0 || size.h <= 0) return createCamera();
+    const availW = Math.max(1, size.w - padding * 2);
+    const availH = Math.max(1, size.h - padding * 2);
+    const z = clampZoom(Math.min(availW / rect.w, availH / rect.h), limits);
+    return { z, x: (size.w - rect.w * z) / 2 - rect.x * z, y: (size.h - rect.h * z) / 2 - rect.y * z };
+}
