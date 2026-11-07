@@ -9,7 +9,7 @@
 
 That is all. TaoUX works without TaoUI (every variable has a dark default), and TaoUI works without TaoUX even more so.
 
-**Without the bridge** the editors keep their dark defaults, so on a light page `TaoxCurveEditor` and `TaoxGradientEditor` look like dark islands with a blue accent. `TaoxCurveField` and `TaoxSwipeRow` need the bridge too: their TaoUI controls follow the theme by themselves, but the plot and the action tones come from `--tx-*`.
+**Without the bridge** the editors keep their dark defaults, so on a light page `TaoxCurveEditor` and `TaoxGradientEditor` look like dark islands with a blue accent. `TaoxCurveField` and `TaoxSwipeRow` are made of TaoUI, so their CSS brings the bridge along and they follow the theme with no import of yours.
 
 ## Who may depend on whom
 

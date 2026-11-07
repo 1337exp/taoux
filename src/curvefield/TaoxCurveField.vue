@@ -196,6 +196,10 @@ function setDirection(v: unknown) {
 </template>
 
 <style scoped>
+/* A field is built from TaoUI, so it brings the bridge along: with TaoUI it follows the theme without a separate import (zero specificity, so your rules still win)
+   Поле собрано из TaoUI, поэтому тянет мост с собой: с TaoUI оно следует теме без отдельного импорта (специфичность нулевая, ваши правила главнее) */
+@import '../../theme/taoui.css';
+
 .tx-curve-field {
     display: flex;
     flex-direction: column;

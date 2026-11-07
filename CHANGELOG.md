@@ -2,7 +2,7 @@
 
 ## 0.9.0
 
-Migrate: `curvefield` and `swiperow` now take their colours from the bridge like the other modules, so import `@1337exp/taoux/taoui.css` with them (`curvefield` drew the plot in TaoUI colours by itself, `swiperow` read the TaoUI tone tokens). Without it they use the built-in dark defaults. `swiperow` without the bridge has a 12px radius (it was the TaoUI panel radius).
+Nothing to migrate: `curvefield` and `swiperow` still follow the TaoUI theme without any import of yours. They now take their colours from the bridge like the other modules, and their CSS (`curvefield.css`, `swiperow.css`) carries the bridge along, because a field is made of TaoUI.
 
 - **The TaoUI bridge is a contract.** `theme/taoui.css` is the only file that names a `--tao-*` token; the modules read `--tx-*` with a fallback. `tests/bridge.test.ts` checks that no file in `src/` names `--tao-*`, that every themed variable (colour, tone, radius) the components read is mapped, and that the bridge points only at tokens the installed TaoUI defines.
 - **Corner radius through the bridge.** New `--tx-curve-radius`, `--tx-gradient-radius`, `--tx-canvas-radius` (defaults 4px, 4px, 6px, as before) mapped to `--tao-radius-control`; `--tx-swipe-radius` is mapped to `--tao-radius-panel`.
