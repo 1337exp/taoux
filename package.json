@@ -90,6 +90,10 @@
       "types": "./dist/history.d.ts",
       "import": "./dist/history.js"
     },
+    "./guides": {
+      "types": "./dist/guides.d.ts",
+      "import": "./dist/guides.js"
+    },
     "./hotkeys": {
       "types": "./dist/hotkeys.d.ts",
       "import": "./dist/hotkeys.js"

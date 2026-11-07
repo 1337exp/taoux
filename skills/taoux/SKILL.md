@@ -35,6 +35,7 @@ controls, or with your own design.
 | `hotkeys` | `parseHotkey('Mod+Shift+Z')`, `matchHotkey`, `formatHotkey` (`Ctrl+Shift+Z` / `⇧⌘Z`), `isReservedHotkey`, `bindHotkeys(element, map)` |
 | `storage` | autosave to localStorage that never throws; `tryWrite` gives the reason (`quota` / `denied`), `remove`, `subscribe` for changes from other tabs |
 | `file` | `downloadBlob(name, data, mime?)` saves bytes or a `Blob`; `downloadText(name, text, mime?)`; `readTextFile(file, limit?)` reads a picked file, refusing a big one |
+| `guides` | `snapToGuides(movingRect, otherRects, thresholdInWorldUnits)` → `{ dx, dy, lines }`: smart guides while dragging (edges and centres of the other nodes); you apply the shift and draw the lines; divide a screen threshold by the zoom |
 | `snap` | soft snapping to a grid, threshold follows the zoom |
 | `wheel` | wheel / trackpad → pan or zoom, like Figma (zoom only with Ctrl / ⌘ or a pinch) |
 | `edgescroll` | auto-scroll near an edge while dragging (`createEdgeScroller`) |
