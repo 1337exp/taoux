@@ -340,10 +340,6 @@ const startLabel = (w: number) => fade(w, 84, 28);
 </template>
 
 <style>
-/* A field is built from TaoUI, so it brings the bridge along: with TaoUI it follows the theme without a separate import (zero specificity, so your rules still win)
-   Поле собрано из TaoUI, поэтому тянет мост с собой: с TaoUI оно следует теме без отдельного импорта (специфичность нулевая, ваши правила главнее) */
-@import '../../theme/taoui.css';
-
 /*
  * Variables, on the row or on any element around it (the defaults stand in var(), so an ancestor's value reaches here):
  *   --tx-swipe-bg      the face of the row and the ground its actions are tinted on (the raised surface; a row right on

@@ -66,7 +66,7 @@ import '@1337exp/taoux/taoui.css';          // the bridge: --tx-* → --tao-*, t
 import '@1337exp/taoux/curveeditor.css';    // styles of a Vue module are imported explicitly
 ```
 
-`taoui.css` is plain CSS with zero specificity and no dependency on TaoUI, so any rule of yours wins. Values then travel through `v-model`: `usePlayback` drives `TaoScrubber`, a TaoUI field edits a curve point, a TaoUI slider sets the opacity of a gradient stop. With code: [docs/taoui.md](docs/taoui.md). Without the bridge the editors keep their dark defaults; `TaoxCurveField` and `TaoxSwipeRow` bring it along in their own CSS. The bridge is a contract: the only file that names `--tao-*` tokens.
+`taoui.css` is plain CSS with zero specificity and no dependency on TaoUI, so any rule of yours wins. Values then travel through `v-model`: `usePlayback` drives `TaoScrubber`, a TaoUI field edits a curve point, a TaoUI slider sets the opacity of a gradient stop. With code: [docs/taoui.md](docs/taoui.md). Without the bridge the editors keep their dark defaults; `TaoxCurveField` and `TaoxSwipeRow` need it too. The bridge is a contract: the only file that names `--tao-*` tokens.
 
 <a id="modules"></a>
 
