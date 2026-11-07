@@ -88,7 +88,7 @@ export interface CanvasHost<P = unknown> {
     claimsKey?(event: KeyboardEvent): boolean; // приложение сейчас забирает клавишу: холст её не трогает
     readonly placing?: boolean; // включён инструмент «поставить»: следующее нажатие левой кнопкой только зовёт placeAt
     placeAt?(screen: Point, world: Point): void;
-    contextMenu?(screen: Point, world: Point, target: ContextTarget): boolean; // правый клик без перетаскивания: покажи своё меню и верни true, либо false ради палитры
+    contextMenu?(screen: Point, world: Point, target: ContextTarget): boolean; // правый клик без перетаскивания или долгое нажатие на сенсоре: покажи своё меню и верни true, либо false ради палитры
 }
 
 export interface CanvasOptions<P> {

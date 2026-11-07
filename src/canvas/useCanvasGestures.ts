@@ -235,19 +235,35 @@ export function useCanvasGestures<P>(root: Ref<HTMLElement | null>, host: Canvas
     }
 
     /**
-     * A finger lies on an empty place without moving: this is the touch right click, the palette opens.
-     * Палец лежит на пустом месте и не двигается: это правый клик сенсора, открываем палитру.
+     * A finger lies without moving: this is the touch right click. On a node or a link the app's context menu opens
+     * (when it has one); on an empty place, or when the app shows no menu, the palette opens (an empty place only).
+     * Палец лежит и не двигается: это правый клик сенсора. На ноде или связи открывается контекстное меню приложения
+     * (если оно есть); на пустом месте, или когда меню приложение не показало, открывается палитра (только на пустом месте).
      */
     function onLongPress() {
         longPressTimer = undefined;
-        if (mode !== 'pan' || !taps.longPressDue(performance.now() + 50)) return;
+        const onNode = mode === 'drag' && armed !== null; // a finger on a node that has not started dragging it / палец на ноде, которую он ещё не потащил
+        if ((mode !== 'pan' && !onNode) || !taps.longPressDue(performance.now() + 50)) return;
 
-        // The capture is not released: the palette opens under the finger, and without the capture pointerup would go to it, not to the canvas.
-        // Захват не отпускаем: палитра открывается под пальцем, и без захвата pointerup ушёл бы на неё, а не на холст.
+        const target: ContextTarget = armed
+            ? { kind: 'node', nodeId: armed }
+            : armedConn
+              ? { kind: 'link', id: armedConn }
+              : { kind: 'empty' };
+        const rect = root.value!.getBoundingClientRect();
+        const handled = host.contextMenu?.([lastX - rect.left, lastY - rect.top], screenToWorld(host.camera, lastX - rect.left, lastY - rect.top), target) ?? false;
+        // A node with no menu to show: nothing happens, as before (a hold on a node may still turn into a drag).
+        // Ноде показывать нечего: ничего не происходит, как раньше (удержание на ноде ещё может стать перетаскиванием).
+        if (!handled && target.kind !== 'empty') return;
+
+        // The capture is not released: the menu or the palette opens under the finger, and without the capture pointerup would go to it, not to the canvas.
+        // Захват не отпускаем: меню или палитра открывается под пальцем, и без захвата pointerup ушёл бы на неё, а не на холст.
         taps.cancel();
+        armed = null;
+        armedConn = null;
         mode = 'idle';
         navigator.vibrate?.(15);
-        openPaletteAt({ clientX: lastX, clientY: lastY }, null);
+        if (!handled) openPaletteAt({ clientX: lastX, clientY: lastY }, null);
         note('long press');
     }
 

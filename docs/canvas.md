@@ -88,7 +88,7 @@ export interface CanvasHost<P = unknown> {
     claimsKey?(event: KeyboardEvent): boolean; // the app takes this key now: the canvas leaves it alone
     readonly placing?: boolean; // a "place" tool is armed: the next left press only calls placeAt
     placeAt?(screen: Point, world: Point): void;
-    contextMenu?(screen: Point, world: Point, target: ContextTarget): boolean; // a right click without dragging: show your menu and return true, or false for the palette
+    contextMenu?(screen: Point, world: Point, target: ContextTarget): boolean; // a right click without dragging, or a long press on touch: show your menu and return true, or false for the palette
 }
 
 export interface CanvasOptions<P> {

@@ -156,9 +156,11 @@ export interface CanvasHost<P = unknown> {
      */
     placeAt?(screen: Point, world: Point): void;
     /**
-     * A right click without dragging (a dragged right button pans). The app shows its menu for `target` and returns true;
+     * A right click without dragging (a dragged right button pans), or a finger held still on a node, a link or an empty
+     * place (the long press on touch). The app shows its menu for `target` and returns true;
      * false (or no member) leaves the old behaviour: the node palette opens. `screen` is in px relative to the canvas.
-     * Правый клик без перетаскивания (с перетаскиванием правая кнопка двигает холст). Приложение показывает своё меню для
+     * Правый клик без перетаскивания (с перетаскиванием правая кнопка двигает холст) или палец, неподвижно лежащий на
+     * ноде, связи или пустом месте (долгое нажатие на сенсоре). Приложение показывает своё меню для
      * `target` и возвращает true; false (или нет члена) оставляет прежнее: открывается палитра нод. `screen` в px относительно холста.
      */
     contextMenu?(screen: Point, world: Point, target: ContextTarget): boolean;

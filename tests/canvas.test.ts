@@ -378,6 +378,83 @@ describe('TaoxCanvas: контекстное меню', () => {
     });
 });
 
+describe('TaoxCanvas: долгое нажатие пальцем', () => {
+    const touch = (type: string, init: PointerEventInit = {}) => pointer(type, { pointerType: 'touch', isPrimary: true, ...init });
+    const hold = (ms = 800) => vi.advanceTimersByTime(ms);
+
+    afterEach(() => vi.useRealTimers());
+
+    function setup(extra: Partial<CanvasHost<Pin>> = {}) {
+        vi.useFakeTimers();
+        const made = createHost(extra);
+        return { ...made, canvas: mount(made.host) };
+    }
+
+    it('на ноде: удержание без движения открывает контекстное меню этой ноды, палитра не открывается', () => {
+        const contextMenu = vi.fn<NonNullable<CanvasHost<Pin>['contextMenu']>>(() => true);
+        const { canvas, calls } = setup({ contextMenu });
+
+        canvas.querySelector('.node-b')!.dispatchEvent(touch('pointerdown', { clientX: 40, clientY: 50 }));
+        hold();
+
+        expect(contextMenu).toHaveBeenCalledTimes(1);
+        expect(contextMenu.mock.calls[0]![2]).toEqual({ kind: 'node', nodeId: 'b' });
+        expect(contextMenu.mock.calls[0]![0]).toHaveLength(2);
+        expect(calls.some((c) => c.startsWith('openPalette'))).toBe(false);
+        expect(calls.some((c) => c.startsWith('beginDrag'))).toBe(false); // это не перетаскивание
+    });
+
+    it('на связи: меню связи', () => {
+        const contextMenu = vi.fn<NonNullable<CanvasHost<Pin>['contextMenu']>>(() => true);
+        const { canvas } = setup({ contextMenu });
+        canvas.querySelector('.link')!.dispatchEvent(touch('pointerdown'));
+        hold();
+        expect(contextMenu.mock.calls[0]![2]).toEqual({ kind: 'link', id: 'c1' });
+    });
+
+    it('если палец пошёл тянуть до срока, меню не открывается', () => {
+        const contextMenu = vi.fn<NonNullable<CanvasHost<Pin>['contextMenu']>>(() => true);
+        const { canvas } = setup({ contextMenu });
+
+        canvas.querySelector('.node-b')!.dispatchEvent(touch('pointerdown', { clientX: 40, clientY: 50 }));
+        canvas.dispatchEvent(touch('pointermove', { clientX: 90, clientY: 90 }));
+        hold();
+        expect(contextMenu).not.toHaveBeenCalled();
+    });
+
+    it('на пустом месте приложение спрашивают тоже; false оставляет палитру', () => {
+        const contextMenu = vi.fn<NonNullable<CanvasHost<Pin>['contextMenu']>>(() => false);
+        const { canvas, calls } = setup({ contextMenu });
+        canvas.dispatchEvent(touch('pointerdown'));
+        hold();
+        expect(contextMenu.mock.calls[0]![2]).toEqual({ kind: 'empty' });
+        expect(calls.some((c) => c.startsWith('openPalette'))).toBe(true);
+    });
+
+    it('без contextMenu всё как раньше: на пустом месте палитра, на ноде ничего', () => {
+        const a = setup();
+        a.canvas.dispatchEvent(touch('pointerdown'));
+        hold();
+        expect(a.calls.some((c) => c.startsWith('openPalette'))).toBe(true);
+        a.canvas.remove();
+    });
+
+    it('на ноде без contextMenu удержание ничего не открывает', () => {
+        const { canvas, calls } = setup();
+        canvas.querySelector('.node-b')!.dispatchEvent(touch('pointerdown'));
+        hold();
+        expect(calls.some((c) => c.startsWith('openPalette'))).toBe(false);
+    });
+
+    it('в поле ввода внутри ноды удержание меню не открывает: там выделяют текст', () => {
+        const contextMenu = vi.fn<NonNullable<CanvasHost<Pin>['contextMenu']>>(() => true);
+        const { canvas } = setup({ contextMenu });
+        canvas.querySelector('.field-a')!.dispatchEvent(touch('pointerdown'));
+        hold();
+        expect(contextMenu).not.toHaveBeenCalled();
+    });
+});
+
 describe('TaoxCanvas: инструмент «поставить»', () => {
     it('пока он включён, нажатие зовёт placeAt с экранной и мировой точкой и больше ничего не делает', () => {
         const placeAt = vi.fn();
