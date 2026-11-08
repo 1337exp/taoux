@@ -85,7 +85,8 @@ const colorStyle = (line: LinkLine) => (line.color ? { '--tx-link-line-color': l
     stroke-width: var(--tx-link-width-active, 3);
 }
 
-.tx-link-head {
+/* The selector is as specific as `.tx-links path` above: with a shorter one `fill: none` won and the arrowhead was invisible. / Селектор той же специфичности, что у `.tx-links path` выше: с коротким побеждал `fill: none`, и наконечник не был виден. */
+.tx-links .tx-link-head {
     fill: var(--tx-link-now);
     stroke: none;
     pointer-events: none;

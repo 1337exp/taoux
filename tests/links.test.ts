@@ -1,4 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { createApp, h, type App } from 'vue';
 import { TaoxLinks, type LinkLine, type LinkPreview } from '../src/links';
 
@@ -69,5 +71,13 @@ describe('TaoxLinks', () => {
         expect(preview.classList.contains('invalid')).toBe(true);
         expect(preview.dataset.connId).toBeUndefined();
         expect(el.querySelector('.tx-link-hit')).toBeNull(); // за предпросмотр не ухватишься
+    });
+});
+
+describe('TaoxLinks: стили', () => {
+    it('наконечник заливается: его правило не слабее общего `.tx-links path { fill: none }`', () => {
+        const css = readFileSync(join(process.cwd(), 'src/links/TaoxLinks.vue'), 'utf8');
+        expect(css).toMatch(/.tx-links .tx-link-heads*{[^}]*fill:s*var(--tx-link-now)/);
+        expect(css).not.toMatch(/^.tx-link-heads*{/m);
     });
 });

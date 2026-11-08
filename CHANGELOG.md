@@ -4,6 +4,7 @@
 
 Nothing to migrate: two optional host members; a host without them works as before.
 
+- **`links`: the arrowhead is filled.** `.tx-links path { fill: none }` is more specific than `.tx-link-head { fill }`, so an arrowhead was drawn with no fill and was never seen; the line, shortened to run into it, stopped short of the node. The head rule is as specific now.
 - **`curve`: `linkPointAt(a, aSide, b, bSide, t = 0.5)`.** A point on the curve of `linkShape`: the middle of a link for a label, a handle or a marker.
 - **`canvas`: a double click on a link tells what was under the pointer.** `ActivateTarget` of kind `link` has `element`, the element under the pointer, so an app that draws something on a link (a label) can tell a double click on it from one on the line (which puts a point).
 - **New module `guides`: smart guides for dragging.** `snapToGuides(moving, others, threshold, options?)` compares the edges and the centre of the dragged rectangle with those of the other rectangles, per axis, and returns `{ dx, dy, lines }`: how far to shift it so that the nearest pair coincides (within the threshold, in world units; divide a screen threshold by the zoom) and the lines to draw, one per coinciding position, shared by every rectangle that lies on it. Edges and centres can be switched off in `options`. Plain numbers, no DOM and no Vue; collecting the rectangles, applying the shift and drawing stay with the app.
