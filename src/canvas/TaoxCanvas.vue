@@ -46,7 +46,7 @@ const gridStyle = computed(() => {
         // При сильном отдалении точки каждого шага слились бы в дымку: тогда только каждого пятого.
         const step = small < 10 ? big : small;
         return {
-            backgroundImage: 'radial-gradient(circle, var(--tx-canvas-dot, rgba(255, 255, 255, 0.2)) 1.1px, transparent 1.6px)',
+            backgroundImage: 'radial-gradient(circle, var(--tx-canvas-dot, rgba(255, 255, 255, 0.1)) 1.1px, transparent 1.6px)',
             backgroundSize: `${step}px ${step}px`,
             // the dot sits in the middle of its tile: shift the tile so that dots lie on the grid lines / точка в середине плитки: сдвигаем плитку, чтобы точки лежали на линиях сетки
             backgroundPosition: `${x - step / 2}px ${y - step / 2}px`,
