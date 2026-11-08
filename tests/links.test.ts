@@ -77,7 +77,7 @@ describe('TaoxLinks', () => {
 describe('TaoxLinks: стили', () => {
     it('наконечник заливается: его правило не слабее общего `.tx-links path { fill: none }`', () => {
         const css = readFileSync(join(process.cwd(), 'src/links/TaoxLinks.vue'), 'utf8');
-        expect(css).toMatch(/.tx-links .tx-link-heads*{[^}]*fill:s*var(--tx-link-now)/);
-        expect(css).not.toMatch(/^.tx-link-heads*{/m);
+        expect(css).toMatch(/[.]tx-links [.]tx-link-head[ ]*[{][^}]*fill:[ ]*var[(]--tx-link-now[)]/);
+        expect(css).not.toMatch(/^[.]tx-link-head[ ]*[{]/m);
     });
 });
