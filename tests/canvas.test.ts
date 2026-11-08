@@ -455,6 +455,27 @@ describe('TaoxCanvas: долгое нажатие пальцем', () => {
     });
 });
 
+describe('TaoxCanvas: нажатие на управляющие элементы внутри ноды', () => {
+    it('метка (так рисуют самодельный чекбокс), ссылка и ARIA-переключатель получают нажатие сами: нода не тащится', () => {
+        const { host, calls } = createHost();
+        const canvas = mount(host);
+        const node = canvas.querySelector('.node-b')!;
+        const label = document.createElement('label');
+        const link = document.createElement('a');
+        link.setAttribute('href', '#');
+        const sw = document.createElement('span');
+        sw.setAttribute('role', 'switch');
+        node.append(label, link, sw);
+
+        for (const el of [label, link, sw]) el.dispatchEvent(pointer('pointerdown'));
+        expect(calls.some((c) => c.startsWith('beginDrag'))).toBe(false);
+
+        // Сама нода по-прежнему тащится.
+        node.dispatchEvent(pointer('pointerdown'));
+        expect(calls.some((c) => c.startsWith('beginDrag'))).toBe(true);
+    });
+});
+
 describe('TaoxCanvas: инструмент «поставить»', () => {
     it('пока он включён, нажатие зовёт placeAt с экранной и мировой точкой и больше ничего не делает', () => {
         const placeAt = vi.fn();

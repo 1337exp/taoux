@@ -104,7 +104,7 @@ export function useCanvasGestures<P>(root: Ref<HTMLElement | null>, host: Canvas
      * Поля ввода внутри нод: клик по ним выделяет ноду, но не тащит её и не отбирает фокус.
      */
     const isEditable = (target: EventTarget | null) =>
-        !!(target as Element | null)?.closest('input, textarea, select, button, [contenteditable="true"]');
+        !!(target as Element | null)?.closest('input, textarea, select, button, label, a[href], [contenteditable="true"], [role="checkbox"], [role="radio"], [role="switch"]');
 
     /**
      * The pin under the cursor: the nearest pin (if the app can) or the one exactly under the pointer.
