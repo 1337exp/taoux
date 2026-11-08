@@ -5,6 +5,7 @@
 Nothing to migrate: two optional host members; a host without them works as before.
 
 - **`canvas`: a press on a label, a link or an ARIA checkbox / radio / switch inside a node belongs to it.** The canvas passed presses to `input`, `textarea`, `select`, `button` and left the rest to the drag, so a checkbox drawn as a `label` (TaoUI's `TaoCheckbox`) could not be ticked with a mouse: the press started dragging the node and the click never came.
+- **`canvas`: a `background` prop: `grid` (default), `dots` or `none`.** Some people read a canvas with fewer details better: `dots` puts a dot at every crossing of the grid (every fifth one when zoomed far out), `none` leaves the plain colour. Only a look: snapping to the grid is the app's. The dots colour is `--tx-canvas-dot` (the bridge maps it).
 - **`links`: the arrowhead is filled.** `.tx-links path { fill: none }` is more specific than `.tx-link-head { fill }`, so an arrowhead was drawn with no fill and was never seen; the line, shortened to run into it, stopped short of the node. The head rule is as specific now.
 - **`curve`: `linkPointAt(a, aSide, b, bSide, t = 0.5)`.** A point on the curve of `linkShape`: the middle of a link for a label, a handle or a marker.
 - **`canvas`: a double click on a link tells what was under the pointer.** `ActivateTarget` of kind `link` has `element`, the element under the pointer, so an app that draws something on a link (a label) can tell a double click on it from one on the line (which puts a point).

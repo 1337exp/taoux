@@ -90,12 +90,12 @@ const options: CanvasOptions<Pin> = {
 let app: App | null = null;
 let el: HTMLElement | null = null;
 
-function mount(host: CanvasHost<Pin>, opts: CanvasOptions<Pin> = options) {
+function mount(host: CanvasHost<Pin>, opts: CanvasOptions<Pin> = options, props: Record<string, unknown> = {}) {
     el = document.createElement('div');
     document.body.appendChild(el);
     app = createApp({
         render: () =>
-            h(TaoxCanvas as never, { host, options: opts }, {
+            h(TaoxCanvas as never, { host, options: opts, ...props }, {
                 default: () => [
                     h('div', { class: 'node-a', 'data-node-id': 'a' }, [h('span', { class: 'pin-a', 'data-pin': 'right' }), h('input', { class: 'field-a' })]),
                     h('div', { class: 'node-b', 'data-node-id': 'b' }),
@@ -131,6 +131,36 @@ describe('TaoxCanvas: вид', () => {
         state.origin = { node: 'a', side: 'right' };
         await Promise.resolve();
         expect(canvas.classList.contains('connecting')).toBe(true);
+    });
+});
+
+describe('TaoxCanvas: фон', () => {
+    /** "48px 48px, 240px 240px" → [48, 48, 240, 240]: сравниваем числа, а не строки (дробный хвост у px). */
+    const nums = (v: string) => (v.match(/-?[0-9.]+/g) ?? []).map(Number);
+
+    it('сетка по умолчанию: четыре слоя размеров из CSS; точки: один радиальный слой на узлах сетки; без фона: нет картинки', () => {
+        const { host, state } = createHost();
+        state.camera = { x: 30, y: 40, z: 2 };
+
+        const grid = mount(host);
+        expect(nums(grid.style.backgroundSize).map(Math.round)).toEqual([48, 48, 48, 48, 240, 240, 240, 240]);
+        grid.parentElement!.remove();
+
+        const dots = mount(host, options, { background: 'dots' });
+        expect(nums(dots.style.backgroundSize).map(Math.round)).toEqual([48, 48]);
+        // плитка сдвинута на полшага, чтобы точка (в её середине) легла на линию сетки
+        expect(nums(dots.style.backgroundPosition).map(Math.round)).toEqual([6, 16]);
+        dots.parentElement!.remove();
+
+        const none = mount(host, options, { background: 'none' });
+        expect(none.style.backgroundImage).toBe('none');
+    });
+
+    it('точки при сильном отдалении берут каждый пятый шаг (иначе сольются в дымку)', () => {
+        const { host, state } = createHost();
+        state.camera = { x: 0, y: 0, z: 0.2 }; // шаг 4.8 px < 10
+        const dots = mount(host, options, { background: 'dots' });
+        expect(nums(dots.style.backgroundSize).map(Math.round)).toEqual([24, 24]);
     });
 });
 

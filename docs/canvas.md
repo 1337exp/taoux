@@ -32,7 +32,7 @@ This keeps the answer about isolation honest: primitives are still self-containe
 The `TaoxCanvas` component and the `useCanvasGestures` composable. The canvas does not know the data model: it parses gestures and calls the methods of `CanvasHost`.
 
 ```vue
-<TaoxCanvas :host="host" :options="options">
+<TaoxCanvas :host="host" :options="options" background="dots"> <!-- background: 'grid' (default), 'dots' or 'none' -->
     <!-- the world: the app puts containers, the links layer and nodes here in the right order -->
     <NodeView v-for="n in containers" :node="n" />
     <TaoxLinks :lines="lines" :selected-id="..." :preview="preview" />

@@ -22,6 +22,7 @@
     --tx-canvas-bg: var(--tao-color-bg);
     --tx-canvas-grid-minor: color-mix(in srgb, var(--tao-color-text) 4%, transparent);
     --tx-canvas-grid-major: color-mix(in srgb, var(--tao-color-text) 8%, transparent);
+    --tx-canvas-dot: color-mix(in srgb, var(--tao-color-text) 24%, transparent);
     --tx-canvas-accent: var(--tao-color-accent);
     --tx-canvas-accent-subtle: var(--tao-color-accent-subtle);
 

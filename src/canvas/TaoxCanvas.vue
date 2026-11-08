@@ -17,8 +17,15 @@ const props = withDefaults(
          * Шаг мелкой сетки на фоне, мировые единицы.
          */
         grid?: number;
+        /**
+         * What is drawn on the background: `grid` (lines, the default), `dots` (a dot at every crossing, fewer details) or
+         * `none`. It is only a look: snapping to the grid is the app's own setting.
+         * Что нарисовано на фоне: `grid` (линии, по умолчанию), `dots` (точка в каждом пересечении, меньше деталей) или `none`.
+         * Это только вид: привязка к сетке отдельная настройка приложения.
+         */
+        background?: 'grid' | 'dots' | 'none';
     }>(),
-    { grid: GRID },
+    { grid: GRID, background: 'grid' },
 );
 
 const root = ref<HTMLElement | null>(null);
@@ -33,6 +40,18 @@ const gridStyle = computed(() => {
     const { x, y, z } = props.host.camera;
     const small = props.grid * z;
     const big = small * 5;
+    if (props.background === 'none') return { backgroundImage: 'none' };
+    if (props.background === 'dots') {
+        // Zoomed far out the dots of every step would turn into a haze: then every fifth step only.
+        // При сильном отдалении точки каждого шага слились бы в дымку: тогда только каждого пятого.
+        const step = small < 10 ? big : small;
+        return {
+            backgroundImage: 'radial-gradient(circle, var(--tx-canvas-dot, rgba(255, 255, 255, 0.2)) 1.1px, transparent 1.6px)',
+            backgroundSize: `${step}px ${step}px`,
+            // the dot sits in the middle of its tile: shift the tile so that dots lie on the grid lines / точка в середине плитки: сдвигаем плитку, чтобы точки лежали на линиях сетки
+            backgroundPosition: `${x - step / 2}px ${y - step / 2}px`,
+        };
+    }
     return {
         backgroundSize: `${small}px ${small}px, ${small}px ${small}px, ${big}px ${big}px, ${big}px ${big}px`,
         backgroundPosition: `${x}px ${y}px`,
@@ -87,7 +106,7 @@ defineExpose({ root });
 /*
  * Configured with CSS variables on the canvas or an ancestor:
  * Настройка через CSS-переменные на холсте или предке:
- *   --tx-canvas-bg, --tx-canvas-grid-minor, --tx-canvas-grid-major, --tx-canvas-accent, --tx-canvas-accent-subtle,
+ *   --tx-canvas-bg, --tx-canvas-grid-minor, --tx-canvas-grid-major, --tx-canvas-dot, --tx-canvas-accent, --tx-canvas-accent-subtle,
  *   --tx-canvas-radius (the corners of the debug badge, 6px by default).
  *   --tx-canvas-radius — углы отладочной плашки, по умолчанию 6px.
  */
