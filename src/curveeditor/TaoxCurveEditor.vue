@@ -49,6 +49,14 @@ const props = withDefaults(
          */
         pointLabel?: (index: number, point: CurvePoint) => string;
         /**
+         * How time is written: on the time axis, on the tag of the selected point and in the default point label. `t` is 0…1, the
+         * editor's own time; a curve over years or seconds says so here (`(t) => `${Math.round(t * 14)} y``). By default the number
+         * itself.
+         * Как записывается время: на оси времени, на метке выбранной точки и в подписи точки по умолчанию. `t` — от 0 до 1, собственное
+         * время редактора; кривая по годам или секундам говорит это здесь. По умолчанию само число.
+         */
+        formatT?: (t: number) => string;
+        /**
          * Guides from the selected point to the axes: `off` none, `lines` dashed lines only, `values` lines and the point values on the axes.
          * `lines` by default: noticeable, but not overloaded.
          * Направляющие от выбранной точки к осям: `off` нет, `lines` только пунктирные линии, `values` линии и значения точки на осях.
@@ -116,6 +124,7 @@ const path = computed(() => {
     return out.join(' ');
 });
 const fmt = (n: number) => String(Math.round(n * 1000) / 1000);
+const fmtT = (tt: number) => (props.formatT ? props.formatT(tt) : fmt(tt));
 
 // The values of the selected point on the axes: time under the plot, value on the left. They show while the point is dragged, so there is no need to look for the fields.
 // Значения выбранной точки на осях: время под графиком, значение слева. Они видны, пока точку тянут, и не надо искать глазами поля.
@@ -124,7 +133,7 @@ const tagWidth = (text: string) => text.length * CHAR_W + 5;
 const tags = computed(() => {
     const p = points.value[Math.min(props.selected, points.value.length - 1)];
     if (!p) return null;
-    const t = fmt(p.t);
+    const t = fmtT(p.t);
     const v = fmt(p.v);
     const wt = tagWidth(t);
     const wv = tagWidth(v);
@@ -429,7 +438,7 @@ function onKey(e: KeyboardEvent) {
     }
 }
 
-const labelOf = (i: number, p: CurvePoint) => (props.pointLabel ? props.pointLabel(i, p) : `Point ${i + 1}: ${fmt(p.t)}, ${fmt(p.v)}`);
+const labelOf = (i: number, p: CurvePoint) => (props.pointLabel ? props.pointLabel(i, p) : `Point ${i + 1}: ${fmtT(p.t)}, ${fmt(p.v)}`);
 </script>
 
 <template>
@@ -439,7 +448,7 @@ const labelOf = (i: number, p: CurvePoint) => (props.pointLabel ? props.pointLab
         <line v-for="v in gridV" :key="`gv${v}`" class="tx-curve-grid" :class="{ major: isMajorV(v) }" :x1="PAD_L" :x2="W - PAD_R" :y1="py(v)" :y2="py(v)" />
 
         <text v-for="(v, i) in labelsV" :key="`lv${v}`" class="tx-curve-label" :class="{ edge: v === 0 || i === 0 || i === labelsV.length - 1 }" :x="PAD_L - 4" :y="py(v)" text-anchor="end" dominant-baseline="middle">{{ fmt(v) }}</text>
-        <text v-for="x in labelsT" :key="`lt${x}`" class="tx-curve-label" :class="{ edge: x === 0 || x === 1 }" :x="px(x)" :y="H - 4" :text-anchor="x === 0 ? 'start' : x === 1 ? 'end' : 'middle'">{{ fmt(x) }}</text>
+        <text v-for="x in labelsT" :key="`lt${x}`" class="tx-curve-label" :class="{ edge: x === 0 || x === 1 }" :x="px(x)" :y="H - 4" :text-anchor="x === 0 ? 'start' : x === 1 ? 'end' : 'middle'">{{ fmtT(x) }}</text>
 
         <g v-if="tags && guides !== 'off'" class="tx-curve-tags" aria-hidden="true">
             <line class="tx-curve-guide" :x1="tags.x" :x2="tags.x" :y1="tags.y" :y2="PAD_T + PLOT_H" />

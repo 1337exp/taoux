@@ -33,6 +33,15 @@ describe('TaoxCurveField', () => {
         expect(w.text()).toContain('Value'); // недостающие надписи остаются английскими
     });
 
+    it('formatT доходит до графика: ось времени подписана по-своему', () => {
+        w = mountField({ formatT: (t: number) => `${Math.round(t * 10)} s` });
+        const times = () => w.findAll('.tx-curve-label').filter((l) => l.attributes('y') === '128');
+        expect(times().map((l) => l.text())).toEqual(['0 s', '3 s', '5 s', '8 s', '10 s']);
+        w.unmount();
+        w = mountField();
+        expect(times().map((l) => l.text())).toEqual(['0', '0.25', '0.5', '0.75', '1']);
+    });
+
     it('поле значения двигает точку, зажимая в границы и сохраняя правку', () => {
         w = mountField({ precision: 2 });
         numbers()[1]!.vm.$emit('update:modelValue', -5);

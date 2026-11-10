@@ -55,6 +55,7 @@ A runtime does not have to depend on taoux at install time: the module is tiny a
 - A segment with no height difference (`v` of both points equal) has no handles: its shape does not depend on them.
 - Guides from the selected point to the axes: the `guides` prop (`off`, `lines`, `values`). `lines` draws dashed lines, `values` adds the point values on the axes. `lines` by default; `TaoxCurveField` has the same prop.
 - Labels for screen readers: `pointLabel` for points, `handleLabel(n, index)` for handles.
+- How time is written: the `formatT(t)` prop. The editor's time is always 0…1, so a curve over years or seconds would show 0, 0.25, 0.5 on its axis; `formatT` turns `t` into the text you want (`(t) => \`${Math.round(t * 14)} y\``) on the time axis, on the tag of the selected point (`guides="values"`) and in the default point label. The value axis and the points themselves stay as they are; `TaoxCurveField` has the same prop.
 
 Operations: `setEase(points, index, ease)` sets a transition (`undefined` or `'linear'` removes the field), `sampleSegment(a, b)` returns the polyline of a segment for drawing, `sampleCurve` and `valueBounds` take transitions into account. `movePoint` keeps `ease` on the moved point.
 

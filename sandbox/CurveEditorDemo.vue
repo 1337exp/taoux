@@ -15,14 +15,16 @@ interface Case {
     initial: CurvePoint[];
     value: CurvePoint[];
     selected: number;
+    formatT?: (t: number) => string;
 }
 
-const make = (title: readonly [string, string], note: readonly [string, string], initial: CurvePoint[], min?: number, max?: number, precision?: number): Case => ({
+const make = (title: readonly [string, string], note: readonly [string, string], initial: CurvePoint[], min?: number, max?: number, precision?: number, formatT?: (t: number) => string): Case => ({
     title,
     note,
     min,
     max,
     precision,
+    formatT,
     initial,
     value: initial.map((p) => ({ ...p })),
     selected: 0,
@@ -38,6 +40,7 @@ const cases = ref<Case[]>([
     make(['Opacity, 0…1', 'Непрозрачность, 0…1'], ['min 0, max 1: the view stays put', 'min 0, max 1: вид стоит'], [{ t: 0, v: 1 }, { t: 1, v: 0 }], 0, 1),
     make(['Speed, −1…1', 'Скорость, −1…1'], ['min −1, max 1', 'min −1, max 1'], [{ t: 0, v: 0 }, { t: 0.5, v: 1 }, { t: 1, v: -1 }], -1, 1),
     make(['No bounds', 'Без границ'], ['everything automatic', 'всё авто'], [{ t: 0, v: 2 }, { t: 1, v: 2 }]),
+    make(['Time in seconds', 'Время в секундах'], ['formatT: the editor\'s 0…1 is written as 0…12 s', 'formatT: 0…1 редактора записано как 0…12 с'], [{ t: 0, v: 0 }, { t: 0.5, v: 1 }, { t: 1, v: 0.25 }], 0, 1, undefined, (t) => `${Math.round(t * 120) / 10} s`),
     make(['Two decimals', 'Два знака'], ['precision 2, min 0: drag a point to the top edge', 'precision 2, min 0: потяни точку к верхнему краю'], [{ t: 0, v: 0 }, { t: 0.5, v: 1 }, { t: 1, v: 0 }], 0, undefined, 2),
 ]);
 
@@ -76,7 +79,7 @@ function setField(c: Case, field: 't' | 'v', value: number | null) {
         <div class="grid">
             <section v-for="c in cases" :key="c.title[0]" class="case">
                 <h2>{{ tr(...c.title) }} <small>{{ tr(...c.note) }}</small></h2>
-                <TaoxCurveEditor v-model="c.value" v-model:selected="c.selected" :min="c.min" :max="c.max" :precision="c.precision" :snap="snap" :guides="guides" />
+                <TaoxCurveEditor v-model="c.value" v-model:selected="c.selected" :min="c.min" :max="c.max" :precision="c.precision" :snap="snap" :guides="guides" :format-t="c.formatT" />
                 <div class="divider">{{ tr('Below: TaoUI fields around the editor; they are not part of it', 'Ниже обвязка на TaoUI: самого редактора это не касается') }}</div>
                 <div class="row">
                     <TaoInputNumber class="grow" size="small" :min="0" :max="1" :step="0.05" :precision="c.precision" :controls="false" :model-value="current(c).t" @update:model-value="(x) => setField(c, 't', x)" />

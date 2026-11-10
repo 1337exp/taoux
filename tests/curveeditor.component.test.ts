@@ -277,6 +277,35 @@ describe('TaoxCurveEditor: подписи осей', () => {
         v.unmount();
     });
 
+    it('formatT пишет время на оси, на метке выбранной точки и в подписи точки, а значения не трогает', () => {
+        const years = (t: number) => `${Math.round(t * 14)} y`;
+        const w = mountCurve({ selected: 1, guides: 'values', formatT: years });
+        const labels = w.findAll('.tx-curve-label');
+        expect(labels.filter((l) => l.attributes('y') === '128').map((l) => l.text())).toEqual(['0 y', '4 y', '7 y', '11 y', '14 y']);
+        expect(labels.filter((l) => l.attributes('y') !== '128').every((l) => !l.text().includes('y'))).toBe(true);
+        expect(w.findAll('.tx-curve-tag').map((t) => t.text())).toEqual(['7 y', '1']);
+        expect(dots(w)[1]!.attributes('aria-label')).toBe('Point 2: 7 y, 1');
+        w.unmount();
+    });
+
+    it('formatT не мешает своей подписи точки и по умолчанию время остаётся числом', () => {
+        const w = mountCurve({ formatT: (t: number) => `${t * 14} y`, pointLabel: (i: number) => `Точка ${i + 1}` });
+        expect(dots(w)[1]!.attributes('aria-label')).toBe('Точка 2');
+        w.unmount();
+        const d = mountCurve({ selected: 1, guides: 'values' });
+        expect(d.findAll('.tx-curve-label').filter((l) => l.attributes('y') === '128').map((l) => l.text())).toEqual(['0', '0.25', '0.5', '0.75', '1']);
+        d.unmount();
+    });
+
+    it('метка времени с длинным текстом получает более широкую подложку', () => {
+        const short = mountCurve({ selected: 1, guides: 'values' });
+        const long = mountCurve({ selected: 1, guides: 'values', formatT: (t: number) => `year ${t * 14}` });
+        const width = (w: VueWrapper) => Number(w.findAll('.tx-curve-tag-bg')[0]!.attributes('width'));
+        expect(width(long)).toBeGreaterThan(width(short));
+        short.unmount();
+        long.unmount();
+    });
+
     it('крайние цифры каждой оси выделены, средние нет', () => {
         const w = mountCurve();
         const labels = w.findAll('.tx-curve-label');

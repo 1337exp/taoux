@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.11.0
+
+Nothing to migrate: one optional prop; without it the editor writes the same numbers as before.
+
+- **`curveeditor`: a `formatT(t)` prop writes the time.** The editor's time is 0…1, and its axis and the tag of the selected point could only print that number, so a curve over years or seconds (a rate curve, an animation of 12 s) had to hide the labels with CSS and draw its own. `formatT` turns `t` into text on the time axis, on the tag of the selected point (`guides="values"`) and in the default point label for screen readers; the value axis and the points are not touched. `TaoxCurveField` forwards it to its plot. The tag background widens with the text.
+
 ## 0.10.0
 
 Nothing to migrate: two optional host members; a host without them works as before.

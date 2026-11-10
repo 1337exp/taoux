@@ -59,6 +59,11 @@ const props = withDefaults(
          */
         pointLabel?: (index: number, point: CurvePoint) => string;
         handleLabel?: (n: number, index: number) => string;
+        /**
+         * How the plot writes time (its axis and the tag of the selected point): see TaoxCurveEditor.
+         * Как график записывает время (ось и метка выбранной точки): см. TaoxCurveEditor.
+         */
+        formatT?: (t: number) => string;
     }>(),
     { stepT: 0.05, snap: true, guides: 'lines' },
 );
@@ -167,6 +172,7 @@ function setDirection(v: unknown) {
             :guides="guides"
             :point-label="pointLabel"
             :handle-label="handleLabel"
+            :format-t="formatT"
             @update:model-value="change"
             @commit="emit('commit')"
         />

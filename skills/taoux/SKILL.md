@@ -53,7 +53,7 @@ controls, or with your own design.
 | `i18n` | typed i18n: `createI18n({ locales, fallback, storageKey })` |
 | `links` (Vue) | `TaoxLinks`: an SVG layer of links from ready geometry |
 | `canvas` (Vue) | `TaoxCanvas`: pan / zoom canvas with mouse, touch, wheel, auto-scroll, keys; the `CanvasHost` contract; prop `background: 'grid' | 'dots' | 'none'`; options `marquee: 'contain'` (only nodes wholly inside the frame), `zoom: { min, max }`; host `claimsKey(e)` keeps a key from the canvas while a tool uses it; host `placing` + `placeAt(screen, world)` is a "place a node" tool (the next left press only says where); host `contextMenu(screen, world, target)` shows the app's menu on a right click (true) or leaves the palette (false) |
-| `curveeditor` (Vue) | `TaoxCurveEditor`: points, snapping, bounds, per-segment easing with Bezier handles, keyboard |
+| `curveeditor` (Vue) | `TaoxCurveEditor`: points, snapping, bounds, per-segment easing with Bezier handles, keyboard; time is 0…1, `formatT(t)` writes it as years, seconds… on the axis and tag |
 | `gradienteditor` (Vue) | `TaoxGradientEditor`: stops on a bar, `gradientCss`, keyboard |
 | `curvefield` (Vue, needs TaoUI) | `TaoxCurveField`: a curve editor with TaoUI fields for time, value, easing, snapping |
 
