@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.12.1
+
+Nothing to migrate; the behaviour of `zip` does not change.
+
+- **`zip`: checks that other checks already cover are gone, and the tests hold the rest.** The reader no longer repeats an absolute-path test (an empty first part of the path already refuses it), a stored-size test and a running total (the size of every file is verified against its declared one, so the total is the declared total, which is judged before unpacking). New tests pin what a mutation check showed to be unguarded: an end record that sits inside the archive comment, the file count of the record, a total-size refusal that comes before the rest of the archive is touched, a declared size bigger than the data with a matching CRC, a packed size running past the data, names that are not UTF-8 (refused with the UTF-8 flag, read as Latin-1 without it) and a date before 1980.
+
 ## 0.12.0
 
 Nothing to migrate: a new module and new optional members.
