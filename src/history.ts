@@ -5,6 +5,17 @@
 export const COALESCE_MS = 800;
 
 /**
+ * A history taken out of a `History` to be put back later: for an editor with several documents, each keeps its own.
+ * It is plain data (strings and a number), so it can be stored anywhere.
+ * История, вынутая из `History`, чтобы вернуть её позже: у редактора с несколькими документами у каждого своя.
+ * Это простые данные (строки и число), их можно хранить где угодно.
+ */
+export interface HistoryState {
+    states: readonly string[];
+    index: number;
+}
+
+/**
  * Undo/redo state history: a linear list of snapshots and a pointer to the current one.
  * Snapshots are strings (graph JSON): they are immutable, easy to compare and need no copying.
  * История состояний для undo/redo: линейный список снимков и указатель на текущий.
@@ -84,6 +95,30 @@ export class History {
         if (!this.canRedo) return null;
         this.lastKey = undefined;
         return this.states[++this.index]!;
+    }
+
+    /**
+     * A copy of the whole history (the snapshots and the position), to put back with `restore`.
+     * Копия всей истории (снимки и положение), чтобы вернуть её через `restore`.
+     */
+    save(): HistoryState {
+        return { states: [...this.states], index: this.index };
+    }
+
+    /**
+     * Puts a saved history back. The current snapshot of it should be the state of the document the app shows now;
+     * what is not (an index out of range, no snapshots) is refused with an error. A series of merged edits is not
+     * continued across a restore.
+     * Возвращает сохранённую историю. Текущий снимок в ней должен быть состоянием документа, который приложение показывает
+     * сейчас; негодное (положение вне списка, нет снимков) отклоняется ошибкой. Серия склеенных правок через возврат не продолжается.
+     */
+    restore(state: HistoryState): void {
+        if (!Number.isInteger(state.index) || state.index < 0 || state.index >= state.states.length) {
+            throw new RangeError('History.restore: the position is outside the saved snapshots');
+        }
+        this.states = [...state.states];
+        this.index = state.index;
+        this.lastKey = undefined;
     }
 
     /**

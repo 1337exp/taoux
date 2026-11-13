@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.13.0
+
+Nothing to migrate: new optional members.
+
+- **`history`: `save()` and `restore(state)`.** An editor with several documents (tabs, a project tree) wants an undo of its own for each: switching from one to another must not lose the steps of the first or give them to the second. `save()` returns the whole history (a copy of the snapshots and the position, plain data, `HistoryState`), `restore(state)` puts it back; a position outside the snapshots, or no snapshots, is a `RangeError`. A series of merged edits (the `key`) is not continued across a restore.
+- **`session`: `saveHistory()` and `restoreHistory(state)`.** The same for a document session: when another document is shown, take the history of the one you leave (`saveHistory`), `load` the next with `resetHistory`, then give it its own (`restoreHistory`); `canUndo` and `canRedo` follow it. The document, `dirty` and the autosave are not touched, so the app keeps its own `dirty` per document if it wants it.
+
 ## 0.12.1
 
 Nothing to migrate; the behaviour of `zip` does not change.

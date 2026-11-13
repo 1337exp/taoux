@@ -82,7 +82,7 @@ import { History } from '@1337exp/taoux/history';
 | Модуль | Что делает | Зависимости |
 |---|---|---|
 | `camera` | камера холста: pan, zoom вокруг курсора, экран ↔ мир | нет |
-| `history` | undo/redo на снимках-строках со склейкой частых правок | нет |
+| `history` | undo/redo на снимках-строках со склейкой частых правок; `save()` / `restore()` уносят всю историю и возвращают её (по одной на документ) | нет |
 | `undo` | undo/redo по записям, а не по снимкам: шаг хранит только затронутые записи, поэтому он мал, а отмена после синхронизации не откатывает правки другого устройства; частые правки склеиваются (`UndoStack`, `diffRecords`) | нет |
 | `hotkeys` | сочетания клавиш: `parseHotkey('Mod+Shift+Z')`, `matchHotkey` (Mod = ⌘ / Ctrl, нелатинские раскладки по физической клавише), `formatHotkey` (`Ctrl+Shift+Z` / `⇧⌘Z`), `isReservedHotkey` (⌘W, ⌘T, ⌘Q…), `bindHotkeys` на элементе | DOM (для `bindHotkeys`) |
 | `storage` | автосохранение в localStorage без исключений; `tryWrite` (почему не вышло: квота / запрет), `remove`, `subscribe` (ключ изменила другая вкладка) | нет |
@@ -99,7 +99,7 @@ import { History } from '@1337exp/taoux/history';
 | `ease` | функции движения между точками кривой: 8 семейств × in / out / in-out, `linear`, `step`, кубический Безье; `easeValue`, `isEase` (редактор рисует ими, рантайм считает ими же) | нет |
 | `num` | мелкая числовая математика: `clamp`, `roundTo`, `snapTo`, `niceStep`, `ticks` (общая для кривой, градиента и воспроизведения) | нет |
 | `sortable` (Vue) | перестановка списка за ручку и с клавиатуры: `useSortable(listRef, { onMove })`, `data-sortable-item` / `data-sortable-handle`; остальные расступаются, у края список прокручивается, Esc возвращает, живой регион сообщает скринридеру; `moveItem` | vue (peer) |
-| `session` | жизненный цикл документа: история, автосохранение, файлы, восстановление, уведомления, `dirty` / `markSaved()`; камера холста необязательна (`countItems`) | vue (peer) |
+| `session` | жизненный цикл документа: история, автосохранение, файлы, восстановление, уведомления, `dirty` / `markSaved()`, `saveHistory()` / `restoreHistory()` для редактора с несколькими документами; камера холста необязательна (`countItems`) | vue (peer) |
 | `commands` | реестр команд (подпись, сочетание, `enabled`, `checked`, `run`): `toMenu(layout)` строит дерево `TaoMenuItem[]` для `TaoMenubar` / `TaoContextMenu`, `bind` слушает те же сочетания, `historyCommands` даёт Undo / Redo, которые сами становятся недоступными, `check` находит занятые браузером и повторённые сочетания | DOM (для `bind`) |
 | `palette` | поиск и группы нод для палитры | нет |
 | `links` (Vue) | слой связей: SVG из готовой геометрии, `--tx-link-*` | vue (peer) |

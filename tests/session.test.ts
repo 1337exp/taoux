@@ -330,3 +330,60 @@ describe('dirty: the document changed since it was opened or saved', () => {
         expect(session.canUndo.value).toBe(false);
     });
 });
+
+describe('история одного документа можно унести и вернуть', () => {
+    it('два документа, у каждого свой undo', () => {
+        const { doc, session } = setup();
+        add(doc, 'a1');
+        session.commit();
+        add(doc, 'a2');
+        session.commit();
+        const first = session.saveHistory();
+
+        // показываем второй документ: чистый старт
+        session.load({ items: ['b0'] }, undefined, true);
+        expect(session.canUndo.value).toBe(false);
+        add(doc, 'b1');
+        session.commit();
+        const second = session.saveHistory();
+
+        // возвращаемся к первому
+        session.load({ items: ['a1', 'a2'].slice() }, undefined, true);
+        session.restoreHistory(first);
+        expect(session.canUndo.value).toBe(true);
+        session.undo();
+        expect(doc.value.items).toEqual(['a1']); // шаг первого документа, а не второго
+
+        // и ко второму
+        session.load({ items: ['b0', 'b1'] }, undefined, true);
+        session.restoreHistory(second);
+        session.undo();
+        expect(doc.value.items).toEqual(['b0']);
+    });
+
+    it('restoreHistory обновляет canUndo и canRedo, не трогая dirty и не пиша в хранилище', () => {
+        const { doc, session, storage } = setup();
+        session.startAutosave();
+        add(doc, 'x');
+        session.commit();
+        session.undo();
+        const saved = session.saveHistory(); // позиция в начале, есть redo
+        session.load({ items: [] }, undefined, true);
+        session.markSaved();
+        vi.advanceTimersByTime(1000);
+        const written = storage.read();
+        session.restoreHistory(saved);
+        expect([session.canUndo.value, session.canRedo.value]).toEqual([false, true]);
+        expect(session.dirty.value).toBe(false);
+        vi.advanceTimersByTime(1000);
+        expect(storage.read()).toBe(written);
+    });
+
+    it('негодная история отклоняется, текущая остаётся', () => {
+        const { doc, session } = setup();
+        add(doc, 'x');
+        session.commit();
+        expect(() => session.restoreHistory({ states: [], index: 0 })).toThrow(RangeError);
+        expect(session.canUndo.value).toBe(true);
+    });
+});

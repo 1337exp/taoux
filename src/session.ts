@@ -1,6 +1,6 @@
 import { ref } from 'vue';
 import { clampZoom, zoomLimits, type Camera, type ZoomLimits } from './camera';
-import { History } from './history';
+import { History, type HistoryState } from './history';
 import type { SavedStorage } from './storage';
 
 export type NoticeArgs = readonly (string | number)[];
@@ -211,6 +211,26 @@ export function createDocumentSession<D, K extends string>(options: SessionOptio
     }
 
     /**
+     * The history of this document, to keep while another one is shown (`restoreHistory` puts it back). The `dirty` flag
+     * is not part of it: keep it with the history if the app wants it back too.
+     * История этого документа, чтобы хранить её, пока показан другой (`restoreHistory` возвращает её). Флаг `dirty` в неё
+     * не входит: если приложению нужен и он, хранить его надо вместе с историей.
+     */
+    const saveHistory = (): HistoryState => history.save();
+
+    /**
+     * Puts a saved history back, for a document that was just put on the screen (`load` with `resetHistory`, then this).
+     * The history decides `canUndo` / `canRedo`; `dirty` and the document are not touched, nothing is autosaved.
+     * Возвращает сохранённую историю документу, который только что выставлен на экран (`load` с `resetHistory`, потом это).
+     * История решает `canUndo` / `canRedo`; `dirty` и сам документ не трогаются, автосохранения нет.
+     */
+    function restoreHistory(state: HistoryState) {
+        history.restore(state);
+        canUndo.value = history.canUndo;
+        canRedo.value = history.canRedo;
+    }
+
+    /**
      * Remembers the current state as a history step. The same `key` in a row merges edits (typing text).
      * Запоминает текущее состояние как шаг истории. Одинаковый `key` подряд склеивает правки (набор текста).
      */
@@ -332,6 +352,8 @@ export function createDocumentSession<D, K extends string>(options: SessionOptio
         commit,
         undo,
         redo,
+        saveHistory,
+        restoreHistory,
         recorded,
         load,
         exportText,

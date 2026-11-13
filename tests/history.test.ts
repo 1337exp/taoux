@@ -105,4 +105,73 @@ describe('History', () => {
         h.commit('Y');
         expect(h.undo()).toBe('Z');
     });
+
+    describe('save и restore', () => {
+        it('история уносится и возвращается целиком: снимки, положение, undo и redo', () => {
+            const h = make();
+            h.commit('B');
+            h.commit('C');
+            h.undo();
+            const saved = h.save();
+            expect(saved).toEqual({ states: ['A', 'B', 'C'], index: 1 });
+
+            const other = make();
+            other.commit('X');
+            other.restore(saved);
+            expect([other.canUndo, other.canRedo]).toEqual([true, true]);
+            expect(other.undo()).toBe('A');
+            expect(other.redo()).toBe('B');
+            expect(other.redo()).toBe('C');
+        });
+
+        it('сохранённое не меняется от дальнейших правок, а возвращённое не связано с сохранённым', () => {
+            const h = make();
+            h.commit('B');
+            const saved = h.save();
+            h.commit('C');
+            expect(saved.states).toEqual(['A', 'B']);
+
+            const other = make();
+            other.restore(saved);
+            other.commit('Z');
+            expect(saved.states).toEqual(['A', 'B']);
+            expect(saved.index).toBe(1);
+        });
+
+        it('новая правка после возврата идёт как обычно: отбрасывает redo', () => {
+            const h = make();
+            h.commit('B');
+            h.commit('C');
+            h.undo();
+            const other = make();
+            other.restore(h.save());
+            other.commit('D');
+            expect(other.canRedo).toBe(false);
+            expect(other.undo()).toBe('B');
+        });
+
+        it('серия склеенных правок через возврат не продолжается', () => {
+            const h = make();
+            h.commit('B', 'k');
+            time = 100;
+            const other = make();
+            other.commit('Y', 'k'); // серия с тем же ключом уже идёт
+            other.restore(h.save());
+            other.commit('C', 'k'); // тот же ключ и недавно, но после возврата это новая запись
+            expect(other.undo()).toBe('B');
+        });
+
+        it('негодное положение или пустой список отклоняется ошибкой, история остаётся прежней', () => {
+            const h = make();
+            h.commit('B');
+            for (const bad of [{ states: [], index: 0 }, { states: ['A'], index: 1 }, { states: ['A'], index: -1 }, { states: ['A', 'B'], index: 0.5 }]) {
+                expect(() => h.restore(bad)).toThrow(RangeError);
+            }
+            expect(h.undo()).toBe('A');
+        });
+
+        it('save пустой истории: одно состояние и нулевое положение', () => {
+            expect(make().save()).toEqual({ states: ['A'], index: 0 });
+        });
+    });
 });

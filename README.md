@@ -82,7 +82,7 @@ import { History } from '@1337exp/taoux/history';
 | Module | What it does | Depends on |
 |---|---|---|
 | `camera` | canvas camera: pan, zoom around the cursor, screen ↔ world | nothing |
-| `history` | undo/redo on string snapshots, rapid edits merged into one step | nothing |
+| `history` | undo/redo on string snapshots, rapid edits merged into one step; `save()` / `restore()` take a whole history out and put it back (a document each) | nothing |
 | `undo` | undo/redo by records, not snapshots: a step keeps only the records it touched, so it is small and an undo after a sync does not roll back another device's edits; quick edits merge (`UndoStack`, `diffRecords`) | nothing |
 | `hotkeys` | shortcuts: `parseHotkey('Mod+Shift+Z')`, `matchHotkey` (Mod = ⌘ / Ctrl, non-Latin layouts by the physical key), `formatHotkey` (`Ctrl+Shift+Z` / `⇧⌘Z`), `isReservedHotkey` (⌘W, ⌘T, ⌘Q…), `bindHotkeys` on an element | DOM (for `bindHotkeys`) |
 | `storage` | autosave to localStorage without exceptions; `tryWrite` (why it failed: quota / denied), `remove`, `subscribe` (another tab changed the key) | nothing |
@@ -99,7 +99,7 @@ import { History } from '@1337exp/taoux/history';
 | `ease` | easing functions between curve points: 8 families × in / out / in-out, `linear`, `step`, cubic Bezier; `easeValue`, `isEase` (the editor draws with it, a runtime evaluates with it) | nothing |
 | `num` | small numeric helpers: `clamp`, `roundTo`, `snapTo`, `niceStep`, `ticks` (shared by the curve, gradient and playback modules) | nothing |
 | `sortable` (Vue) | reorder a list by a grip and by the keyboard: `useSortable(listRef, { onMove })`, `data-sortable-item` / `data-sortable-handle`; the others make room, the list scrolls at its edge, Esc puts it back, a live region tells a screen reader; `moveItem` | vue (peer) |
-| `session` | document lifecycle: history, autosave, files, restore, notices, `dirty` / `markSaved()`; a canvas camera is optional (`countItems`) | vue (peer) |
+| `session` | document lifecycle: history, autosave, files, restore, notices, `dirty` / `markSaved()`, `saveHistory()` / `restoreHistory()` for an editor with several documents; a canvas camera is optional (`countItems`) | vue (peer) |
 | `commands` | a registry of commands (label, shortcut, `enabled`, `checked`, `run`): `toMenu(layout)` builds a `TaoMenuItem[]` tree for `TaoMenubar` / `TaoContextMenu`, `bind` listens to the same shortcuts, `historyCommands` gives Undo / Redo that disable themselves, `check` finds reserved and duplicate shortcuts | DOM (for `bind`) |
 | `palette` | search and groups of nodes for a palette | nothing |
 | `links` (Vue) | links layer: SVG from ready geometry, `--tx-link-*` | vue (peer) |
