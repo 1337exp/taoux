@@ -49,3 +49,26 @@ export async function readTextFile(file: Blob, limit = MAX_FILE_BYTES): Promise<
         return { ok: false, error: 'unreadable' };
     }
 }
+
+/**
+ * Size above which a picked archive or image is not read into memory. Default 512 MiB.
+ * Размер, больше которого выбранный архив или картинку не читаем в память. По умолчанию 512 МиБ.
+ */
+export const MAX_BINARY_FILE_BYTES = 512 * 1024 * 1024;
+
+export type ReadBytesResult = { ok: true; data: Uint8Array } | { ok: false; error: 'tooLarge' | 'unreadable' };
+
+/**
+ * Reads a picked file as bytes (an archive, an image). A file above `limit` bytes is refused before it is read; a failed
+ * read is a result, not an exception.
+ * Читает выбранный файл как байты (архив, картинка). Файл больше `limit` байт отклоняется до чтения; сбой чтения —
+ * результат, а не исключение.
+ */
+export async function readBytesFile(file: Blob, limit = MAX_BINARY_FILE_BYTES): Promise<ReadBytesResult> {
+    if (file.size > limit) return { ok: false, error: 'tooLarge' };
+    try {
+        return { ok: true, data: new Uint8Array(await file.arrayBuffer()) };
+    } catch {
+        return { ok: false, error: 'unreadable' };
+    }
+}

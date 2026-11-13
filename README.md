@@ -86,7 +86,8 @@ import { History } from '@1337exp/taoux/history';
 | `undo` | undo/redo by records, not snapshots: a step keeps only the records it touched, so it is small and an undo after a sync does not roll back another device's edits; quick edits merge (`UndoStack`, `diffRecords`) | nothing |
 | `hotkeys` | shortcuts: `parseHotkey('Mod+Shift+Z')`, `matchHotkey` (Mod = ⌘ / Ctrl, non-Latin layouts by the physical key), `formatHotkey` (`Ctrl+Shift+Z` / `⇧⌘Z`), `isReservedHotkey` (⌘W, ⌘T, ⌘Q…), `bindHotkeys` on an element | DOM (for `bindHotkeys`) |
 | `storage` | autosave to localStorage without exceptions; `tryWrite` (why it failed: quota / denied), `remove`, `subscribe` (another tab changed the key) | nothing |
-| `file` | download bytes or text as a file (`downloadBlob`, `downloadText`, any `mime`), read a picked file as text with a size limit | DOM |
+| `file` | download bytes or text as a file (`downloadBlob`, `downloadText`, any `mime`), read a picked file as text or as bytes with a size limit | DOM |
+| `zip` | ZIP without libraries: `createZip(entries)` (deflates what is not already compressed) and `readZip(bytes, limits?)` (central directory, CRC, size limits that hold against zip bombs, names that leave the folder refused; `ZipError` with a `code`), `looksLikeZip` | nothing (needs `CompressionStream`) |
 | `snap` | soft snapping to a grid with a threshold that follows the camera zoom | nothing |
 | `wheel` | wheel/trackpad → pan or zoom (like Figma) | nothing |
 | `guides` | smart guides for dragging (as in Figma): `snapToGuides(rect, others, threshold)` compares edges and centres with the other rectangles and returns the shift that puts them together and the lines to draw | nothing |
@@ -98,7 +99,7 @@ import { History } from '@1337exp/taoux/history';
 | `ease` | easing functions between curve points: 8 families × in / out / in-out, `linear`, `step`, cubic Bezier; `easeValue`, `isEase` (the editor draws with it, a runtime evaluates with it) | nothing |
 | `num` | small numeric helpers: `clamp`, `roundTo`, `snapTo`, `niceStep`, `ticks` (shared by the curve, gradient and playback modules) | nothing |
 | `sortable` (Vue) | reorder a list by a grip and by the keyboard: `useSortable(listRef, { onMove })`, `data-sortable-item` / `data-sortable-handle`; the others make room, the list scrolls at its edge, Esc puts it back, a live region tells a screen reader; `moveItem` | vue (peer) |
-| `session` | document lifecycle: history, autosave, files, restore, notices; a canvas camera is optional (`countItems`) | vue (peer) |
+| `session` | document lifecycle: history, autosave, files, restore, notices, `dirty` / `markSaved()`; a canvas camera is optional (`countItems`) | vue (peer) |
 | `commands` | a registry of commands (label, shortcut, `enabled`, `checked`, `run`): `toMenu(layout)` builds a `TaoMenuItem[]` tree for `TaoMenubar` / `TaoContextMenu`, `bind` listens to the same shortcuts, `historyCommands` gives Undo / Redo that disable themselves, `check` finds reserved and duplicate shortcuts | DOM (for `bind`) |
 | `palette` | search and groups of nodes for a palette | nothing |
 | `links` (Vue) | links layer: SVG from ready geometry, `--tx-link-*` | vue (peer) |

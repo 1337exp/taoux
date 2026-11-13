@@ -1,6 +1,6 @@
 {
   "name": "@1337exp/taoux",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "description": "Interaction and behavior building blocks for Vue apps: curve and gradient editors, canvas, undo/redo, playback. Import only what you need, bring your own design.",
   "keywords": [
     "vue",
@@ -167,6 +167,10 @@
     "./wheel": {
       "types": "./dist/wheel.d.ts",
       "import": "./dist/wheel.js"
+    },
+    "./zip": {
+      "types": "./dist/zip.d.ts",
+      "import": "./dist/zip.js"
     },
     "./taoui.css": "./theme/taoui.css",
     "./package.json": "./package.json"

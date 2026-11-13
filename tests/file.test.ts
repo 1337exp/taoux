@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { downloadBlob, downloadText, MAX_FILE_BYTES, readTextFile } from '../src/file';
+import { downloadBlob, downloadText, MAX_BINARY_FILE_BYTES, MAX_FILE_BYTES, readBytesFile, readTextFile } from '../src/file';
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -74,5 +74,29 @@ describe('readTextFile', () => {
     it('a failed read is a result, not an exception', async () => {
         const broken = { size: 1, text: () => Promise.reject(new Error('nope')) } as unknown as Blob;
         expect(await readTextFile(broken)).toEqual({ ok: false, error: 'unreadable' });
+    });
+});
+
+describe('readBytesFile', () => {
+    it('reads the bytes of a file', async () => {
+        const result = await readBytesFile(new Blob([new Uint8Array([80, 75, 3, 4])]));
+        expect(result).toEqual({ ok: true, data: new Uint8Array([80, 75, 3, 4]) });
+    });
+
+    it('refuses a file above the limit before reading it', async () => {
+        const big = new Blob(['x'.repeat(11)]);
+        const read = vi.spyOn(big, 'arrayBuffer');
+        expect(await readBytesFile(big, 10)).toEqual({ ok: false, error: 'tooLarge' });
+        expect(read).not.toHaveBeenCalled();
+    });
+
+    it('the default limit is MAX_BINARY_FILE_BYTES, and a file of exactly the limit is read', async () => {
+        expect(await readBytesFile({ size: MAX_BINARY_FILE_BYTES + 1 } as Blob)).toEqual({ ok: false, error: 'tooLarge' });
+        expect(await readBytesFile(new Blob(['abc']), 3)).toMatchObject({ ok: true });
+    });
+
+    it('a failed read is a result, not an exception', async () => {
+        const broken = { size: 1, arrayBuffer: () => Promise.reject(new Error('nope')) } as unknown as Blob;
+        expect(await readBytesFile(broken)).toEqual({ ok: false, error: 'unreadable' });
     });
 });

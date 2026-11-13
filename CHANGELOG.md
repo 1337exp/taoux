@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.12.0
+
+Nothing to migrate: a new module and new optional members.
+
+- **New module `zip`: ZIP without libraries.** `createZip(entries, { date?, compress? })` writes an archive and `readZip(bytes, limits?)` reads one; both are async because the deflate is the browser's `CompressionStream` / `DecompressionStream` (`deflate-raw`). A project that is a folder of files (an editor with textures and documents) goes in one file this way, as a docx does. Writing: UTF-8 names; a file is deflated unless its name says it is already compressed (PNG, JPEG, WebP, audio, video, archives) and only when that makes it smaller (`compress: 'store'` keeps everything as it is); no ZIP64 (up to 65 535 files and 4 GiB). Reading goes by the central directory, so archives of any tool open, including those with sizes after the data; folders are skipped, names without the UTF-8 flag are read as Latin-1. An archive comes from outside, so reading is defensive: a name that would leave the folder it is unpacked into (`../x`, `/x`, a backslash, a control character, an empty part) is refused, the same name twice is refused, the CRC and the sizes are checked, and the limits (`maxEntries` 10 000, `maxEntryBytes` 512 MiB, `maxTotalBytes` 1 GiB, all overridable) are applied to the declared sizes before unpacking and to the real ones while unpacking, so a few KB that unpack into gigabytes are stopped. Every refusal is a `ZipError` with a `code` (`notZip`, `unsupported`, `corrupt`, `unsafeName`, `duplicate`, `tooMany`, `tooLarge`) for the interface to turn into text; encryption, ZIP64 and several disks are `unsupported`. `looksLikeZip(bytes)` tells an archive from a text file before opening it. Tested against an archive made by Python's `zipfile`.
+- **`file`: `readBytesFile(file, limit?)`.** Reads a picked file as bytes (an archive, an image) with a size limit (`MAX_BINARY_FILE_BYTES`, 512 MiB), as `readTextFile` does for text: too large is refused before reading, a failed read is a result.
+- **`session`: `dirty` and `markSaved()`.** A ref that tells whether the document changed since it was opened or last saved (an edit, undo, redo, a replacement by `load`); `markSaved()` clears it after the app wrote the document somewhere, and `load` with `resetHistory` starts clean. For an "unsaved" mark and a "leave the page?" guard. Undoing back to the saved state does not clear it (it is a flag, not a position in the history).
+
 ## 0.11.0
 
 Nothing to migrate: one optional prop; without it the editor writes the same numbers as before.

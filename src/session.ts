@@ -195,10 +195,18 @@ export function createDocumentSession<D, K extends string>(options: SessionOptio
     const history = new History(snapshot());
     const canUndo = ref(false);
     const canRedo = ref(false);
+    /**
+     * The document changed since it was opened or last marked saved (an edit, undo, redo, or a replacement by `load`).
+     * Undoing back to the saved state does not clear it: only `markSaved` or a `load` with `resetHistory` does.
+     * Документ изменился с момента открытия или последнего `markSaved` (правка, undo, redo, подмена через `load`).
+     * Откат назад к сохранённому состоянию флаг не снимает: его снимает только `markSaved` или `load` с `resetHistory`.
+     */
+    const dirty = ref(false);
 
     function syncHistory() {
         canUndo.value = history.canUndo;
         canRedo.value = history.canRedo;
+        dirty.value = true;
         scheduleSave(); // the document changed (an edit, undo or redo): autosave will pick it up / документ изменился (правка, undo или redo): автосохранение подхватит
     }
 
@@ -251,10 +259,19 @@ export function createDocumentSession<D, K extends string>(options: SessionOptio
         if (resetHistory) {
             history.reset(snapshot());
             syncHistory();
+            dirty.value = false; // a fresh start: nothing to lose yet / чистый старт: терять пока нечего
         } else {
             commit();
         }
     }
+
+    /**
+     * The app has written the document somewhere (a file, a disk): `dirty` goes off until the next change.
+     * Приложение записало документ куда-то (файл, диск): `dirty` снимается до следующей правки.
+     */
+    const markSaved = () => {
+        dirty.value = false;
+    };
 
     /**
      * The file text for download.
@@ -310,6 +327,8 @@ export function createDocumentSession<D, K extends string>(options: SessionOptio
         showNotice,
         canUndo,
         canRedo,
+        dirty,
+        markSaved,
         commit,
         undo,
         redo,

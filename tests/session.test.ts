@@ -291,3 +291,42 @@ describe('a document without a camera (a list of notes)', () => {
         expect(session.notice.value).toEqual({ kind: 'info', key: 'loaded', args: [3] });
     });
 });
+
+describe('dirty: the document changed since it was opened or saved', () => {
+    it('starts clean, any edit, undo or redo makes it dirty, markSaved clears it', () => {
+        const { doc, session } = setup();
+        expect(session.dirty.value).toBe(false);
+        add(doc, 'a');
+        session.commit();
+        expect(session.dirty.value).toBe(true);
+        session.markSaved();
+        expect(session.dirty.value).toBe(false);
+        session.undo();
+        expect(session.dirty.value).toBe(true);
+        session.markSaved();
+        session.redo();
+        expect(session.dirty.value).toBe(true);
+    });
+
+    it('undoing back to the saved state does not clear it', () => {
+        const { doc, session } = setup();
+        add(doc, 'a');
+        session.commit();
+        session.markSaved();
+        add(doc, 'b');
+        session.commit();
+        session.undo();
+        expect(doc.value.items).toEqual(['a']);
+        expect(session.dirty.value).toBe(true);
+    });
+
+    it('a replacement of the document is a change, unless the history is reset (a fresh open)', () => {
+        const { session } = setup();
+        session.load({ items: ['x'] }); // undoable, like an ordinary edit
+        expect(session.dirty.value).toBe(true);
+        session.markSaved();
+        session.load({ items: ['y'] }, undefined, true);
+        expect(session.dirty.value).toBe(false);
+        expect(session.canUndo.value).toBe(false);
+    });
+});
