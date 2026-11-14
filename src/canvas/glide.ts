@@ -14,9 +14,9 @@ export interface GlideOptions {
     friction?: number;
     /**
      * A release slower than this (px/ms) does not start a glide: a careful drag, a small jerk or a tremor of the hand must
-     * not glide. Default 0.5 (500 px/s, a clear flick).
+     * not glide. Default 0.4 (400 px/s, a clear flick).
      * Отпускание медленнее этого (px/мс) скольжения не запускает: аккуратная протяжка, небольшой рывок или дрожь руки не
-     * должны скользить. По умолчанию 0.5 (500 px/с, явный бросок).
+     * должны скользить. По умолчанию 0.4 (400 px/с, явный бросок).
      */
     minSpeed?: number;
     /**
@@ -26,7 +26,7 @@ export interface GlideOptions {
     maxSpeed?: number;
 }
 
-export const GLIDE_DEFAULTS = { friction: 140, minSpeed: 0.5, maxSpeed: 6 } as const;
+export const GLIDE_DEFAULTS = { friction: 140, minSpeed: 0.4, maxSpeed: 6 } as const;
 /** A glide slower than this (px/ms) is over. / Скольжение медленнее этого (px/мс) окончено. */
 export const STOP_SPEED = 0.03;
 /** How far back the release speed is measured, ms. / За какое время до отпускания меряется скорость, мс. */
