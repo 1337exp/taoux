@@ -19,6 +19,8 @@ describe('canvas/glide: скорость в момент отпускания', 
 
     it('медленное движение не запускает скольжение, быстрое ограничено максимумом, направление сохраняется', () => {
         expect(releaseVelocity(moving(0.01, 1000), 1000)).toBeNull();
+        expect(releaseVelocity(moving(0.4, 1000), 1000)).toBeNull(); // небольшой рывок: ниже порога 0.5
+        expect(releaseVelocity(moving(0.8, 1000), 1000)).not.toBeNull();
         const fast = releaseVelocity(moving(50, 1000), 1000)!;
         expect(Math.hypot(fast[0], fast[1])).toBeCloseTo(GLIDE_DEFAULTS.maxSpeed, 5);
         const diagonal = releaseVelocity(moving(2, 1000).map((s) => ({ ...s, dy: -s.dx })), 1000)!;

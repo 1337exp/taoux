@@ -13,8 +13,10 @@ export interface GlideOptions {
      */
     friction?: number;
     /**
-     * Below this speed (px/ms) a release does not start a glide and a glide stops. Default 0.05.
-     * Ниже этой скорости (px/мс) отпускание не запускает скольжение, а скольжение останавливается. По умолчанию 0.05.
+     * A release slower than this (px/ms) does not start a glide: a careful drag, a small jerk or a tremor of the hand must
+     * not glide. Default 0.5 (500 px/s, a clear flick).
+     * Отпускание медленнее этого (px/мс) скольжения не запускает: аккуратная протяжка, небольшой рывок или дрожь руки не
+     * должны скользить. По умолчанию 0.5 (500 px/с, явный бросок).
      */
     minSpeed?: number;
     /**
@@ -24,11 +26,13 @@ export interface GlideOptions {
     maxSpeed?: number;
 }
 
-export const GLIDE_DEFAULTS = { friction: 280, minSpeed: 0.05, maxSpeed: 6 } as const;
+export const GLIDE_DEFAULTS = { friction: 280, minSpeed: 0.5, maxSpeed: 6 } as const;
+/** A glide slower than this (px/ms) is over. / Скольжение медленнее этого (px/мс) окончено. */
+export const STOP_SPEED = 0.03;
 /** How far back the release speed is measured, ms. / За какое время до отпускания меряется скорость, мс. */
 export const VELOCITY_WINDOW = 100;
 /** A pointer held still this long before the release does not glide (the person stopped on purpose), ms. / Указатель, который перед отпусканием стоял столько, не скользит (человек остановился намеренно), мс. */
-export const HOLD_STILL = 70;
+export const HOLD_STILL = 90;
 
 export interface PanSample {
     /** Time, ms. */
@@ -83,9 +87,9 @@ export interface GlideStep {
  * от частоты кадров (медленный кадр проезжает столько же, сколько заменённые им быстрые).
  */
 export function glideStep(v: readonly [number, number], dt: number, options: GlideOptions = {}): GlideStep {
-    const { friction, minSpeed } = { ...GLIDE_DEFAULTS, ...options };
+    const { friction } = { ...GLIDE_DEFAULTS, ...options };
     const decay = Math.exp(-dt / friction);
     const k = friction * (1 - decay);
     const next: [number, number] = [v[0] * decay, v[1] * decay];
-    return { dx: v[0] * k, dy: v[1] * k, v: next, done: Math.hypot(next[0], next[1]) < minSpeed };
+    return { dx: v[0] * k, dy: v[1] * k, v: next, done: Math.hypot(next[0], next[1]) < STOP_SPEED };
 }
