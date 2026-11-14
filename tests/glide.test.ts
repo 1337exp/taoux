@@ -35,6 +35,22 @@ describe('canvas/glide: скорость в момент отпускания', 
     });
 });
 
+describe('canvas/glide: короткий толчок', () => {
+    it('разгон с места: считается скорость в конце, а не средняя за весь жест', () => {
+        // 2, 4, 8, 16, 24 px с кадром в 16 мс: в среднем за жест 0.8 px/мс, в конце 1.5 px/мс
+        const ramp: PanSample[] = [2, 4, 8, 16, 24].map((dx, i) => ({ t: 1000 + i * 16, dx, dy: 0 }));
+        const v = releaseVelocity(ramp, 1064)!;
+        expect(v[0]).toBeGreaterThanOrEqual(0.95); // а не 0.8 средних за весь жест
+    });
+
+    it('короткий толчок в одну-две клетки скользит, дрожание руки нет', () => {
+        const push: PanSample[] = [3, 6, 10, 14].map((dx, i) => ({ t: 1000 + i * 16, dx, dy: 0 })); // около 33 px всего
+        expect(releaseVelocity(push, 1048)).not.toBeNull();
+        const tremor: PanSample[] = [1, -1, 1, 0].map((dx, i) => ({ t: 1000 + i * 16, dx, dy: 0 }));
+        expect(releaseVelocity(tremor, 1048)).toBeNull();
+    });
+});
+
 describe('canvas/glide: торможение', () => {
     it('путь не зависит от частоты кадров: один шаг в 64 мс равен четырём по 16', () => {
         const once = glideStep([3, 0], 64);

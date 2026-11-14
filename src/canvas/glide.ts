@@ -29,8 +29,13 @@ export interface GlideOptions {
 export const GLIDE_DEFAULTS = { friction: 140, minSpeed: 0.4, maxSpeed: 6 } as const;
 /** A glide slower than this (px/ms) is over. / Скольжение медленнее этого (px/мс) окончено. */
 export const STOP_SPEED = 0.03;
-/** How far back the release speed is measured, ms. / За какое время до отпускания меряется скорость, мс. */
-export const VELOCITY_WINDOW = 100;
+/**
+ * How far back the release speed is measured, ms. Short on purpose: a flick starts from rest and speeds up, and a longer
+ * window would average the slow start in and make a short push too weak to glide.
+ * За какое время до отпускания меряется скорость, мс. Намеренно короткое: бросок начинается с места и разгоняется, а
+ * длинное окно усреднило бы медленное начало, и короткий толчок не хватал бы на скольжение.
+ */
+export const VELOCITY_WINDOW = 40;
 /** A pointer held still this long before the release does not glide (the person stopped on purpose), ms. / Указатель, который перед отпусканием стоял столько, не скользит (человек остановился намеренно), мс. */
 export const HOLD_STILL = 90;
 
@@ -49,13 +54,15 @@ export interface PanSample {
  */
 export function releaseVelocity(samples: readonly PanSample[], now: number, options: GlideOptions = {}): [number, number] | null {
     const { minSpeed, maxSpeed } = { ...GLIDE_DEFAULTS, ...options };
-    const recent = samples.filter((s) => now - s.t <= VELOCITY_WINDOW);
+    const from = samples.findIndex((s) => now - s.t <= VELOCITY_WINDOW);
+    const recent = from < 0 ? [] : samples.slice(from);
     const last = recent[recent.length - 1];
     if (!last || now - last.t > HOLD_STILL) return null;
 
-    const first = recent[0]!;
-    // The span starts one step before the first sample: a sample is the movement that ended at its time.
-    const span = Math.max(last.t - first.t, 16);
+    // A sample is the movement that ended at its time, so the span starts at the sample before the first one used.
+    // Отсчёт это сдвиг, закончившийся в его момент, поэтому отрезок времени начинается с отсчёта перед первым взятым.
+    const start = from > 0 ? samples[from - 1]!.t : recent[0]!.t - 16;
+    const span = Math.max(last.t - start, 16);
     const sx = recent.reduce((s, p) => s + p.dx, 0);
     const sy = recent.reduce((s, p) => s + p.dy, 0);
     let vx = sx / span;

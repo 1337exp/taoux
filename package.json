@@ -177,6 +177,7 @@
   },
   "scripts": {
     "build": "vite build && vue-tsc -p tsconfig.build.json",
+    "build:watch": "vite build --watch",
     "dev": "node scripts/dev.mjs",
     "sandbox": "vite --config vite.sandbox.config.ts",
     "sandbox:build": "vite build --config vite.sandbox.config.ts",
