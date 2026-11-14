@@ -7,7 +7,7 @@
 export interface GlideOptions {
     /**
      * Time constant of the slowing down, ms: the speed falls `e` times over it (the camera travels about speed × this in
-     * total). Default 280.
+     * total). Default 140.
      * Постоянная времени торможения, мс: за неё скорость падает в `e` раз (камера проедет примерно скорость × это).
      * По умолчанию 280.
      */
@@ -26,7 +26,7 @@ export interface GlideOptions {
     maxSpeed?: number;
 }
 
-export const GLIDE_DEFAULTS = { friction: 280, minSpeed: 0.5, maxSpeed: 6 } as const;
+export const GLIDE_DEFAULTS = { friction: 140, minSpeed: 0.5, maxSpeed: 6 } as const;
 /** A glide slower than this (px/ms) is over. / Скольжение медленнее этого (px/мс) окончено. */
 export const STOP_SPEED = 0.03;
 /** How far back the release speed is measured, ms. / За какое время до отпускания меряется скорость, мс. */
