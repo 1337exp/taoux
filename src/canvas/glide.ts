@@ -9,7 +9,7 @@ export interface GlideOptions {
      * Time constant of the slowing down, ms: the speed falls `e` times over it (the camera travels about speed × this in
      * total). Default 140.
      * Постоянная времени торможения, мс: за неё скорость падает в `e` раз (камера проедет примерно скорость × это).
-     * По умолчанию 280.
+     * По умолчанию 140.
      */
     friction?: number;
     /**
