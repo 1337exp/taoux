@@ -33,7 +33,11 @@ const { marquee, debug, debugText, handlers } = useCanvasGestures(root, props.ho
 
 const world = computed(() => {
     const { x, y, z } = props.host.camera;
-    return { transform: `translate(${x}px, ${y}px) scale(${z})` };
+    // The offset lands on whole device pixels: a fractional one (a glide, a trackpad, a zoom) makes the text shimmer.
+    // Сдвиг ложится на целые пиксели экрана: дробный (скольжение, тачпад, зум) заставляет текст мерцать.
+    const dpr = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
+    const snap = (v: number) => Math.round(v * dpr) / dpr;
+    return { transform: `translate(${snap(x)}px, ${snap(y)}px) scale(${z})` };
 });
 
 const gridStyle = computed(() => {
