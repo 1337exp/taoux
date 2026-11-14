@@ -568,3 +568,56 @@ describe('TaoxCanvas: двойной клик', () => {
         vi.restoreAllMocks();
     });
 });
+
+describe('TaoxCanvas: инерция камеры', () => {
+    afterEach(() => vi.useRealTimers());
+
+    /** Правая кнопка ведёт камеру со скоростью 2 px/мс (кадр в 16 мс), затем отпускает. */
+    function pan(canvas: HTMLElement, holdMs: number) {
+        canvas.dispatchEvent(pointer('pointerdown', { button: 2, clientX: 50, clientY: 60 }));
+        for (let i = 1; i <= 8; i++) {
+            vi.advanceTimersByTime(16);
+            canvas.dispatchEvent(pointer('pointermove', { clientX: 50 + i * 32, clientY: 60, buttons: 2 }));
+        }
+        vi.advanceTimersByTime(holdMs);
+        canvas.dispatchEvent(pointer('pointerup', { button: 2, clientX: 50 + 8 * 32, clientY: 60 }));
+    }
+
+    it('отпустили на ходу: камера продолжает скользить и тормозит; без опции останавливается сразу', () => {
+        vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'performance'] });
+        const { host, state } = createHost();
+        const canvas = mount(host, { ...options, inertia: true });
+        pan(canvas, 0);
+        const atRelease = state.camera.x;
+        expect(atRelease).toBe(256);
+        vi.advanceTimersByTime(1500);
+        expect(state.camera.x).toBeGreaterThan(atRelease + 100); // проехала дальше
+        const rest = state.camera.x;
+        vi.advanceTimersByTime(1500);
+        expect(state.camera.x).toBe(rest); // остановилась
+
+        app?.unmount();
+        el?.remove();
+        const plain = createHost();
+        const canvas2 = mount(plain.host, options);
+        pan(canvas2, 0);
+        vi.advanceTimersByTime(1500);
+        expect(plain.state.camera.x).toBe(256);
+    });
+
+    it('придержали перед отпусканием: 1:1, скольжения нет; новое нажатие и колесо останавливают скольжение', () => {
+        vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'performance'] });
+        const { host, state } = createHost();
+        const canvas = mount(host, { ...options, inertia: true });
+        pan(canvas, 200);
+        vi.advanceTimersByTime(1000);
+        expect(state.camera.x).toBe(256);
+
+        pan(canvas, 0);
+        vi.advanceTimersByTime(100);
+        canvas.dispatchEvent(pointer('pointerdown', { button: 2, clientX: 5, clientY: 5 }));
+        const stopped = state.camera.x;
+        vi.advanceTimersByTime(1000);
+        expect(state.camera.x).toBe(stopped);
+    });
+});

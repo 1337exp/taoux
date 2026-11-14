@@ -1,4 +1,5 @@
 import type { Camera, ZoomLimits } from '../camera';
+import type { GlideOptions } from './glide';
 
 /**
  * A mutable tuple: app stores accept exactly these.
@@ -210,4 +211,15 @@ export interface CanvasOptions<P> {
      * Диапазон масштаба колеса и щипка; не заданный конец остаётся по умолчанию (0.2…2).
      */
     zoom?: Partial<ZoomLimits>;
+    /**
+     * The camera glides after a pan (a mouse drag with the middle or right button, a finger): drag and let go while the
+     * pointer is still moving, and the camera keeps going and slows down smoothly; a pointer held still before the release
+     * stops the camera at once (a 1:1 drag). A new press, the wheel and a zoom stop the glide. `true` for the defaults,
+     * or the settings (see `GlideOptions`). Off by default; not run when the system asks for reduced motion.
+     * Камера скользит после перетаскивания (средняя или правая кнопка, палец): потянули и отпустили на ходу, и камера
+     * продолжает движение, плавно тормозя; указатель, придержанный перед отпусканием, останавливает камеру сразу (1:1).
+     * Новое нажатие, колесо и масштаб останавливают скольжение. `true` для настроек по умолчанию или сами настройки
+     * (см. `GlideOptions`). По умолчанию выключено; не работает, если система просит поменьше анимации.
+     */
+    inertia?: boolean | GlideOptions;
 }

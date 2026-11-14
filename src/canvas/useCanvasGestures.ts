@@ -1,4 +1,5 @@
 import { onMounted, onUnmounted, ref, watch, type Ref } from 'vue';
+import { glideStep, releaseVelocity, type GlideOptions, type PanSample } from './glide';
 import { panBy, screenToWorld, zoomAt, zoomLimits } from '../camera';
 import { createEdgeScroller } from '../edgescroll';
 import { LONG_PRESS_MS, PinchTracker, TapRecognizer, pinchOf, type Sample } from '../gestures';
@@ -40,6 +41,35 @@ export function useCanvasGestures<P>(root: Ref<HTMLElement | null>, host: Canvas
     let lastY = 0;
     let baseSelection: string[] = [];
     let panDistance = 0;
+    /**
+     * The last moves of a pan, for the glide after the release (see `CanvasOptions.inertia`).
+     * Последние сдвиги перетаскивания холста, для скольжения после отпускания (см. `CanvasOptions.inertia`).
+     */
+    let panSamples: PanSample[] = [];
+    let glideFrame = 0;
+    const glideOptions = (): GlideOptions | null => {
+        if (!options.inertia) return null;
+        if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return null;
+        return options.inertia === true ? {} : options.inertia;
+    };
+    function stopGlide() {
+        if (glideFrame) cancelAnimationFrame(glideFrame);
+        glideFrame = 0;
+    }
+    function startGlide(v: [number, number], opts: GlideOptions) {
+        stopGlide();
+        let velocity = v;
+        let last = performance.now();
+        const frame = (now: number) => {
+            const dt = Math.min(now - last, 64); // a stalled tab must not throw the camera across the world
+            last = now;
+            const step = glideStep(velocity, dt, opts);
+            host.setCamera(panBy(host.camera, step.dx, step.dy));
+            velocity = step.v;
+            glideFrame = step.done ? 0 : requestAnimationFrame(frame);
+        };
+        glideFrame = requestAnimationFrame(frame);
+    }
     /**
      * Alt is held: grid snapping is temporarily off. Remembered so that auto-scroll (no event) knows it too.
      * Alt зажат: привязка к сетке временно отключена. Запоминаем, чтобы автопрокрутка (без события) тоже знала.
@@ -394,6 +424,8 @@ export function useCanvasGestures<P>(root: Ref<HTMLElement | null>, host: Canvas
         if (touch && touchDown(e)) return; // a second finger: pinch / второй палец: щипок
 
         host.closePalette();
+        stopGlide();
+        panSamples = [];
         lastX = e.clientX;
         lastY = e.clientY;
         panDistance = 0;
@@ -629,6 +661,7 @@ export function useCanvasGestures<P>(root: Ref<HTMLElement | null>, host: Canvas
         if (mode === 'pan') {
             panDistance += Math.hypot(dx, dy);
             host.setCamera(panBy(host.camera, dx, dy));
+            if (options.inertia) panSamples.push({ t: performance.now(), dx, dy });
         } else if (mode === 'drag') {
             host.moveSelected(dx / host.camera.z, dy / host.camera.z, snapNow());
         } else if (mode === 'resize') {
@@ -663,7 +696,13 @@ export function useCanvasGestures<P>(root: Ref<HTMLElement | null>, host: Canvas
             host.commit(); // a drag or a resize as a whole: one history step (nothing is recorded without a shift) / перетаскивание или изменение размера целиком: один шаг истории (без сдвига ничего не запишется)
         } else if (mode === 'pan' && e.button === 2 && panDistance < PAN_CLICK_THRESHOLD) {
             if (!openContextAt(e)) openPaletteAt(e, null);
+        } else if (mode === 'pan') {
+            // Released on the move: the camera keeps gliding. / Отпустили на ходу: камера продолжает скользить.
+            const opts = glideOptions();
+            const v = opts && releaseVelocity(panSamples, performance.now(), opts);
+            if (opts && v) startGlide(v, opts);
         }
+        panSamples = [];
         mode = 'idle';
         marquee.value = null;
         stopAutoScroll();
@@ -731,6 +770,7 @@ export function useCanvasGestures<P>(root: Ref<HTMLElement | null>, host: Canvas
      * заметкой, которую можно прокрутить, не масштабирует холст, стоит курсору случайно выйти за её край.
      */
     function onWheel(e: WheelEvent) {
+        stopGlide();
         const el = root.value!;
         const zooming = e.ctrlKey || e.metaKey;
 
@@ -777,6 +817,7 @@ export function useCanvasGestures<P>(root: Ref<HTMLElement | null>, host: Canvas
         window.removeEventListener('pointercancel', purgeTouch);
         stopAutoScroll();
         clearLongPress();
+        stopGlide();
         cancelAnimationFrame(pinchFrame);
     });
 
