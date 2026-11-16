@@ -1,2 +1,2 @@
 export { default as TaoxLinks } from './TaoxLinks.vue';
-export type { LinkLine, LinkPreview } from './types';
+export type { LinkDash, LinkLine, LinkPreview } from './types';

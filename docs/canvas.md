@@ -43,6 +43,8 @@ The `TaoxCanvas` component and the `useCanvasGestures` composable. The canvas do
 
 What the canvas does: the world transform and the grid, the selection frame, the mouse, touch (tap, double tap, long press, pinch), the wheel, auto-scroll at the edge, the keys Delete/Esc/Ctrl+Z/Y (by physical key, so they work in non-Latin layouts), pointer capture and cancel, broken-off gestures.
 
+**Key scope (`options.keys`).** `'window'` (default, as before): the keys are taken from the whole window, so they work without a click on the canvas first: right for an app where the canvas is everything (`workspace`). `'focus'`: only an event whose target is inside the canvas root; the root is focusable (`tabindex="0"`) and takes focus on a press, so with a drawer, a dialog or a text field beside the canvas Delete typed there never reaches it. In both modes typing in `input`, `textarea`, `select` and `contenteditable` is never taken, and `host.claimsKey` is asked first. In `'focus'` mode the canvas has no focus until the first press on it.
+
 ### The `CanvasHost<P>` contract
 
 `P` is a pin address. It is opaque to the canvas: only the app creates and understands it.
@@ -96,6 +98,7 @@ export interface CanvasOptions<P> {
     pinNear?(point: { clientX: number; clientY: number }): P | null; // the nearest pin (a node side)
     marquee?: 'intersect' | 'contain'; // what the selection frame picks; intersect by default
     inertia?: boolean | GlideOptions;  // the camera glides after a pan released on the move; off by default
+    keys?: 'window' | 'focus'; // where the keys Delete/Backspace/Esc/Ctrl+Z/Y come from: the whole window (default) or only from inside the canvas
     zoom?: Partial<ZoomLimits>; // the zoom range of the wheel and the pinch; 0.2…2 by default
 }
 ```
@@ -109,7 +112,9 @@ The full text of the types, with `ConnectHost`, `ResizeHost`, `ActivateTarget`, 
 `TaoxLinks`: only SVG rendering from ready geometry. Paths are built by the app (from `curve`: `curvePath` or `linkShape`).
 
 ```ts
-interface LinkLine { id: string; d: string; head?: string | null; color?: string }
+interface LinkLine { id: string; d: string; head?: string | null; color?: string; dash?: 'solid' | 'dashed' | 'dotted'; width?: number }
+// dash: the line style, solid by default; the pattern is in line widths and screen pixels (stable under zoom), the arrowhead stays solid, the gaps are clickable
+// width: thickness in screen pixels (default --tx-link-width, 2; +1 on hover and selection)
 // props: lines, selectedId, preview?: LinkLine & { invalid?: boolean }
 ```
 

@@ -43,6 +43,8 @@
 
 Что делает холст: transform мира и сетка, рамка выделения, мышь, сенсор (тап, двойной тап, долгое нажатие, щипок), колесо, автопрокрутка у края, клавиши Delete/Esc/Ctrl+Z/Y (по физической клавише, работает в русской раскладке), захват и отмена указателя, оборванные жесты.
 
+**Область клавиш (`options.keys`).** `'window'` (по умолчанию, как раньше): клавиши берутся со всего окна, поэтому работают без предварительного клика по холсту: верно для приложения, где холст — всё (`workspace`). `'focus'`: только событие, цель которого внутри корня холста; корень фокусируемый (`tabindex="0"`) и получает фокус при нажатии, поэтому при панели, диалоге или текстовом поле рядом с холстом Delete, нажатый там, до холста не доходит. В обоих режимах набор текста в `input`, `textarea`, `select` и `contenteditable` не перехватывается, а `host.claimsKey` спрашивается первым. В режиме `'focus'` до первого нажатия по холсту фокуса у него нет.
+
 ### Контракт `CanvasHost<P>`
 
 `P` — адрес пина. Для холста он непрозрачный: его создаёт и понимает только приложение.
@@ -95,6 +97,8 @@ export interface CanvasOptions<P> {
     pinAt(target: EventTarget | null): P | null; // пин под указателем
     pinNear?(point: { clientX: number; clientY: number }): P | null; // ближайший пин (сторона ноды)
     marquee?: 'intersect' | 'contain'; // что берёт рамка выделения; по умолчанию intersect
+    inertia?: boolean | GlideOptions; // камера скользит после перетаскивания, отпущенного на ходу; по умолчанию выключено
+    keys?: 'window' | 'focus'; // откуда клавиши Delete/Backspace/Esc/Ctrl+Z/Y: со всего окна (по умолчанию) или только изнутри холста
     zoom?: Partial<ZoomLimits>; // диапазон масштаба колеса и щипка; по умолчанию 0.2…2
 }
 ```
@@ -108,7 +112,9 @@ export interface CanvasOptions<P> {
 `TaoxLinks`: только отрисовка SVG из готовой геометрии. Пути строит приложение (из `curve`: `curvePath` или `linkShape`).
 
 ```ts
-interface LinkLine { id: string; d: string; head?: string | null; color?: string }
+interface LinkLine { id: string; d: string; head?: string | null; color?: string; dash?: 'solid' | 'dashed' | 'dotted'; width?: number }
+// dash: стиль линии, по умолчанию сплошная; узор в толщинах линии и экранных пикселях (от зума не зависит), наконечник остаётся сплошным, в пропуски кликать можно
+// width: толщина в экранных пикселях (по умолчанию --tx-link-width, 2; при наведении и выборе +1)
 // props: lines, selectedId, preview?: LinkLine & { invalid?: boolean }
 ```
 

@@ -222,4 +222,15 @@ export interface CanvasOptions<P> {
      * (см. `GlideOptions`). По умолчанию выключено; не работает, если система просит поменьше анимации.
      */
     inertia?: boolean | GlideOptions;
+    /**
+     * Where the canvas takes its keys (Delete, Backspace, Escape, Ctrl+Z / Y) from. `'window'` (default): from the whole
+     * window, so they work without a click on the canvas first (the canvas is the whole app). `'focus'`: only when the
+     * event target is inside the canvas root; the root takes focus on a press, so a drawer or a text field beside the
+     * canvas keeps its own keys. In both modes typing in input, textarea, select and contenteditable is never taken.
+     * Откуда холст берёт клавиши (Delete, Backspace, Escape, Ctrl+Z / Y). `'window'` (по умолчанию): со всего окна, так
+     * что они работают без предварительного клика по холсту (холст — всё приложение). `'focus'`: только если цель события
+     * внутри корня холста; корень получает фокус при нажатии, поэтому панель или поле ввода рядом с холстом сохраняют
+     * свои клавиши. В обоих режимах набор текста в input, textarea, select и contenteditable не перехватывается.
+     */
+    keys?: 'window' | 'focus';
 }

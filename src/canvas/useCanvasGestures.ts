@@ -716,6 +716,8 @@ export function useCanvasGestures<P>(root: Ref<HTMLElement | null>, host: Canvas
      * Смотрим на физическую клавишу (`code`), чтобы Ctrl+Z работало и в русской раскладке.
      */
     function onKey(e: KeyboardEvent) {
+        // `keys: 'focus'`: only an event that comes from inside the canvas. / `keys: 'focus'`: только событие изнутри холста.
+        if (options.keys === 'focus' && !(e.target instanceof Node && root.value?.contains(e.target))) return;
         const tag = (e.target as HTMLElement | null)?.tagName;
         if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (e.target as HTMLElement | null)?.isContentEditable) return;
         if (host.claimsKey?.(e)) return;

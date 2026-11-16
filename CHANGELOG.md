@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.15.0
+
+Nothing to migrate: new optional members; without them links and keys behave as before.
+
+- **`links`: `dash` and `width` per link.** A `LinkLine` (and the `preview`) may name its line style, `dash: 'solid' | 'dashed' | 'dotted'` (solid by default), and its thickness, `width` in screen pixels (default `--tx-link-width`, 2; one pixel more on hover and selection, as before). It was colour only, so an app that tells relations apart by line style drew its own SVG layer. The pattern is measured in line widths (`--tx-link-width` is a plain number): dashes `3w` with gaps `3w`, dots of one width with a gap of two widths between their centres, drawn with the round caps; and in screen pixels, so it does not change with the zoom, like the line. The arrowhead is a separate filled path and stays solid; the hit area is a separate transparent solid stroke, so the gaps of a dashed line are clickable. The preview keeps its own `6 4` dashes unless it names `dashed` or `dotted`. A link without the fields renders exactly as before. New type `LinkDash`.
+- **`canvas`: `keys: 'window' | 'focus'` option, the scope of the canvas keys.** The canvas took Delete, Backspace, Escape and Ctrl+Z / Y from the whole window, so with a drawer or a text field beside it a key typed there reached the canvas and the app had to guard against it. With `keys: 'focus'` only an event whose target is inside the canvas root is taken (the root is focusable and takes focus on a press); typing in inputs, textareas, selects and contenteditable is never taken in either mode, and `claimsKey` is asked first. The default stays `'window'`: an app whose canvas is the whole page (`workspace`) needs keys without clicking it first.
+
 ## 0.14.0
 
 Nothing to migrate: one optional member; without it the canvas behaves as before.

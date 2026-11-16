@@ -81,3 +81,52 @@ describe('TaoxLinks: стили', () => {
         expect(css).not.toMatch(/^[.]tx-link-head[ ]*[{]/m);
     });
 });
+
+describe('TaoxLinks: стиль линии', () => {
+    const one = (extra: Partial<LinkLine>, selectedId?: string) => {
+        const el = mount({ lines: [{ id: 's', d: 'M 0 0 L 10 10', head: 'M 10 10 L 5 5 Z', ...extra }], selectedId });
+        return el.querySelector<SVGGElement>('g.tx-link')!;
+    };
+
+    it('без dash и width группа выглядит как раньше: ни классов стиля, ни переменных', () => {
+        const g = one({});
+        expect(g.getAttribute('class')).toBe('tx-link');
+        expect(g.getAttribute('style')).toBeNull();
+    });
+
+    it('solid совпадает с отсутствием поля', () => {
+        expect(one({ dash: 'solid' }).getAttribute('class')).toBe('tx-link');
+    });
+
+    it('dashed и dotted ставят свой класс на группу', () => {
+        expect(one({ dash: 'dashed' }).classList.contains('tx-link-dashed')).toBe(true);
+        expect(one({ dash: 'dotted' }).classList.contains('tx-link-dotted')).toBe(true);
+        expect(one({ dash: 'dashed' }, 's').classList.contains('selected')).toBe(true);
+    });
+
+    it('толщина идёт переменными (в покое и при наведении на пиксель больше); мусор игнорируется', () => {
+        const g = one({ width: 4 });
+        expect(g.style.getPropertyValue('--tx-link-line-width')).toBe('4');
+        expect(g.style.getPropertyValue('--tx-link-line-width-active')).toBe('5');
+        for (const bad of [0, -1, NaN, Infinity]) expect(one({ width: bad }).getAttribute('style')).toBeNull();
+    });
+
+    it('наконечник и зона попадания не получают штрихов: правила узора только у .tx-link-line', () => {
+        const css = readFileSync(join(__dirname, '../src/links/TaoxLinks.vue'), 'utf8').replace(/\r\n/g, '\n');
+        for (const m of css.matchAll(/([^{}]+)\{[^}]*stroke-dasharray[^}]*\}/g)) {
+            expect(m[1]).toContain('.tx-link-line');
+            expect(m[1]).not.toMatch(/head|hit/);
+        }
+        const g = one({ dash: 'dotted' });
+        // the hit path is a separate transparent solid stroke: the gaps of the visible line are clickable
+        expect(g.querySelector('.tx-link-hit')?.getAttribute('d')).toBe('M 0 0 L 10 10');
+        expect(g.querySelector('.tx-link-head')).not.toBeNull();
+    });
+
+    it('предпросмотр принимает dash и width', () => {
+        const el = mount({ lines: [], preview: { id: 'p', d: 'M 0 0 L 5 5', dash: 'dotted', width: 3 } });
+        const g = el.querySelector<SVGGElement>('g.tx-link-preview')!;
+        expect(g.classList.contains('tx-link-dotted')).toBe(true);
+        expect(g.style.getPropertyValue('--tx-link-line-width')).toBe('3');
+    });
+});

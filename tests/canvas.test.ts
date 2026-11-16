@@ -351,6 +351,55 @@ describe('TaoxCanvas: клавиши', () => {
         expect(calls).toContain('removeSelected()');
     });
 
+    it('keys: "focus": клавиша из-за пределов холста не берётся, изнутри берётся, поля ввода никогда', () => {
+        const { host, calls } = createHost();
+        const canvas = mount(host, { ...options, keys: 'focus' });
+        const outside = document.createElement('textarea');
+        const drawer = document.createElement('div');
+        document.body.append(outside, drawer);
+        const del = (el: Element) => el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', bubbles: true, cancelable: true }));
+        const removed = () => calls.filter((c) => c.startsWith('removeSelected')).length;
+
+        key({ key: 'Delete' }); // the target is the window / цель — окно
+        del(document.body);
+        del(drawer);
+        del(outside);
+        expect(removed()).toBe(0);
+
+        del(canvas);
+        expect(removed()).toBe(1);
+        del(canvas.querySelector('.node-a') ?? canvas);
+        expect(removed()).toBe(2);
+
+        del(canvas.querySelector('.field-a')!); // an input inside the canvas is never taken / поле внутри холста не берётся
+        expect(removed()).toBe(2);
+        outside.remove();
+        drawer.remove();
+    });
+
+    it('keys: "focus": нажатие по холсту даёт ему фокус, и Delete работает с него', () => {
+        const { host, calls } = createHost();
+        const canvas = mount(host, { ...options, keys: 'focus' });
+        document.body.focus();
+        canvas.dispatchEvent(pointer('pointerdown', { clientX: 5, clientY: 5 }));
+        expect(document.activeElement).toBe(canvas);
+        canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', bubbles: true, cancelable: true }));
+        expect(calls).toContain('removeSelected()');
+    });
+
+    it('по умолчанию (keys не задан) и при keys: "window" клавиша берётся с любого места окна', () => {
+        for (const opts of [undefined, { ...options, keys: 'window' as const }]) {
+            const { host, calls } = createHost();
+            const el = mount(host, opts);
+            const outside = document.createElement('div');
+            document.body.appendChild(outside);
+            outside.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', bubbles: true, cancelable: true }));
+            expect(calls).toContain('removeSelected()');
+            outside.remove();
+            expect(el).toBeTruthy();
+        }
+    });
+
     it('в полях ввода горячие клавиши не перехватываются', () => {
         const { host, calls } = createHost();
         const canvas = mount(host);
