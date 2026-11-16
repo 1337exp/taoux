@@ -33,6 +33,8 @@
     --tx-link-preview-color: var(--tao-color-accent);
     --tx-link-invalid-color: var(--tao-color-danger);
 
+    --tx-guide-color: var(--tao-color-info);
+
     --tx-canvas-radius: var(--tao-radius-control);
 
     /* curve editor */

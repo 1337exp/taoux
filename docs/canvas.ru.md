@@ -109,6 +109,8 @@ export interface CanvasOptions<P> {
 
 ### `links` (Vue)
 
+`TaoxGuides` (в модуле `canvas`): линии, которые возвращает `snapToGuides`, нарисованные в мире поверх нод (`<TaoxGuides :lines="guides" />`); толщина в пикселях экрана, клики проходят насквозь, вид задают `--tx-guide-color`, `--tx-guide-width`, `--tx-guide-dash`.
+
 `TaoxLinks`: только отрисовка SVG из готовой геометрии. Пути строит приложение (из `curve`: `curvePath` или `linkShape`).
 
 ```ts

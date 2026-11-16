@@ -90,7 +90,7 @@ import { History } from '@1337exp/taoux/history';
 | `zip` | ZIP without libraries: `createZip(entries)` (deflates what is not already compressed) and `readZip(bytes, limits?)` (central directory, CRC, size limits that hold against zip bombs, names that leave the folder refused; `ZipError` with a `code`), `looksLikeZip` | nothing (needs `CompressionStream`) |
 | `snap` | soft snapping to a grid with a threshold that follows the camera zoom | nothing |
 | `wheel` | wheel/trackpad → pan or zoom (like Figma) | nothing |
-| `guides` | smart guides for dragging (as in Figma): `snapToGuides(rect, others, threshold)` compares edges and centres with the other rectangles and returns the shift that puts them together and the lines to draw | nothing |
+| `guides` | smart guides for dragging (as in Figma): `snapToGuides(rect, others, threshold)` compares edges and centres with the other rectangles and returns the shift that puts them together and the lines to draw (`TaoxGuides` from `canvas` draws them) | nothing |
 | `edgescroll` | auto-scroll speed near an edge and a ready loop, `createEdgeScroller` (canvas, curve editors, any drag) | nothing |
 | `gestures` | touch gestures: tap, double tap, long press, pinch, swipe (`SwipeTracker` + `settleOpen` for a row that slides open); `listenFocusLoss` ends a held gesture when the window loses the focus | nothing |
 | `touch` | `coarse`: is there a coarse pointer (a finger) | vue (peer) |

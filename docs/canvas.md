@@ -109,6 +109,8 @@ The full text of the types, with `ConnectHost`, `ResizeHost`, `ActivateTarget`, 
 
 ### `links` (Vue)
 
+`TaoxGuides` (in the `canvas` module): the lines that `snapToGuides` returns, drawn in the world over the nodes (`<TaoxGuides :lines="guides" />`); the thickness is in screen pixels, clicks pass through, the look is `--tx-guide-color`, `--tx-guide-width`, `--tx-guide-dash`.
+
 `TaoxLinks`: only SVG rendering from ready geometry. Paths are built by the app (from `curve`: `curvePath` or `linkShape`).
 
 ```ts

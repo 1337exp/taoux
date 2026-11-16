@@ -1,4 +1,5 @@
 export { default as TaoxCanvas } from './TaoxCanvas.vue';
+export { default as TaoxGuides } from './TaoxGuides.vue';
 export { useCanvasGestures, type Marquee } from './useCanvasGestures';
 export { GLIDE_DEFAULTS, glideStep, releaseVelocity, type GlideOptions, type GlideStep, type PanSample } from './glide';
 export type {

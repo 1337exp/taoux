@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.16.0
+
+Nothing to migrate: a new component in an existing module.
+
+- **`canvas`: `TaoxGuides`, the alignment guides of a drag drawn.** `snapToGuides` (module `guides`) only counted: how far to shift the dragged rectangle and which lines to draw, and every app that used it wrote the same small SVG layer (two apps did). `<TaoxGuides :lines="guides" />` takes that `lines` list and draws it: put it in the world of the canvas, over the nodes, as the lines are in world units. The thickness is in screen pixels whatever the zoom, clicks pass through, nothing is drawn while the list is empty. Look: `--tx-guide-color` (the bridge points it at `--tao-color-info`), `--tx-guide-width` (1) and `--tx-guide-dash` (a `stroke-dasharray`, solid by default). It is in `canvas.css` with the rest of the canvas.
+
 ## 0.15.0
 
 Nothing to migrate: new optional members; without them links and keys behave as before.
