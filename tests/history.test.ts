@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { COALESCE_MS, History } from '../src/history';
+import { COALESCE_MS, History, type HistoryState } from '../src/history';
 
 describe('History', () => {
     let time = 0;
@@ -219,8 +219,24 @@ describe('History', () => {
             old.restore({ states: ['A', 'B'], index: 1 });
             expect([old.undoLabel, old.canUndo]).toEqual([undefined, true]);
             // the saved labels are a copy
-            saved.labels![1] = 'changed';
+            (saved.labels as (string | undefined)[])[1] = 'changed';
             expect(other.undoLabel).toBe('add b');
+        });
+
+        it('подписи, прошедшие через JSON (undefined стал null), возвращаются как undefined', () => {
+            const h = make();
+            h.commit('B', undefined, 'add b');
+            h.commit('C');
+            const through = JSON.parse(JSON.stringify(h.save())) as HistoryState;
+            expect(through.labels).toEqual([null, 'add b', null]);
+            const other = make();
+            other.restore(through);
+            expect(other.undoLabel).toBeUndefined();
+            other.undo();
+            expect(other.undoLabel).toBe('add b');
+            other.undo();
+            expect(other.undoLabel).toBeUndefined();
+            expect(other.redoLabel).toBe('add b');
         });
 
         it('подписи уходят вместе со снимками, когда история длиннее предела', () => {

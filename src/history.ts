@@ -186,7 +186,8 @@ export class History {
             throw new RangeError('History.restore: the position is outside the saved snapshots');
         }
         this.states = [...state.states];
-        this.labels = state.states.map((_, i) => state.labels?.[i]);
+        // a label that went through JSON is null, not undefined / подпись, прошедшая через JSON, это null, а не undefined
+        this.labels = state.states.map((_, i) => state.labels?.[i] ?? undefined);
         this.index = state.index;
         this.lastKey = undefined;
     }
