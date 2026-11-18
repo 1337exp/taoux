@@ -82,7 +82,7 @@ import { History } from '@1337exp/taoux/history';
 | Module | What it does | Depends on |
 |---|---|---|
 | `camera` | canvas camera: pan, zoom around the cursor, screen ↔ world | nothing |
-| `history` | undo/redo on string snapshots, rapid edits merged into one step; `save()` / `restore()` take a whole history out and put it back (a document each) | nothing |
+| `history` | undo/redo on string snapshots, rapid edits merged into one step (by time, or until `seal()`); step labels (`undoLabel`, `redoLabel`); `dirty` / `markSaved()` by position; `save()` / `restore()` take a whole history out and put it back (a document each) | nothing |
 | `undo` | undo/redo by records, not snapshots: a step keeps only the records it touched, so it is small and an undo after a sync does not roll back another device's edits; quick edits merge (`UndoStack`, `diffRecords`) | nothing |
 | `hotkeys` | shortcuts: `parseHotkey('Mod+Shift+Z')`, `matchHotkey` (Mod = ⌘ / Ctrl, non-Latin layouts by the physical key), `formatHotkey` (`Ctrl+Shift+Z` / `⇧⌘Z`), `isReservedHotkey` (⌘W, ⌘T, ⌘Q…), `bindHotkeys` on an element | DOM (for `bindHotkeys`) |
 | `storage` | autosave to localStorage without exceptions; `tryWrite` (why it failed: quota / denied), `remove`, `subscribe` (another tab changed the key) | nothing |

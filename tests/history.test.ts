@@ -174,4 +174,116 @@ describe('History', () => {
             expect(make().save()).toEqual({ states: ['A'], index: 0 });
         });
     });
+
+    describe('подписи шагов, seal, dirty и окно склейки', () => {
+        it('undo и redo называют шаг, который отменят и вернут', () => {
+            const h = make();
+            h.commit('B', undefined, 'add b');
+            h.commit('C', undefined, 'add c');
+            expect([h.undoLabel, h.redoLabel]).toEqual(['add c', undefined]);
+            h.undo();
+            expect([h.undoLabel, h.redoLabel]).toEqual(['add b', 'add c']);
+            h.undo();
+            expect([h.undoLabel, h.redoLabel]).toEqual([undefined, 'add b']);
+            h.commit('D'); // a step with no label
+            expect([h.undoLabel, h.redoLabel]).toEqual([undefined, undefined]);
+        });
+
+        it('склеенная серия называется по первой правке; серия, вернувшаяся к началу, пропадает вместе с подписью', () => {
+            const h = make();
+            h.commit('B', 'k', 'first');
+            time += 10;
+            h.commit('C', 'k', 'second');
+            expect(h.undoLabel).toBe('first');
+            h.commit('X', undefined, 'other');
+            time += 10;
+            h.commit('Y', 'j', 'j1');
+            time += 10;
+            h.commit('X', 'j', 'j2'); // back to the state before the series
+            expect(h.undoLabel).toBe('other');
+            expect(h.undo()).toBe('C');
+            expect(h.undoLabel).toBe('first');
+        });
+
+        it('подписи переживают save и restore, а история без подписей возвращается без них', () => {
+            const h = make();
+            h.commit('B', undefined, 'add b');
+            h.commit('C', undefined, 'add c');
+            h.undo();
+            const saved = h.save();
+            expect(saved.labels).toEqual([undefined, 'add b', 'add c']);
+            const other = make();
+            other.restore(saved);
+            expect([other.undoLabel, other.redoLabel]).toEqual(['add b', 'add c']);
+            const old = make();
+            old.restore({ states: ['A', 'B'], index: 1 });
+            expect([old.undoLabel, old.canUndo]).toEqual([undefined, true]);
+            // the saved labels are a copy
+            saved.labels![1] = 'changed';
+            expect(other.undoLabel).toBe('add b');
+        });
+
+        it('подписи уходят вместе со снимками, когда история длиннее предела', () => {
+            const h = make(2);
+            for (const s of ['B', 'C', 'D']) h.commit(s, undefined, `to ${s}`);
+            expect(h.undoLabel).toBe('to D');
+            h.undo();
+            expect(h.undoLabel).toBe('to C');
+            h.undo();
+            expect([h.canUndo, h.undoLabel]).toEqual([false, undefined]);
+            expect(h.redoLabel).toBe('to C');
+        });
+
+        it('seal заканчивает серию: та же правка с тем же ключом становится новым шагом', () => {
+            const h = make();
+            h.commit('B', 'k');
+            time += 10;
+            h.commit('C', 'k');
+            h.seal();
+            time += 10;
+            h.commit('D', 'k');
+            expect(h.undo()).toBe('C');
+            expect(h.undo()).toBe('A');
+        });
+
+        it('coalesceMs: Infinity склеивает через любую паузу, пока серию не закончит seal или другой ключ', () => {
+            const h = new History('A', 100, () => time, { coalesceMs: Infinity });
+            h.commit('B', 'k');
+            time += 60_000;
+            h.commit('C', 'k');
+            time += 60_000;
+            h.commit('D', 'k');
+            expect(h.undo()).toBe('A');
+            h.redo();
+            h.seal();
+            h.commit('E', 'k');
+            expect(h.undo()).toBe('D');
+            const short = new History('A', 100, () => time, { coalesceMs: 5 });
+            short.commit('B', 'k');
+            time += 6;
+            short.commit('C', 'k');
+            expect(short.undo()).toBe('B');
+        });
+
+        it('dirty следует за положением: правка грязнит, откат до сохранённого очищает, markSaved отмечает текущее', () => {
+            const h = make();
+            expect(h.dirty).toBe(false);
+            h.commit('B');
+            expect(h.dirty).toBe(true);
+            h.markSaved();
+            expect(h.dirty).toBe(false);
+            h.commit('C');
+            expect(h.dirty).toBe(true);
+            h.undo();
+            expect(h.dirty).toBe(false);
+            h.undo();
+            expect(h.dirty).toBe(true);
+            h.redo();
+            expect(h.dirty).toBe(false);
+            h.reset('Z');
+            expect(h.dirty).toBe(false);
+            h.commit('Y');
+            expect(h.dirty).toBe(true);
+        });
+    });
 });

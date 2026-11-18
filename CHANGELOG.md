@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.17.0
+
+Nothing to migrate: new optional members of `History`; a history that does not use them behaves and saves exactly as before.
+
+- **`history`: step labels, `seal()`, `dirty` / `markSaved()` and the `coalesceMs` option.** An editor that keeps its history on string snapshots (a figure, a model, an entity: the document is small and a step is the whole document) had to keep its own labels ("Undo: move layer"), its own end of a drag and its own "unsaved" next to `History`, because `History` merged only by time and knew nothing else. Now `commit(state, key, label)` names the step (a merged series keeps the label of its first edit; `undoLabel` and `redoLabel` read it), `seal()` ends a series of merged edits where the editor knows the gesture ended (a pointer was released), `new History(initial, limit, now, { coalesceMs: Infinity })` merges through any pause until `seal()` or another key, and `dirty` / `markSaved()` say whether the current snapshot is the saved one: it follows the position, so undoing back to the saved snapshot is clean again (the `session` flag `dirty` is unchanged: it is a flag, not a position). `save()` carries the labels only when there are some, and `restore` takes a history saved without them.
 ## 0.16.0
 
 Nothing to migrate: a new component in an existing module.
