@@ -90,6 +90,34 @@ describe('useHistory', () => {
         expect([h.canUndo.value, h.canRedo.value]).toEqual([false, false]);
     });
 
+    it('labels and dirty are refs that follow commit, undo, redo, markSaved and sync', () => {
+        const h = useHistory('one');
+        expect([h.undoLabel.value, h.dirty.value]).toEqual([undefined, false]);
+        h.commit('two', undefined, 'add two');
+        expect([h.undoLabel.value, h.redoLabel.value, h.dirty.value]).toEqual(['add two', undefined, true]);
+        h.markSaved();
+        expect(h.dirty.value).toBe(false);
+        h.undo();
+        expect([h.undoLabel.value, h.redoLabel.value, h.dirty.value]).toEqual([undefined, 'add two', true]);
+        h.redo();
+        expect(h.dirty.value).toBe(false);
+        h.reset('fresh');
+        expect([h.undoLabel.value, h.redoLabel.value, h.dirty.value]).toEqual([undefined, undefined, false]);
+        h.history.commit('moved', undefined, 'moved');
+        h.sync();
+        expect(h.undoLabel.value).toBe('moved');
+    });
+
+    it('seal ends a merged series', () => {
+        const h = useHistory('one');
+        h.commit('a', 'k');
+        h.commit('b', 'k');
+        h.seal();
+        h.commit('c', 'k');
+        expect(h.undo()).toBe('b');
+        expect(h.undo()).toBe('one');
+    });
+
     it('takes a history you already have', () => {
         const history = new History('x');
         history.commit('y');

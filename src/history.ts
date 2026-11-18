@@ -18,6 +18,11 @@ export interface HistoryState {
      * Подпись шага, который сделал каждый снимок (у первого её нет), если в истории есть подписи. История, сохранённая до подписей, их не имеет: возвращается без подписей.
      */
     labels?: readonly (string | undefined)[];
+    /**
+     * The snapshot marked saved by `markSaved()`, when it is not the first one (so a history that never saved is the plain data it always was). Without it `restore` takes the first snapshot as the saved one.
+     * Снимок, отмеченный `markSaved()`, если это не первый снимок (так история, которая не сохранялась, остаётся теми же простыми данными). Без него `restore` считает сохранённым первый снимок.
+     */
+    saved?: string;
 }
 
 export interface HistoryOptions {
@@ -171,7 +176,8 @@ export class History {
     save(): HistoryState {
         const state: HistoryState = { states: [...this.states], index: this.index };
         // only a history that has labels carries them, so one without is the plain data it always was / подписи несёт только история, у которой они есть, так что без них это те же простые данные, что и раньше
-        return this.labels.some(l => l !== undefined) ? { ...state, labels: [...this.labels] } : state;
+        const withLabels = this.labels.some(l => l !== undefined) ? { ...state, labels: [...this.labels] } : state;
+        return this.saved !== this.states[0] ? { ...withLabels, saved: this.saved } : withLabels;
     }
 
     /**
@@ -189,6 +195,7 @@ export class History {
         // a label that went through JSON is null, not undefined / подпись, прошедшая через JSON, это null, а не undefined
         this.labels = state.states.map((_, i) => state.labels?.[i] ?? undefined);
         this.index = state.index;
+        this.saved = state.saved ?? state.states[0]!;
         this.lastKey = undefined;
     }
 

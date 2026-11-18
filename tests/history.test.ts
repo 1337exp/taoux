@@ -301,5 +301,33 @@ describe('History', () => {
             h.commit('Y');
             expect(h.dirty).toBe(true);
         });
+
+        it('метка сохранённого едет в save и restore: у каждого документа своя', () => {
+            const a = make();
+            a.commit('B');
+            a.markSaved();
+            a.commit('C');
+            const saved = a.save();
+            expect(saved.saved).toBe('B');
+            const other = make();
+            other.commit('X');
+            other.restore(saved);
+            expect(other.dirty).toBe(true);
+            other.undo();
+            expect(other.dirty).toBe(false);
+            // a history that never saved keeps its plain shape; restore takes the first snapshot as the saved one
+            const plain = make();
+            plain.commit('B');
+            expect(plain.save()).toEqual({ states: ['A', 'B'], index: 1 });
+            other.restore(plain.save());
+            expect(other.dirty).toBe(true);
+            other.undo();
+            expect(other.dirty).toBe(false);
+            // it goes through JSON
+            const through = JSON.parse(JSON.stringify(saved)) as HistoryState;
+            other.restore(through);
+            other.undo();
+            expect(other.dirty).toBe(false);
+        });
     });
 });

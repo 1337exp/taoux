@@ -110,7 +110,7 @@ import { History } from '@1337exp/taoux/history';
 | `gradienteditor` (Vue) | полоса градиента с ручками остановок; операции над остановками, `gradientCss`; клавиатура (Tab, стрелки, Home/End, Insert, Delete) | vue (peer) |
 | `playback` | модель воспроизведения: время, пауза, цикл, скорость, перемотка; `createPlayback` без Vue и `usePlayback` для компонента | vue (peer, для `usePlayback`) |
 | `tour` | тур по странице по шагам: `createTour` без Vue (перепрыгивает шаги, у которых пропала цель, завершается как `done` или `skipped`), `useTour` для компонента, `createTourMemory`, чтобы показывался один раз | vue (peer, для `useTour`), storage |
-| `undovue` | `undo` и `history` для Vue: `useUndoStack` и `useHistory` держат `canUndo` / `canRedo` как ref после каждого хода (для `historyCommands` и меню); `useUndoFlags(source)` + `sync()` для уже готового стека | vue (peer) |
+| `undovue` | `undo` и `history` для Vue: `useUndoStack` и `useHistory` держат `canUndo` / `canRedo` (а `useHistory` ещё `undoLabel` / `redoLabel` / `dirty`) как ref после каждого хода (для `historyCommands` и меню); `useUndoFlags(source)` + `sync()` для уже готового стека | vue (peer) |
 | `pins` | позиции пинов-строк, измеренные по DOM: `usePinMeasure`, `createPinRegistry` | vue (peer) |
 | `i18n` | типизированный i18n: `createI18n({ locales, fallback, storageKey })` | vue (peer, опционально) |
 

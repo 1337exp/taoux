@@ -90,8 +90,18 @@ export function useUndoStack<T>(from: UndoOptions<T> | UndoStack<T>): UseUndoSta
 export interface UseHistory extends UndoFlags {
     /** The history itself. / Сама история. */
     history: History;
-    /** `History.commit`: false when the state did not change; the flags follow. / `History.commit`: false, если состояние не изменилось. */
-    commit(state: string, key?: string): boolean;
+    /** The label of the step an undo would take back (`History.undoLabel`), as a ref. / Подпись шага, который отменит undo (`History.undoLabel`), как ref. */
+    readonly undoLabel: Readonly<Ref<string | undefined>>;
+    /** The label of the step a redo would bring back, as a ref. / Подпись шага, который вернёт redo, как ref. */
+    readonly redoLabel: Readonly<Ref<string | undefined>>;
+    /** `History.dirty` as a ref: the current snapshot is not the saved one. / `History.dirty` как ref: текущий снимок не сохранённый. */
+    readonly dirty: Readonly<Ref<boolean>>;
+    /** `History.commit`: false when the state did not change; the flags follow. `label` names the step. / `History.commit`: false, если состояние не изменилось; `label` называет шаг. */
+    commit(state: string, key?: string, label?: string): boolean;
+    /** `History.seal`: ends a series of merged edits. / `History.seal`: заканчивает серию склеенных правок. */
+    seal(): void;
+    /** `History.markSaved`; `dirty` follows. / `History.markSaved`; `dirty` следует. */
+    markSaved(): void;
     /** The previous state or null. It also fits `historyCommands` as a source. / Предыдущее состояние или null. */
     undo(): string | null;
     redo(): string | null;
@@ -106,27 +116,47 @@ export interface UseHistory extends UndoFlags {
 export function useHistory(from: string | History, limit?: number): UseHistory {
     const history = from instanceof History ? from : new History(from, limit);
     const flags = useUndoFlags(history);
+    const undoLabel = ref(history.undoLabel);
+    const redoLabel = ref(history.redoLabel);
+    const dirty = ref(history.dirty);
+    function sync() {
+        flags.sync();
+        undoLabel.value = history.undoLabel;
+        redoLabel.value = history.redoLabel;
+        dirty.value = history.dirty;
+    }
     return {
         ...flags,
+        sync,
+        undoLabel: readonly(undoLabel),
+        redoLabel: readonly(redoLabel),
+        dirty: readonly(dirty),
         history,
-        commit(state, key) {
-            const changed = history.commit(state, key);
-            flags.sync();
+        commit(state, key, label) {
+            const changed = history.commit(state, key, label);
+            sync();
             return changed;
+        },
+        seal() {
+            history.seal();
+        },
+        markSaved() {
+            history.markSaved();
+            sync();
         },
         undo() {
             const state = history.undo();
-            flags.sync();
+            sync();
             return state;
         },
         redo() {
             const state = history.redo();
-            flags.sync();
+            sync();
             return state;
         },
         reset(state) {
             history.reset(state);
-            flags.sync();
+            sync();
         },
     };
 }
