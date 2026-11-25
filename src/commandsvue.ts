@@ -1,4 +1,4 @@
-import { computed, getCurrentInstance, getCurrentScope, onMounted, onScopeDispose, ref, type ComputedRef } from 'vue';
+import { computed, getCurrentInstance, getCurrentScope, onActivated, onDeactivated, onMounted, onScopeDispose, ref, type ComputedRef } from 'vue';
 
 /**
  * The registry of commands (`createCommands`) in a Vue app: the commands live as long as the component does, the keys are
@@ -51,30 +51,48 @@ export function useCommands<C, L, I>(registry: CommandRegistry<C, L, I>, options
     // the registry is not reactive: this one number is what a menu waits for when commands come or go
     // реестр не реактивен: это число и ждёт меню, когда команды приходят или уходят
     const version = ref(0);
-    const stops: (() => void)[] = [];
+    let remove: (() => void) | undefined;
+    let unbind: (() => void) | undefined;
 
-    if (options.add?.length) {
-        const remove = registry.add(options.add);
-        version.value += 1;
-        stops.push(() => {
-            remove();
+    const attach = () => {
+        if (options.add?.length && !remove) {
+            remove = registry.add(options.add);
             version.value += 1;
-        });
-    }
-
+        }
+    };
     const listen = () => {
-        if (options.target === false || typeof window === 'undefined') {
+        if (options.target === false || typeof window === 'undefined' || unbind) {
             return;
         }
-        stops.push(registry.bind(options.target ?? window));
+        unbind = registry.bind(options.target ?? window);
     };
+    const detach = () => {
+        unbind?.();
+        unbind = undefined;
+        if (remove) {
+            remove();
+            remove = undefined;
+            version.value += 1;
+        }
+    };
+
+    attach();
     if (getCurrentInstance()) {
         onMounted(listen);
+        // a component kept alive (`<KeepAlive>`) is not disposed when it is hidden: it must not hold its keys and its ids, or the page
+        // that replaced it would throw on the same ids and the hidden one would still answer the keyboard
+        // кэшированный компонент (`<KeepAlive>`) при скрытии не уничтожается: он не должен держать клавиши и id, иначе сменившая его
+        // страница упала бы на тех же id, а скрытая всё ещё отвечала бы на клавиатуру
+        onDeactivated(detach);
+        onActivated(() => {
+            attach();
+            listen();
+        });
     } else {
         listen();
     }
     if (getCurrentScope()) {
-        onScopeDispose(() => stops.splice(0).forEach((stop) => stop()));
+        onScopeDispose(detach);
     }
 
     return {

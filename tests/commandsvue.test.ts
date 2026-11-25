@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import { effectScope, nextTick, ref, defineComponent, h } from 'vue';
+import { KeepAlive, defineComponent, effectScope, h, nextTick, ref } from 'vue';
 import { describe, expect, it, vi } from 'vitest';
 import { createCommands, type Command } from '../src/commands';
 import { useCommands } from '../src/commandsvue';
@@ -85,5 +85,47 @@ describe('useCommands', () => {
         // after the scope stops its commands are removed, so a menu naming them would throw: the registry's own rule (a typo is an error)
         expect(() => commands.toMenu(['save'])).toThrow(/not registered/);
         await nextTick();
+    });
+});
+
+describe('useCommands in a <KeepAlive>', () => {
+    it('a hidden page lets go of its commands and its keys; coming back takes them again', async () => {
+        const commands = createCommands([], { mac: false });
+        const saved = vi.fn();
+        // the ids differ: Vue sets the new page up before the old one is deactivated, so the same id on both would meet in the registry
+        const page = (name: string) =>
+            defineComponent({
+                name,
+                setup() {
+                    useCommands(commands, { add: [{ id: `save-${name}`, label: name, shortcut: 'Mod+S', run: () => saved(name) }], target: document });
+                    return () => h('div', name);
+                },
+            });
+        const A = page('A');
+        const B = page('B');
+        const which = ref<'A' | 'B'>('A');
+        const Root = defineComponent({ setup: () => () => h(KeepAlive, null, [h(which.value === 'A' ? A : B)]) });
+        const w = mount(Root, { attachTo: document.body });
+        const press = () => document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 's', ctrlKey: true, bubbles: true, cancelable: true }));
+        const settle = async () => {
+            await nextTick();
+            await nextTick();
+        };
+        press();
+        expect(saved.mock.calls).toEqual([['A']]);
+        which.value = 'B';
+        await settle();
+        expect(commands.has('save-A')).toBe(false);
+        press();
+        // only the visible page answers the keyboard
+        expect(saved.mock.calls).toEqual([['A'], ['B']]);
+        which.value = 'A';
+        await settle();
+        expect(commands.has('save-B')).toBe(false);
+        expect(commands.has('save-A')).toBe(true);
+        press();
+        expect(saved.mock.calls).toEqual([['A'], ['B'], ['A']]);
+        w.unmount();
+        expect(commands.list()).toEqual([]);
     });
 });
