@@ -37,5 +37,8 @@ export default defineConfig({
     test: {
         environment: 'happy-dom',
         include: ['tests/**/*.test.ts'],
+        // TaoUI 6 brings the CSS of a component with it (an import of a .css file): Vite has to process the package, Node cannot load it
+        // TaoUI 6 везёт CSS компонента с собой (импорт .css): пакет должен пройти через Vite, Node его не загрузит
+        server: { deps: { inline: ['@1337exp/taoui'] } },
     },
 });

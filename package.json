@@ -194,7 +194,7 @@
     "media": "node scripts/media.mjs"
   },
   "peerDependencies": {
-    "@1337exp/taoui": "^5.0.0",
+    "@1337exp/taoui": "^6.0.0-alpha.0",
     "vue": "^3.4.0"
   },
   "peerDependenciesMeta": {

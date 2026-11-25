@@ -137,7 +137,7 @@ const direction = computed<EaseDirection>(() => {
 // linear, step and Bezier have no direction: the switch stays in place, inactive, so that it is visible how this works
 // У linear, step и Безье направления нет: переключатель остаётся на месте неактивным, чтобы было видно, как это устроено
 const hasDirection = computed(() => !isLast.value && typeof current.value.ease === 'string' && easeParts(current.value.ease) !== null);
-const kindOptions = ['linear', 'step', ...EASE_FAMILIES, 'bezier'].map((v) => ({ value: v, label: v }));
+const kindOptions = ['linear', 'step', ...EASE_FAMILIES, 'bezier'].map((v) => ({ id: v, label: v }));
 
 function applyEase(next: Ease) {
     change(setEase(points.value, selected.value, next));
@@ -185,7 +185,7 @@ function setDirection(v: unknown) {
         <div class="tx-curve-field__ease">
             <span class="tx-curve-field__title" aria-hidden="true">{{ text.transition }}</span>
             <div class="tx-curve-field__ease-row" role="group" :aria-label="text.transition">
-                <TaoSelect class="tx-curve-field__kind" size="small" :clearable="false" :options="kindOptions" :disabled="isLast" :model-value="kind" @update:model-value="setKind" />
+                <TaoSelect class="tx-curve-field__kind" size="small" :clearable="false" :items="kindOptions" :disabled="isLast" :model-value="kind" @update:model-value="setKind" />
                 <TaoSegmented size="small" :disabled="!hasDirection" :model-value="hasDirection ? direction : undefined" @update:model-value="setDirection">
                     <TaoSegmentedOption v-for="d in EASE_DIRECTIONS" :key="d" :value="d" :label="d" />
                 </TaoSegmented>
