@@ -195,7 +195,7 @@
   },
   "peerDependencies": {
     "@1337exp/taoui": "^6.0.0-alpha.0",
-    "vue": "^3.4.0"
+    "vue": "^3.5.0"
   },
   "peerDependenciesMeta": {
     "@1337exp/taoui": {
