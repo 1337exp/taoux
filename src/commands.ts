@@ -26,6 +26,13 @@ export interface Command {
     checked?: () => boolean;
     /** With `checked`: a radio of this group. / Вместе с `checked`: радио этой группы. */
     group?: string;
+    /**
+     * A held key runs it again (`true`, the default: a nudge, an undo) or once per press (`false`: a save, a toggle). The held key is swallowed
+     * either way, so the browser's own dialog does not open.
+     * Зажатая клавиша запускает её снова (`true`, по умолчанию: сдвиг, отмена) или один раз на нажатие (`false`: сохранить, переключатель).
+     * Зажатая клавиша глотается в обоих случаях, так что собственный диалог браузера не открывается.
+     */
+    repeat?: boolean;
     run: () => void;
 }
 
@@ -147,7 +154,8 @@ export function createCommands(initial: readonly Command[] = [], options: Platfo
             const map: Record<string, HotkeyHandler> = {};
             for (const command of commands.values()) {
                 for (const combo of shortcuts(command)) {
-                    map[combo] ??= () => {
+                    map[combo] ??= (event) => {
+                        if (event.repeat && command.repeat === false) return;
                         run(command.id);
                     };
                 }

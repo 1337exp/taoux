@@ -11,7 +11,9 @@ import { describe, expect, it } from 'vitest';
  *   2, поля: импортируют примитивы и составные, но не друг друга; только им можно импортировать TaoUI.
  * Составные модули перечислены здесь; всё остальное в src считается примитивом.
  */
-const COMPOSITES = new Set(['session', 'commands', 'canvas', 'links', 'palette', 'pins', 'curveeditor', 'gradienteditor', 'playback', 'sortable', 'tour', 'undovue']);
+/** Ядро составного модуля без Vue (его можно подключать отдельно): составной модуль-сосед вправе импортировать его, как примитив. */
+const CORES = new Set(['curveops']);
+const COMPOSITES = new Set(['session', 'commands', 'canvas', 'links', 'palette', 'pins', 'curveeditor', 'gradienteditor', 'playback', 'sortable', 'tour', 'undovue', 'curveops']);
 /** Ярус 2, поля: собирают составные модули в готовое поле на компонентах TaoUI (единственный ярус, которому TaoUI можно). */
 const FIELDS = new Set(['curvefield', 'swiperow']);
 
@@ -62,7 +64,7 @@ describe('ярусы модулей', () => {
                 for (const spec of relativeImports(f)) {
                     const target = targetModule(f, spec, m.name);
                     if (target === null) continue;
-                    expect(COMPOSITES.has(target) || FIELDS.has(target), `${m.name} импортирует составной модуль или поле ${target}`).toBe(false);
+                    expect((COMPOSITES.has(target) && !CORES.has(target)) || FIELDS.has(target), `${m.name} импортирует составной модуль или поле ${target}`).toBe(false);
                 }
             }
         }

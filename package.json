@@ -59,6 +59,10 @@
       "types": "./dist/curve.d.ts",
       "import": "./dist/curve.js"
     },
+    "./curveops": {
+      "types": "./dist/curveops.d.ts",
+      "import": "./dist/curveops.js"
+    },
     "./curveeditor": {
       "types": "./dist/curveeditor/index.d.ts",
       "import": "./dist/curveeditor.js"
@@ -206,7 +210,7 @@
     }
   },
   "devDependencies": {
-    "@1337exp/taoui": "^5.25.0",
+    "@1337exp/taoui": "^6.0.0",
     "@types/node": "^26.6.4",
     "@vitejs/plugin-vue": "^6.0.10",
     "@vue/test-utils": "^2.5.1",

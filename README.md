@@ -105,6 +105,7 @@ import { History } from '@1337exp/taoux/history';
 | `links` (Vue) | links layer: SVG from ready geometry, `--tx-link-*` | vue (peer) |
 | `canvas` (Vue) | canvas: mouse and touch gestures, wheel, auto-scroll, keys; the `CanvasHost` contract | vue (peer) |
 | `curveeditor` (Vue) | curve editor plot: grid, snapping, bounds, decimals, auto-scroll at the edge; point operations; per-segment transitions with Bezier handles; `formatT` writes the 0…1 time as years, seconds…; keyboard (Tab, arrows, Shift, Insert, Delete) | vue (peer) |
+| `curveops` | the point operations and `sampleCurve(points, t)` of a curve with no Vue: for a game, a worker, a build step | none |
 | `swiperow` (Vue, tier 2) | `TaoxSwipeRow`: a list row a finger slides sideways, as in a mail app: to the start one action that runs past a threshold (read / unread), to the end actions that grow out and stay open, a long pull runs the last one (delete); TaoUI icons and tones, `@action="id => …"`; Tab reaches the actions | vue, **@1337exp/taoui** (peer) |
 | `curvefield` (Vue, tier 2) | `TaoxCurveField`: a curve with fields on TaoUI components: point time and value, transition to the next point (`ease`), snapping, remove and reset; labels come from the app | vue, **@1337exp/taoui** (peer) |
 | `gradienteditor` (Vue) | gradient bar with stop handles; stop operations, `gradientCss`; keyboard (Tab, arrows, Home/End, Insert, Delete) | vue (peer) |
