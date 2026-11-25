@@ -90,8 +90,10 @@ export function createCommands(initial: readonly Command[] = [], options: Platfo
     };
 
     /**
-     * Runs the command if it exists and is enabled. Returns whether it ran. Give it to `@select` of a menu.
-     * Выполняет команду, если она есть и доступна. Возвращает, выполнилась ли. Отдайте его в `@select` меню.
+     * Runs the command if it exists and is enabled. Returns whether it ran. A menu of TaoUI 6 emits the item, not the id, so
+     * `@select` takes `(item) => commands.run(item.id)` (`onSelect` of `useCommands` is that).
+     * Выполняет команду, если она есть и доступна. Возвращает, выполнилась ли. Меню TaoUI 6 отдаёт пункт, а не id, поэтому
+     * в `@select` идёт `(item) => commands.run(item.id)` (это и есть `onSelect` из `useCommands`).
      */
     function run(id: string): boolean {
         if (!isEnabled(id)) return false;

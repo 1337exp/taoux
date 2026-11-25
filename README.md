@@ -110,6 +110,7 @@ import { History } from '@1337exp/taoux/history';
 | `gradienteditor` (Vue) | gradient bar with stop handles; stop operations, `gradientCss`; keyboard (Tab, arrows, Home/End, Insert, Delete) | vue (peer) |
 | `playback` | playback model: time, pause, loop, speed, seeking; `createPlayback` without Vue and `usePlayback` for a component | vue (peer, for `usePlayback`) |
 | `tour` | a guided tour of a page, step by step: `createTour` without Vue (jumps over steps whose target is gone, ends as `done` or `skipped`), `useTour` for a component, `createTourMemory` so it shows once | vue (peer, for `useTour`), storage |
+| `commandsvue` | `commands` in a Vue app: `useCommands(registry, { add })` adds the commands of a component (and removes them with it), listens to the shortcuts while it is mounted, `menu(layout)` is a `computed` that follows the state, `onSelect(item)` is the `@select` of a menu (it takes the item TaoUI 6 emits and runs `item.id`) | vue (peer) |
 | `undovue` | `undo` and `history` for Vue: `useUndoStack` and `useHistory` keep `canUndo` / `canRedo` (and, for `useHistory`, `undoLabel` / `redoLabel` / `dirty`) as refs after every move (for `historyCommands` and the menu); `useUndoFlags(source)` + `sync()` for a stack you already have | vue (peer) |
 | `pins` | row pin positions measured from the DOM: `usePinMeasure`, `createPinRegistry` | vue (peer) |
 | `i18n` | typed i18n: `createI18n({ locales, fallback, storageKey })` | vue (peer, optional) |

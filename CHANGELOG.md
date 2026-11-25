@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.18.0
+
+Nothing to migrate: a new module; `commands` itself is unchanged.
+
+- **`commandsvue`: `useCommands`, the registry in a Vue app.** Every app that used `createCommands` wrote the same glue: add the commands, `bind` the keys on mount and stop on unmount, wrap `toMenu` in a `computed`, and turn the `select` of a menu into `commands.run`. `useCommands(commands, { add, target })` is that glue: the commands of the component are added at once (a menu can name them in the same `setup`) and removed with it, the shortcuts are heard from `onMounted` to unmount (`target: false` for a menu without keys), `menu(layout)` gives a `ComputedRef` of menu items that follows what the labels, `enabled` and `checked` read, and `onSelect(item)` runs `item.id`: TaoUI 6 emits the whole item from `select`, not a bare id, so `@select="commands.run"` of the old docs would pass an object (the comment of `run` says so now). The registry stays where it is, in TaoUX: it is behaviour, not a look, and the kit's menus only take items. `useCommands` takes the registry by its shape, so the module imports nothing from another module of the package.
+
 ## 0.17.0
 
 Nothing to migrate: new optional members of `History`; a history that does not use them behaves and saves exactly as before.
