@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.18.1
+
+Nothing to migrate: the skill and the tests only.
+
+- **The skill binds `select` of a menu by `item.id`.** Its example was `@select="commands.run"`; TaoUI 6 hands out the item, so `commands.run(item)` found no command. `curveops` may be imported by `curveeditor` only (a test of the tiers), and the test that keeps it free of Vue sees a bare `import 'vue'` and `import()` too.
+
 ## 0.18.0
 
 **It needs TaoUI 6** (`@1337exp/taoui` `^6.0.0` as the optional peer, Vue `^3.5.0`): `TaoxCurveField` gives `TaoSelect` its `items` of `{ id, label }`. Nothing else to migrate: new modules and members (`commands` gains `Command.repeat`, an optional field). In Vitest, let Vite process the kit: `test.server.deps.inline: ['@1337exp/taoui']` (its CSS is imported by the components).
