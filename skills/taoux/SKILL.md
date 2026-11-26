@@ -84,7 +84,7 @@ onBeforeUnmount(() => unbind());
 ```
 
 ```vue
-<TaoMenubar :items="menu" @select="commands.run" />
+<TaoMenubar :items="menu" @select="(item) => commands.run(item.id)" />
 ```
 
 - `Mod` is ⌘ on Apple and Ctrl elsewhere; the menu shows the platform's label by itself.

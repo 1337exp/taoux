@@ -2,7 +2,7 @@
 
 ## 0.18.0
 
-**It needs TaoUI 6** (`@1337exp/taoui` `^6.0.0` as the optional peer, Vue `^3.5.0`): `TaoxCurveField` gives `TaoSelect` its `items` of `{ id, label }`. Nothing else to migrate: new modules and members; `commands` itself is unchanged. In Vitest, let Vite process the kit: `test.server.deps.inline: ['@1337exp/taoui']` (its CSS is imported by the components).
+**It needs TaoUI 6** (`@1337exp/taoui` `^6.0.0` as the optional peer, Vue `^3.5.0`): `TaoxCurveField` gives `TaoSelect` its `items` of `{ id, label }`. Nothing else to migrate: new modules and members (`commands` gains `Command.repeat`, an optional field). In Vitest, let Vite process the kit: `test.server.deps.inline: ['@1337exp/taoui']` (its CSS is imported by the components).
 
 - **`curveops`: the sampling of a curve with no Vue.** `sampleCurve`, `sampleSegment`, `addPoint`, `movePoint`, `removePoint`, `setEase`, `valueBounds` were exported with the editor component, so a game that only plays a curve pulled Vue in. `@1337exp/taoux/curveops` is the same code on its own (the editor re-exports it, nothing changes there). `tests/curveops.test.ts` fails if it ever imports Vue.
 - **`Command.repeat`: a held key, per command.** `repeat: false` runs a command once per press (a save, a toggle); the default is as before, it runs again while the key is held (a nudge, an undo). The held key is swallowed either way, so the browser's own dialog does not open. `bind`'s `repeat: false` still turns the repeat off for everything.

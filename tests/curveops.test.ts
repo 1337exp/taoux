@@ -11,12 +11,13 @@ function importsOf(file: string, seen = new Set<string>()): string[] {
     seen.add(file);
     const text = readFileSync(file, 'utf8');
     const found: string[] = [];
-    for (const match of text.matchAll(/(?:^|\n)\s*(?:import|export)[^'"]*?from\s*['"]([^'"]+)['"]/g)) {
+    // `import x from`, `export … from`, a bare `import 'x'` and a dynamic `import('x')`
+    for (const match of text.matchAll(/(?:from\s*|import\s*\(\s*|(?:^|\n)\s*import\s*)['"]([^'"]+)['"]/g)) {
         const spec = match[1]!;
         if (spec.startsWith('.')) {
             const base = resolve(dirname(file), spec);
             const target = [`${base}.ts`, `${base}/index.ts`].find((p) => { try { readFileSync(p); return true; } catch { return false; } });
-            found.push(spec.endsWith('.vue') ? spec : spec);
+            found.push(spec);
             if (target) found.push(...importsOf(target, seen));
         } else {
             found.push(spec);
@@ -30,7 +31,7 @@ describe('curveops', () => {
         const points = [{ t: 0, v: 0 }, { t: 1, v: 10 }];
         expect(sampleCurve(points, 0)).toBe(0);
         expect(sampleCurve(points, 1)).toBe(10);
-        expect(sampleCurve(points, 0.5)).toBeGreaterThan(0);
+        expect(sampleCurve(points, 0.5)).toBeCloseTo(5, 5);
     });
 
     it('imports nothing of Vue, directly or through the modules it uses', () => {
